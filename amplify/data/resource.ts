@@ -12,7 +12,8 @@ const schema = a.schema({
     .query()
     .arguments({ name: a.string().required() })
     .returns(a.string())
-    .handler(a.handler.function(sayHello)),
+    .handler(a.handler.function(sayHello))
+    .authorization(allow => [allow.publicApiKey()]),
 
   Todo: a
     .model({
