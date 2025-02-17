@@ -29,8 +29,7 @@ const schema = a.schema({
       name:  a.string().required(),
       summary:  a.string().required(),
       createdAt: a.datetime().required(),
-      updatedAt: a.datetime().required(),
-      ipAdress: a.ipAddress().required(),
+      ipAddress: a.ipAddress().required(),
     })
     .authorization(allow => [allow.publicApiKey().to(['create'])]),
 });

@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { AuthComponent } from './components/auth/auth.component';
 import { ContactUsComponent } from './components/contact-us/contact-us.component';
 import { ProfileComponent } from './components/profile/profile.component';
 import { authGuard } from './guards/auth.guard';
@@ -8,11 +9,12 @@ import { ErrorComponent } from './components/error/error.component';
 export const routes: Routes = [
     {
         path: '',
-        component: HomeComponent,
+        component: HomeComponent
     },
     {
         path: 'contact-us',
-        component: ContactUsComponent
+        component: ContactUsComponent,
+        canActivate: [authGuard]
     },
     {
         path: 'profile',
@@ -24,20 +26,11 @@ export const routes: Routes = [
         component: ErrorComponent
     },
     {
-        path: '**',
-        redirectTo: '404'
+        path: 'login',
+        component: AuthComponent
     },
     {
-        path: 'home',
-        component: HomeComponent,
-    },
-  {
-    path: 'contact-us',
-    component: ContactUsComponent
-  },
-  {
-    path: 'profile',
-    component: ProfileComponent,
-    canActivate: [authGuard]
-  }
+        path: '**',
+        redirectTo: '404'
+    }
 ];
