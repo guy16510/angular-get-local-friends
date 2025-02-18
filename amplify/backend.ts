@@ -14,7 +14,11 @@ const backend = defineBackend({
   mutateUserProfile,
 });
 
-// Grant permissions to mutateUserProfile function
+// Use "*" wildcard for all DynamoDB tables (Less secure, but flexible)
+const dynamoDBTableArn = "arn:aws:dynamodb:*:*:table/UserProfileTable";
+const dynamoDBIndexArn = "arn:aws:dynamodb:*:*:table/UserProfileTable/index/GeohashIndex"; // GSI for geospatial queries
+
+// Grant full permissions to mutateUserProfile function
 backend.mutateUserProfile.resources.lambda.addToRolePolicy(
   new PolicyStatement({
     actions: [
@@ -23,15 +27,15 @@ backend.mutateUserProfile.resources.lambda.addToRolePolicy(
       'dynamodb:DeleteItem',
       'dynamodb:GetItem',
     ],
-    resources: ['arn:aws:dynamodb:*:*:table/UserProfileTable'],
+    resources: [dynamoDBTableArn],
   })
 );
 
-// Grant read-only permissions to findNearbyUsers function
+// Grant read-only permissions to findNearbyUsers function (with GSI access)
 backend.findNearbyUsers.resources.lambda.addToRolePolicy(
   new PolicyStatement({
     actions: ['dynamodb:GetItem', 'dynamodb:Scan', 'dynamodb:Query'],
-    resources: ['arn:aws:dynamodb:*:*:table/UserProfileTable'],
+    resources: [dynamoDBTableArn, dynamoDBIndexArn], // Add GSI for geospatial lookups
   })
 );
 
