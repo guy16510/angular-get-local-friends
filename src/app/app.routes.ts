@@ -5,6 +5,8 @@ import { authGuard } from './guards/auth.guard';
 import { HomeComponent } from './components/home/home.component';
 import { ErrorComponent } from './components/error/error.component';
 import { LoginComponent } from './components/login/login.component';
+import { SignUpComponent } from './components/sign-up/sign-up.component';
+import { SearchComponent } from './components/search/search.component';
 
 export const routes: Routes = [
     {
@@ -27,6 +29,16 @@ export const routes: Routes = [
     {
         path: 'login',
         component: LoginComponent
+    },
+    {
+        path: 'sign-up',
+        component: SignUpComponent,
+        canActivate: [authGuard]
+    },
+    {
+        path: 'search',
+        component: SearchComponent,
+        canActivate: [authGuard]
     },
     {
         path: '**',
