@@ -3,16 +3,21 @@ backend:
   phases:
     build:
       commands:
-        - 'npm ci --cache .npm --prefer-offline'
-        - 'echo "Fetching IAM Role for this build..."'
-        
-        # Print IAM Role being used
+        - 'echo "Fetching IAM Role Info..."'
         - 'aws sts get-caller-identity'
+        - 'echo "Listing Attached Policies for the IAM Role..."'
+        - 'aws iam list-attached-role-policies --role-name AmplifySSRLoggingRole-962c531f-f7a1-4ec3-812f-bfa363465843'
+        - 'echo "Fetching DynamoDB table for branch: $AWS_BRANCH"'
+        # - 'npm ci --cache .npm --prefer-offline'
+        # - 'echo "Fetching IAM Role for this build..."'
+        
+        # # Print IAM Role being used
+        # - 'aws sts get-caller-identity'
 
-        # Continue with your existing setup
-        - 'export USER_PROFILE_TABLE_NAME=$(aws dynamodb list-tables --query "TableNames[]" --output text | grep "UserProfile-")'
-        - 'echo "Using DynamoDB Table: $USER_PROFILE_TABLE_NAME"'
-        - 'npx ampx pipeline-deploy --branch "$AWS_BRANCH" --app-id "$AWS_APP_ID"'
+        # # Continue with your existing setup
+        # - 'export USER_PROFILE_TABLE_NAME=$(aws dynamodb list-tables --query "TableNames[]" --output text | grep "UserProfile-")'
+        # - 'echo "Using DynamoDB Table: $USER_PROFILE_TABLE_NAME"'
+        # - 'npx ampx pipeline-deploy --branch "$AWS_BRANCH" --app-id "$AWS_APP_ID"'
 
 frontend:
   phases:
