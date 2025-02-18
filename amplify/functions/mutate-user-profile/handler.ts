@@ -5,8 +5,7 @@ import ngeohash from 'ngeohash';
 
 const docClient = new AWS.DynamoDB.DocumentClient();
 // Construct the table name dynamically using bracket notation
-const TABLE_NAME = process.env['USER_PROFILE_TABLE_NAME'] || 
-  `UserProfile-${process.env['AMPLIFY_PROJECT_ID']}-${process.env['AMPLIFY_ENV']}-NONE`;
+const TABLE_NAME = process.env['USER_PROFILE_TABLE_NAME'] || null;
 
 if (!TABLE_NAME) {
   console.error("ERROR: USER_PROFILE_TABLE_NAME is not set!");

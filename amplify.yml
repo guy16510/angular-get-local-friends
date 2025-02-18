@@ -9,9 +9,9 @@ backend:
         # Manually set the DynamoDB table name based on the branch/environment
         - |
           if [[ "$AWS_BRANCH" == "develop" ]]; then
-            export USER_PROFILE_TABLE_NAME="UserProfile-x334imiw7fh4hlc6cfem5zw2vy-NONE"
-          elif [[ "$AWS_BRANCH" == "main" ]]; then
             export USER_PROFILE_TABLE_NAME="UserProfile-etrhmycfdfb4bfizioslgo3f3q-NONE"
+          elif [[ "$AWS_BRANCH" == "main" ]]; then
+            export USER_PROFILE_TABLE_NAME="UserProfile-x334imiw7fh4hlc6cfem5zw2vy-NONE"
           else
             export USER_PROFILE_TABLE_NAME="UserProfile-default-NONE"
           fi
