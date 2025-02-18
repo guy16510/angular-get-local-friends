@@ -29,7 +29,8 @@ export class SignUpComponent {
     try {
       // Build a JSON-encoded payload with the required fields.
       const payload = JSON.stringify({
-        userId: this.userId,
+        // userId: this.userId,
+        userId: 'b4c82498-1031-70e1-976b-d6da3060b5fd',
         locationLat: Number(this.lat),
         locationLng: Number(this.lng),
       });

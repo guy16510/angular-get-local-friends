@@ -52,7 +52,8 @@ export const handler: Schema["mutateUserProfile"]["functionHandler"] = async (ev
     const params: AWS.DynamoDB.DocumentClient.PutItemInput = {
       TableName: TABLE_NAME,
       Item: {
-        userId,
+        id: userId,  // Use 'id' instead of 'userId' if your table requires it
+        userId,      // Keep userId for tracking, but 'id' is the PK
         locationLat,
         locationLng,
         geohash,
@@ -60,7 +61,7 @@ export const handler: Schema["mutateUserProfile"]["functionHandler"] = async (ev
         geoPrecision,
         lastUpdated: now,
       },
-      ConditionExpression: 'attribute_not_exists(userId)', // fail if already exists
+      ConditionExpression: 'attribute_not_exists(id)', // fail if already exists
     };
     
     await docClient.put(params).promise();

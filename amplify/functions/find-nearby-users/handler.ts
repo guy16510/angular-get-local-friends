@@ -28,7 +28,7 @@ export const handler: Schema["findNearbyUsers"]["functionHandler"] = async (even
     throw new Error("lat, lng, and radius must be numbers");
   }
   if (radius < 1 || radius > 5) {
-    throw new Error(TABLE_NAME + " hello world");
+    throw new Error("Radius must be between 1 and 5 miles");
   }
 
   const precision = getGeohashPrecision(radius);
