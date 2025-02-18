@@ -1,0 +1,24 @@
+<main>
+    <h1>Sign Up</h1>
+    <form (ngSubmit)="signUp()">
+      <label>
+        User ID:
+        <input type="text" [(ngModel)]="userId" name="userId" required />
+      </label>
+      <br />
+      <label>
+        Latitude:
+        <input type="number" [(ngModel)]="locationLat" name="locationLat" required />
+      </label>
+      <br />
+      <label>
+        Longitude:
+        <input type="number" [(ngModel)]="locationLng" name="locationLng" required />
+      </label>
+      <br />
+      <button type="submit">Sign Up</button>
+    </form>
+    <div *ngIf="message">
+      {{ message }}
+    </div>
+  </main>
