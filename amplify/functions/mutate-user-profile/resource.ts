@@ -3,7 +3,7 @@ import { defineFunction } from '@aws-amplify/backend';
 export const mutateUserProfile = defineFunction({
   name: 'mutate-user-profile',
   entry: './handler.ts',
-  environment:{
-    USER_PROFILE_TABLE_NAME: `UserProfile-${process.env['AMPLIFY_PROJECT_ID']}-${process.env['AMPLIFY_ENV']}-NONE`,
+  environment: {
+    USER_PROFILE_TABLE_NAME: process.env['AMPLIFY_USER_PROFILE_TABLE_NAME'] || 'default_table_name',
   }
 });

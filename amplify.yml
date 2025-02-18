@@ -4,20 +4,23 @@ backend:
     build:
       commands:
         - 'npm ci --cache .npm --prefer-offline'
-        - 'echo "Setting Amplify Environment Variables..."'
+        - 'echo "Fetching DynamoDB table for branch: $AWS_BRANCH"'
 
-        # Set AMPLIFY_ENV based on the current Amplify branch
-        - 'export AMPLIFY_ENV=$AWS_BRANCH'
-        
-        # Set AMPLIFY_PROJECT_ID dynamically (Amplify provides this)
-        - 'export AMPLIFY_PROJECT_ID=$AWS_APP_ID'
+        # Fetch the correct table name based on the amplify:branch-name tag
+        - |
+          export USER_PROFILE_TABLE_NAME=$(
+            aws dynamodb list-tables --query "TableNames[]" --output text | tr " " "\n" | while read table; do
+              TAG_VALUE=$(aws dynamodb list-tags-of-resource --resource-arn "arn:aws:dynamodb:us-east-1:$AWS_ACCOUNT_ID:table/$table" --query "Tags[?Key==\`amplify:branch-name\`].Value" --output text);
+              if [[ "$TAG_VALUE" == "$AWS_BRANCH" ]]; then echo "$table"; fi;
+            done | head -n 1
+          )
 
-        # Debugging: Print the variables
-        - 'echo "AMPLIFY_ENV: $AMPLIFY_ENV"'
-        - 'echo "AMPLIFY_PROJECT_ID: $AMPLIFY_PROJECT_ID"'
+        - 'echo "Using DynamoDB Table: $USER_PROFILE_TABLE_NAME"'
+        - 'export AMPLIFY_USER_PROFILE_TABLE_NAME=$USER_PROFILE_TABLE_NAME'
 
         # Deploy backend resources
         - 'npx ampx pipeline-deploy --branch "$AWS_BRANCH" --app-id "$AWS_APP_ID"'
+
 frontend:
   phases:
     preBuild:
