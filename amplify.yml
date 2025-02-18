@@ -8,7 +8,7 @@ backend:
 
         # Fetch the correct table based on amplify:branch-name tag
         - export USER_PROFILE_TABLE_NAME="$(aws dynamodb list-tables --query 'TableNames[]' --output text | tr '\t' '\n' | while read table; do
-            TAGS=$(aws dynamodb list-tags-of-resource --resource-arn "arn:aws:dynamodb:us-east-1:$AWS_ACCOUNT_ID:table/$table" --query "Tags[?Key=='amplify:branch-name'].Value" --output text);
+            TAGS=$(aws dynamodb list-tags-of-resource --resource-arn "arn:aws:dynamodb:us-east-1:$AWS_ACCOUNT_ID:table/$table" --query "Tags[?Key==\`amplify:branch-name\`].Value" --output text);
             if [[ \"$TAGS\" == \"$AWS_BRANCH\" ]]; then echo $table; fi;
           done)"
 
