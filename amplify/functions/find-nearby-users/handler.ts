@@ -4,7 +4,9 @@ import AWS from 'aws-sdk';
 import ngeohash from 'ngeohash';
 
 const docClient = new AWS.DynamoDB.DocumentClient();
-const TABLE_NAME = 'UserProfileTable';
+const TABLE_NAME = process.env['USER_PROFILE_TABLE_NAME'] || 'UserProfileTable';
+console.log("TABLE_NAME: " + TABLE_NAME);
+
 
 /**
  * Use low geohash precision to minimize cost and complexity.
