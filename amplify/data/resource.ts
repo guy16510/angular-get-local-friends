@@ -23,6 +23,17 @@ const schema = a.schema({
     })
     .authorization(allow => [allow.owner()]),
     
+  Profile: a
+    .model({
+      firstName: a.string().required(),
+      lastName: a.string().required(),
+      hash: a.datetime().required(),
+      createdAt: a.datetime().required(),
+      updatedAt: a.datetime().required(),
+    })
+    .authorization(allow => [allow.owner()]),
+
+
   Contact: a
     .model({
       email: a.string().required(),

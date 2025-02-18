@@ -1,10 +1,10 @@
 import { Routes } from '@angular/router';
-import { AuthComponent } from './components/auth/auth.component';
 import { ContactUsComponent } from './components/contact-us/contact-us.component';
 import { ProfileComponent } from './components/profile/profile.component';
 import { authGuard } from './guards/auth.guard';
 import { HomeComponent } from './components/home/home.component';
 import { ErrorComponent } from './components/error/error.component';
+import { LoginComponent } from './components/login/login.component';
 
 export const routes: Routes = [
     {
@@ -13,8 +13,7 @@ export const routes: Routes = [
     },
     {
         path: 'contact-us',
-        component: ContactUsComponent,
-        canActivate: [authGuard]
+        component: ContactUsComponent
     },
     {
         path: 'profile',
@@ -27,7 +26,7 @@ export const routes: Routes = [
     },
     {
         path: 'login',
-        component: AuthComponent
+        component: LoginComponent
     },
     {
         path: '**',

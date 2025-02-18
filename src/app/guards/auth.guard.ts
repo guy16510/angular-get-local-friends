@@ -5,7 +5,6 @@ import { AuthenticatorService } from '@aws-amplify/ui-angular';
 export const authGuard = () => {
   const authenticator = inject(AuthenticatorService);
   const router = inject(Router);
-
   if (authenticator.authStatus === 'authenticated') {
     return true;
   }
