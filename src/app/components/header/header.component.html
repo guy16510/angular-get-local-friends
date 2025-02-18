@@ -1,5 +1,13 @@
-<nav>
-  <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Home</a>
-  <a routerLink="/contact-us" routerLinkActive="active">Contact Us</a>
-  <a routerLink="/profile" routerLinkActive="active">Profile</a>
-</nav>
+<header>
+  <div class="header-container">
+    <div class="branding">
+      <a aria-current="page" class="active" href="/">Get Local Friends</a>
+    </div>
+    <nav class="nav-links">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Home</a>
+      <a routerLink="/contact-us" routerLinkActive="active">Contact Us</a>
+      <a routerLink="/profile" routerLinkActive="active">Profile</a>
+      <a href="/search">Search</a>
+    </nav>
+  </div>
+</header>

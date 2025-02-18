@@ -27,18 +27,19 @@ const schema = a.schema({
     })
     .authorization(allow => [allow.owner()]),
     
-  UserProfile: a
+    UserProfile: a
     .model({
-      userId: a.string().required(),       // Unique user ID
-      lat: a.float().required(),            // Latitude coordinate
-      lng: a.float().required(),            // Longitude coordinate
-      geohash: a.string().required(),       // Geohash for spatial queries
-      geoPrecision: a.float(),             // Optional: Precision of the geohash (e.g., number of characters)
-      lastUpdated: a.datetime().required(), // Last update timestamp
+      userId: a.string().required(),        // Unique user ID
+      locationLat: a.float().required(),      // Latitude coordinate
+      locationLng: a.float().required(),      // Longitude coordinate
+      geohash: a.string().required(),         // Geohash for spatial queries
+      geoPrecision: a.float(),                  // Optional: Precision of the geohash
+      lastUpdated: a.datetime().required(),   // Last update timestamp
     })
-    .authorization(allow => [allow.owner()]),
+    .authorization(allow => [allow.owner()])
+    .secondaryIndexes(index => [index('geohash')]),
 
-  Contact: a
+    Contact: a
     .model({
       email: a.string().required(),
       name: a.string().required(),
@@ -46,7 +47,10 @@ const schema = a.schema({
       createdAt: a.datetime().required(),
       ipAddress: a.ipAddress().required(),
     })
-    .authorization(allow => [allow.publicApiKey().to(['create'])]),
+    .authorization(allow => [
+      allow.guest().to(['create']),
+      allow.owner().to(['create']),
+    ]),
 });
 
 export type Schema = ClientSchema<typeof schema>;

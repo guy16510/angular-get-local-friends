@@ -1,4 +1,4 @@
-
+/* 
 body {
     margin: 0;
     background: linear-gradient(180deg, rgb(117, 81, 194), rgb(255, 255, 255));
@@ -63,4 +63,27 @@ body {
   a {
     font-weight: 800;
     text-decoration: none;
+  } */
+
+  :root {
+    --primary-color: #000;
+    --accent-color: #ff0055;
+    --text-color: #333;
+    --bg-color: #fff;
+    --secondary-bg: #f8f8f8;
+    --heading-font: 'Open Sans', sans-serif;
+    --body-font: 'Open Sans', sans-serif;
+  }
+  
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: var(--body-font);
+    color: var(--text-color);
+    background-color: var(--bg-color);
+    line-height: 1.6;
   }
