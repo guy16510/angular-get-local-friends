@@ -4,8 +4,14 @@ import AWS from 'aws-sdk';
 import ngeohash from 'ngeohash';
 
 const docClient = new AWS.DynamoDB.DocumentClient();
-const TABLE_NAME = process.env['USER_PROFILE_TABLE_NAME'] || 'UserProfileTable';
-console.log("TABLE_NAME: " + TABLE_NAME);
+// Construct the table name dynamically using bracket notation
+const TABLE_NAME = process.env['USER_PROFILE_TABLE_NAME'] || 
+  `UserProfile-${process.env['AMPLIFY_PROJECT_ID']}-${process.env['AMPLIFY_ENV']}-NONE`;
+
+if (!TABLE_NAME) {
+  console.error("ERROR: USER_PROFILE_TABLE_NAME is not set!");
+  throw new Error("Missing environment variable: USER_PROFILE_TABLE_NAME");
+}
 
 // Use a fixed precision for simplicity
 const GEO_PRECISION = 7;
