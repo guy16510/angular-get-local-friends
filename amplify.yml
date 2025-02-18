@@ -4,18 +4,18 @@ backend:
     build:
       commands:
         - 'npm ci --cache .npm --prefer-offline'
-        - 'echo "Fetching DynamoDB table name for branch: $AWS_BRANCH"'
+        - 'echo "Fetching DynamoDB table for branch: $AWS_BRANCH"'
 
-        # Debug Step: Print all available tables before filtering
+        # Debug: List all available tables
         - 'aws dynamodb list-tables --query "TableNames[]" --output text'
 
-        # Dynamically fetch the correct table name based on AWS_BRANCH
-        - 'export USER_PROFILE_TABLE_NAME=$(aws dynamodb list-tables --query "TableNames[]" --output text | tr "\t" "\n" | grep "UserProfile-" | grep -i "$AWS_BRANCH")'
+        # Fetch the correct table name by checking the amplify:branch-name tag
+        - 'export USER_PROFILE_TABLE_NAME=$(aws dynamodb list-tables --query "TableNames[]" --output text | tr " " "\n" | while read table; do
+            TAG_VALUE=$(aws dynamodb list-tags-of-resource --resource-arn "arn:aws:dynamodb:us-east-1:$AWS_ACCOUNT_ID:table/$table" --query "Tags[?Key==\`amplify:branch-name\`].Value" --output text);
+            if [[ "$TAG_VALUE" == "$AWS_BRANCH" ]]; then echo "$table"; fi;
+          done | head -n 1)"'
 
-        # Debug Step: Print the selected table name
         - 'echo "Using DynamoDB Table: $USER_PROFILE_TABLE_NAME"'
-
-        # Deploy with Amplify
         - 'npx ampx pipeline-deploy --branch "$AWS_BRANCH" --app-id "$AWS_APP_ID"'
 
 frontend:
