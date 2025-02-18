@@ -1,0 +1,28 @@
+{
+    "Resources": {
+      "UserProfileTable": {
+        "Properties": {
+          "AttributeDefinitions": [
+            { "AttributeName": "geohash", "AttributeType": "S" },
+            { "AttributeName": "lat", "AttributeType": "N" }
+          ],
+          "GlobalSecondaryIndexes": [
+            {
+              "IndexName": "GeohashIndex",
+              "KeySchema": [
+                { "AttributeName": "geohash", "KeyType": "HASH" },
+                { "AttributeName": "lat", "KeyType": "RANGE" }
+              ],
+              "Projection": {
+                "ProjectionType": "ALL"
+              },
+              "ProvisionedThroughput": {
+                "ReadCapacityUnits": 5,
+                "WriteCapacityUnits": 5
+              }
+            }
+          ]
+        }
+      }
+    }
+  }

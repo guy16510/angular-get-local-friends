@@ -1,12 +1,16 @@
 import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
 import { sayHello } from '../functions/say-hello/resource';
 
-/*== STEP 1 ===============================================================
-The section below creates a Todo database table with a "content" field. Try
-adding a new "isDone" field as a boolean. The authorization rule below
-specifies that any user authenticated via an API key can "create", "read",
-"update", and "delete" any "Todo" records.
-=========================================================================*/
+/*== DATA MODEL ===============================================================
+This schema defines several models. In addition to existing models, we add a
+UserProfile model with geospatial fields:
+  - userId: Unique user ID
+  - lat: Latitude coordinate
+  - lng: Longitude coordinate
+  - geohash: Geohash string for spatial queries
+  - geoPrecision: (Optional) The precision/length of the geohash
+  - lastUpdated: Timestamp for the last update
+=============================================================================*/
 const schema = a.schema({
   sayHello: a
     .query()
@@ -23,22 +27,22 @@ const schema = a.schema({
     })
     .authorization(allow => [allow.owner()]),
     
-  Profile: a
+  UserProfile: a
     .model({
-      firstName: a.string().required(),
-      lastName: a.string().required(),
-      hash: a.datetime().required(),
-      createdAt: a.datetime().required(),
-      updatedAt: a.datetime().required(),
+      userId: a.string().required(),       // Unique user ID
+      lat: a.float().required(),            // Latitude coordinate
+      lng: a.float().required(),            // Longitude coordinate
+      geohash: a.string().required(),       // Geohash for spatial queries
+      geoPrecision: a.float(),             // Optional: Precision of the geohash (e.g., number of characters)
+      lastUpdated: a.datetime().required(), // Last update timestamp
     })
     .authorization(allow => [allow.owner()]),
-
 
   Contact: a
     .model({
       email: a.string().required(),
-      name:  a.string().required(),
-      summary:  a.string().required(),
+      name: a.string().required(),
+      summary: a.string().required(),
       createdAt: a.datetime().required(),
       ipAddress: a.ipAddress().required(),
     })
@@ -57,5 +61,3 @@ export const data = defineData({
     },
   },
 });
-
-
