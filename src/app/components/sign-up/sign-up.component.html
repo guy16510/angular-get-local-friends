@@ -8,13 +8,15 @@
       <br />
       <label>
         Latitude:
-        <input type="number" [(ngModel)]="locationLat" name="locationLat" required />
+        <input type="number" [(ngModel)]="lat" name="lat" required />
       </label>
       <br />
       <label>
         Longitude:
-        <input type="number" [(ngModel)]="locationLng" name="locationLng" required />
+        <input type="number" [(ngModel)]="lng" name="lng" required />
       </label>
+      <br />
+      <button type="button" (click)="useCurrentLocation()">Use Current Location</button>
       <br />
       <button type="submit">Sign Up</button>
     </form>
@@ -22,3 +24,7 @@
       {{ message }}
     </div>
   </main>
+    <!-- Show loading overlay if search is in progress -->
+    <ng-container *ngIf="loading">
+      <app-loading></app-loading>
+    </ng-container>
