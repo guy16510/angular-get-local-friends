@@ -12,7 +12,8 @@
     "test": "ng test",
     "build:prod": "ng build --configuration production",
     "typecheck": "tsc --noEmit",
-    "precommit": "npm run typecheck && npm run build:prod"
+    "precommit": "npm run typecheck && npm run build:prod",
+    "prepare": "husky"
   },
   "private": true,
   "dependencies": {
@@ -26,7 +27,6 @@
     "@angular/router": "^17.3.0",
     "@aws-amplify/ui-angular": "^5.0.37",
     "aws-amplify": "^6.6.6",
-    "husky": "^9.1.7",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.14.3"
@@ -42,6 +42,7 @@
     "aws-cdk-lib": "^2.137.0",
     "constructs": "^10.3.0",
     "esbuild": "^0.20.2",
+    "husky": "^9.1.7",
     "jasmine-core": "~5.1.0",
     "json-schema-to-ts": "^3.1.1",
     "karma": "~6.4.0",
