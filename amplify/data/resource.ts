@@ -63,6 +63,8 @@ const schema = a.schema({
       rangeKey: a.string().required(),        // Range key for spatial queries
       geoPrecision: a.float(),                  // Optional: Precision of the geohash
       lastUpdated: a.datetime().required(),   // Last update timestamp
+      createdAt: a.datetime(),  // Add createdAt timestamp
+      updatedAt: a.datetime(),  // Add updatedAt timestamp
     })
     .authorization(allow => [allow.owner()])
     .secondaryIndexes(index => [index('geohash')]),

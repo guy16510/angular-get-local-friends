@@ -59,7 +59,9 @@ export const handler: Schema["mutateUserProfile"]["functionHandler"] = async (ev
         geohash,
         rangeKey,
         geoPrecision,
-        lastUpdated: now,
+        createdAt: now,  // Add createdAt timestamp
+        updatedAt: now,  // Add updatedAt timestamp
+        lastUpdated: now, // Keep for consistency
       },
       ConditionExpression: 'attribute_not_exists(id)', // fail if already exists
     };
