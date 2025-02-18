@@ -7,7 +7,7 @@ const docClient = new AWS.DynamoDB.DocumentClient();
 // Construct the table name dynamically using bracket notation
 const TABLE_NAME = process.env['USER_PROFILE_TABLE_NAME'] || null;
 
-if (!TABLE_NAME) {
+if (!TABLE_NAME || TABLE_NAME.length === 0) {
   console.error("ERROR: USER_PROFILE_TABLE_NAME is not set!");
   throw new Error("Missing environment variable: USER_PROFILE_TABLE_NAME");
 }

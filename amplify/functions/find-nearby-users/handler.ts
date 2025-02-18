@@ -7,7 +7,7 @@ const docClient = new AWS.DynamoDB.DocumentClient();
 const TABLE_NAME = process.env['USER_PROFILE_TABLE_NAME'] || null;
 
 
-if (!TABLE_NAME) {
+if (!TABLE_NAME || TABLE_NAME.length === 0) {
   console.error("ERROR: USER_PROFILE_TABLE_NAME is not set!");
   throw new Error("Missing environment variable: USER_PROFILE_TABLE_NAME");
 }
@@ -28,7 +28,7 @@ export const handler: Schema["findNearbyUsers"]["functionHandler"] = async (even
     throw new Error("lat, lng, and radius must be numbers");
   }
   if (radius < 1 || radius > 5) {
-    throw new Error("Radius must be between 1 and 5 miles" + TABLE_NAME);
+    throw new Error(TABLE_NAME + " hello world");
   }
 
   const precision = getGeohashPrecision(radius);
