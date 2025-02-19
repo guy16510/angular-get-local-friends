@@ -1,0 +1,30 @@
+  .sign-up-container {
+    margin: 2rem auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  mat-card {
+    width: 400px;
+    padding: 20px;
+  }
+  
+  .form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px; /* Adds spacing between form fields */
+  }
+  
+  mat-form-field {
+    width: 100%;
+  }
+  
+  button {
+    margin-top: 16px;
+  }
+  
+  .message-card {
+    margin-top: 16px;
+    background-color: #f8f8f8;
+  }

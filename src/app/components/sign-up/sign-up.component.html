@@ -1,30 +1,38 @@
-<main>
-    <h1>Sign Up</h1>
-    <form (ngSubmit)="signUp()">
-      <label>
-        User ID:
-        <input type="text" [(ngModel)]="userId" name="userId" required />
-      </label>
-      <br />
-      <label>
-        Latitude:
-        <input type="number" [(ngModel)]="lat" name="lat" required />
-      </label>
-      <br />
-      <label>
-        Longitude:
-        <input type="number" [(ngModel)]="lng" name="lng" required />
-      </label>
-      <br />
-      <button type="button" (click)="useCurrentLocation()">Use Current Location</button>
-      <br />
-      <button type="submit">Sign Up</button>
-    </form>
-    <div *ngIf="message">
-      {{ message }}
-    </div>
-  </main>
-    <!-- Show loading overlay if search is in progress -->
-    <ng-container *ngIf="loading">
-      <app-loading></app-loading>
-    </ng-container>
+<main class="sign-up-container">
+  <mat-card>
+    <mat-card-title>Sign Up</mat-card-title>
+    <mat-card-content>
+      <form (ngSubmit)="signUp()" class="form-container">
+        <mat-form-field appearance="outline">
+          <mat-label>User ID</mat-label>
+          <input matInput type="text" [(ngModel)]="userId" name="userId" required />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Latitude</mat-label>
+          <input matInput type="number" [(ngModel)]="lat" name="lat" required />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Longitude</mat-label>
+          <input matInput type="number" [(ngModel)]="lng" name="lng" required />
+        </mat-form-field>
+
+        <button mat-raised-button color="primary" type="button" (click)="useCurrentLocation()">
+          Use Current Location
+        </button>
+        <button mat-raised-button color="accent" type="submit">
+          Sign Up
+        </button>
+      </form>
+
+      <mat-card *ngIf="message" class="message-card">
+        <mat-card-content>{{ message }}</mat-card-content>
+      </mat-card>
+    </mat-card-content>
+  </mat-card>
+
+  <ng-container *ngIf="loading">
+    <app-loading></app-loading>
+  </ng-container>
+</main>

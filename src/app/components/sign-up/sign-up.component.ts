@@ -1,6 +1,10 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
 import { generateClient } from 'aws-amplify/data';
 import { GeolocationService } from '../../services/geolocation.service';
 import type { Schema } from '../../../../amplify/data/resource';
@@ -11,8 +15,17 @@ const client = generateClient<Schema>();
 @Component({
   selector: 'app-sign-up',
   standalone: true,
-  imports: [CommonModule, FormsModule, LoadingComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    LoadingComponent
+  ],
   templateUrl: './sign-up.component.html',
+  styleUrls: ['./sign-up.component.css']
 })
 export class SignUpComponent {
   loading = false;
@@ -20,11 +33,11 @@ export class SignUpComponent {
   lat!: number;
   lng!: number;
   message = '';
-  
+
   constructor(private geoService: GeolocationService) {}
-  
+
   generateGUID() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
       const r = (Math.random() * 16) | 0;
       const v = c === 'x' ? r : (r & 0x3) | 0x8;
       return v.toString(16);
@@ -34,18 +47,17 @@ export class SignUpComponent {
   async signUp() {
     this.loading = true;
     try {
-      // Build a JSON-encoded payload with the required fields.
       const payload = JSON.stringify({
-        // userId: this.userId,
         userId: this.generateGUID(),
         locationLat: Number(this.lat),
         locationLng: Number(this.lng),
       });
-      // Call the mutateUserProfile function with the "create" action.
+
       const result: any = await client.mutations.mutateUserProfile({
         action: 'create',
         payload,
       });
+
       this.message = result.data;
     } catch (error: any) {
       console.error('Error signing up:', error);
