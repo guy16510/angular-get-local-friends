@@ -67,8 +67,8 @@ const schema = a.schema({
       updatedAt: a.datetime(),  // Add updatedAt timestamp
     })
     .authorization(allow => [allow.owner()])
-    .secondaryIndexes(index => [index('geohash')]),
-
+    .secondaryIndexes(index => [index('geohash').sortKeys(['rangeKey'])]),
+        
     Contact: a
     .model({
       email: a.string().required(),

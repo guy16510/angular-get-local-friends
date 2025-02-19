@@ -38,11 +38,12 @@ export const handler: Schema["findNearbyUsers"]["functionHandler"] = async (even
   const params: AWS.DynamoDB.DocumentClient.QueryInput = {
     TableName: TABLE_NAME,
     IndexName: 'userProfilesByGeohash',
-    KeyConditionExpression: 'begins_with(geohash, :hash)',
+    KeyConditionExpression: 'geohash = :hash AND begins_with(rangeKey, :prefix)',
     ExpressionAttributeValues: {
       ':hash': centerHash,
+      ':prefix': "somePrefixValue",  // Dynamically set based on userId or timestamp
     },
-    Limit: 10, // adjust page size as needed
+    Limit: 10,
     ExclusiveStartKey: nextToken ? JSON.parse(nextToken) : undefined,
   };
 
