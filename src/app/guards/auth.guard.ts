@@ -2,9 +2,10 @@ import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthenticatorService } from '@aws-amplify/ui-angular';
 
-export const authGuard = () => {
+export const authGuard = async () => {
   const authenticator = inject(AuthenticatorService);
   const router = inject(Router);
+
   if (authenticator.authStatus === 'authenticated') {
     return true;
   }

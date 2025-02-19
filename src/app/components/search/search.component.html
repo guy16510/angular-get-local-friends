@@ -12,8 +12,8 @@
     </label>
     <br />
     <label>
-      Radius (1-5 miles):
-      <input type="number" [(ngModel)]="radius" name="radius" required min="1" max="5" />
+      Radius (1-25 miles):
+      <input type="number" [(ngModel)]="radius" name="radius" required min="1" max="25" />
     </label>
     <br />
     <button type="button" (click)="useCurrentLocation()">Use Current Location</button>
@@ -28,9 +28,18 @@
 
   <div *ngIf="message">{{ message }}</div>
 
-  <ul>
-    <li *ngFor="let user of nearbyUsers">
-      {{ user.userId }} - Last updated: {{ user.lastUpdated }}
-    </li>
-  </ul>
+  <!-- Grid display using Angular Material -->
+  <mat-grid-list cols="3" rowHeight="1:1" gutterSize="16px" *ngIf="!loading && nearbyUsers.length">
+    <mat-grid-tile *ngFor="let user of nearbyUsers">
+      <mat-card class="user-card">
+        <!-- Placeholder image -->
+        <!-- <img mat-card-image src="assets/placeholder.png" alt="User Image" /> -->
+        <mat-card-content>
+          <p><strong>User ID:</strong> {{ user.userId }}</p>
+          <p><strong>Distance:</strong> {{ user.distance | number:'1.2-2' }} miles</p>
+          <p><strong>Last Updated:</strong> {{ user.lastUpdated | date:'short' }}</p>
+        </mat-card-content>
+      </mat-card>
+    </mat-grid-tile>
+  </mat-grid-list>
 </main>

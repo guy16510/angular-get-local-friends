@@ -26,7 +26,9 @@
       <button mat-menu-item routerLink="/profile" routerLinkActive="active">Profile</button>
     </mat-menu>
 
-    <!-- Theme Toggle Button -->
-    <mat-slide-toggle [(ngModel)]="isDarkMode" (change)="toggleTheme()">Dark Mode</mat-slide-toggle>
+    <div class='lightMode' (click)="toggleTheme()">
+      <mat-icon *ngIf="isDarkMode">light_mode</mat-icon>
+      <mat-icon *ngIf="!isDarkMode">dark_mode</mat-icon>
+    </div>
   </div>
 </header>

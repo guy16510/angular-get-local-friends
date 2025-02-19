@@ -1,0 +1,12 @@
+/* src/app/components/upload-images/upload-images.component.css */
+.upload-container {
+    margin: 16px;
+  }
+  
+  .upload-container h2 {
+    margin-bottom: 16px;
+  }
+  
+  .uploaded-images {
+    margin-top: 24px;
+  }

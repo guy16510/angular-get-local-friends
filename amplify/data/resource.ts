@@ -2,16 +2,19 @@ import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
 import { sayHello } from '../functions/say-hello/resource';
 import { findNearbyUsers } from '../functions/find-nearby-users/resource';
 import { mutateUserProfile } from '../functions/mutate-user-profile/resource';
+import { updateUserImages } from '../functions/update-user-images/resource';
+import { getUserProfile } from '../functions/get-user-profile/resource';
 
 /*== DATA MODEL ===============================================================
 This schema defines several models. In addition to existing models, we add a
-UserProfile model with geospatial fields:
+UserProfile model with geospatial fields and an images field to store S3 keys:
   - userId: Unique user ID
-  - lat: Latitude coordinate
-  - lng: Longitude coordinate
+  - locationLat: Latitude coordinate
+  - locationLng: Longitude coordinate
   - geohash: Geohash string for spatial queries
   - geoPrecision: (Optional) The precision/length of the geohash
   - lastUpdated: Timestamp for the last update
+  - images: Array of S3 keys or URLs for the user’s images
 =============================================================================*/
 const schema = a.schema({
   sayHello: a
@@ -36,15 +39,35 @@ const schema = a.schema({
       allow.authenticated(),
     ]),
 
+  getUserProfile: a
+    .query()
+    .arguments({
+      userId: a.string().required(),
+    })
+    .returns(a.string())  // or define a custom type if you prefer an object response
+    .handler(a.handler.function(getUserProfile))
+    .authorization(allow => [allow.guest(), allow.authenticated()]),
+    
   mutateUserProfile: a
-  .mutation()
-  .arguments({
-    action: a.string().required(),
-    payload: a.string().required(), // JSON-encoded payload
-  })
-  .returns(a.string())
-  .handler(a.handler.function(mutateUserProfile))
-  .authorization(allow => [allow.authenticated()]),
+    .mutation()
+    .arguments({
+      action: a.string().required(),
+      payload: a.string().required(), // JSON-encoded payload
+    })
+    .returns(a.string())
+    .handler(a.handler.function(mutateUserProfile))
+    .authorization(allow => [allow.authenticated()]),
+
+  // New mutation to update a user’s images
+  updateUserImages: a
+    .mutation()
+    .arguments({
+      userId: a.string().required(),
+      images: a.string().array(), // array of S3 keys or URLs
+    })
+    .returns(a.string())
+    .handler(a.handler.function(updateUserImages))
+    .authorization(allow => [allow.authenticated()]),
 
   Todo: a
     .model({
@@ -53,23 +76,24 @@ const schema = a.schema({
       updatedAt: a.datetime(),
     })
     .authorization(allow => [allow.owner()]),
-    
-    UserProfile: a
+
+  UserProfile: a
     .model({
       userId: a.string().required(),        // Unique user ID
       locationLat: a.float().required(),      // Latitude coordinate
       locationLng: a.float().required(),      // Longitude coordinate
       geohash: a.string().required(),         // Geohash for spatial queries
       rangeKey: a.string().required(),        // Range key for spatial queries
-      geoPrecision: a.float(),                  // Optional: Precision of the geohash
+      geoPrecision: a.float(),                // Optional: Precision of the geohash
       lastUpdated: a.datetime().required(),   // Last update timestamp
-      createdAt: a.datetime(),  // Add createdAt timestamp
-      updatedAt: a.datetime(),  // Add updatedAt timestamp
+      createdAt: a.datetime(),                // Add createdAt timestamp
+      updatedAt: a.datetime(),                // Add updatedAt timestamp
+      images: a.string().array()              // Array of S3 keys/URLs for images
     })
     .authorization(allow => [allow.owner()])
     .secondaryIndexes(index => [index('geohash').sortKeys(['rangeKey'])]),
         
-    Contact: a
+  Contact: a
     .model({
       email: a.string().required(),
       name: a.string().required(),
