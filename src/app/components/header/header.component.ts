@@ -1,19 +1,27 @@
 import { Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { ThemeService } from '../../services/theme.service';
-import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [RouterModule, MatButtonModule],
+  imports: [RouterModule, MatIconModule, MatMenuModule, MatSlideToggleModule, FormsModule],
   templateUrl: './header.component.html',
   styleUrl: './header.component.css'
 })
 export class HeaderComponent {
-  constructor(private themeService: ThemeService) {}
+  isDarkMode = false;
+
+  constructor(private themeService: ThemeService) {
+    this.isDarkMode = this.themeService.isDarkMode();
+  }
 
   toggleTheme(): void {
     this.themeService.toggleDarkMode();
+    this.isDarkMode = this.themeService.isDarkMode();
   }
 }

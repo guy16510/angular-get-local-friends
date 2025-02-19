@@ -1,8 +1,11 @@
 <header>
   <div class="header-container">
+    <!-- Branding -->
     <div class="branding">
       <a aria-current="page" class="active" href="/">Get Local Friends</a>
     </div>
+
+    <!-- Desktop Navigation -->
     <nav class="nav-links">
       <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Home</a>
       <a routerLink="/contact-us" routerLinkActive="active">Contact Us</a>
@@ -10,6 +13,20 @@
       <a routerLink="/sign-up" routerLinkActive="active">Sign Up</a>
       <a routerLink="/profile" routerLinkActive="active">Profile</a>
     </nav>
-    <button mat-button (click)="toggleTheme()">Toggle</button>
+
+    <!-- Mobile Navigation: Hamburger Menu -->
+    <button mat-icon-button class="menu-button" [matMenuTriggerFor]="menu">
+      <mat-icon>menu</mat-icon>
+    </button>
+    <mat-menu #menu="matMenu">
+      <button mat-menu-item routerLink="/" routerLinkActive="active">Home</button>
+      <button mat-menu-item routerLink="/contact-us" routerLinkActive="active">Contact Us</button>
+      <button mat-menu-item routerLink="/search" routerLinkActive="active">Search</button>
+      <button mat-menu-item routerLink="/sign-up" routerLinkActive="active">Sign Up</button>
+      <button mat-menu-item routerLink="/profile" routerLinkActive="active">Profile</button>
+    </mat-menu>
+
+    <!-- Theme Toggle Button -->
+    <mat-slide-toggle [(ngModel)]="isDarkMode" (change)="toggleTheme()">Dark Mode</mat-slide-toggle>
   </div>
 </header>

@@ -29,18 +29,23 @@ export class SearchComponent {
   async searchUsers() {
     try {
       this.loading = true;
-      // Call the findNearbyUsers function. Note that it returns a JSON string.
+      
+      // Call the findNearbyUsers function
       const result: any = await client.queries.findNearbyUsers({
         lat: this.lat,
         lng: this.lng,
         radius: this.radius,
       });
-      const data = JSON.parse(result);
-      this.nearbyUsers = data.nearbyUsers;
+  
+      console.log("API Response:", result.data);
+  
+      const data = JSON.parse(result.data);
+      this.nearbyUsers = Array.isArray(data.nearbyUsers) ? data.nearbyUsers : [];
+  
       this.message = this.nearbyUsers.length ? '' : 'No users found nearby.';
     } catch (error: any) {
       console.error('Error searching nearby users:', error);
-      this.message = error.message;
+      this.message = error.message || 'An error occurred.';
     } finally {
       this.loading = false;
     }

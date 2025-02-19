@@ -23,6 +23,13 @@ export class SignUpComponent {
   
   constructor(private geoService: GeolocationService) {}
   
+  generateGUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = (Math.random() * 16) | 0;
+      const v = c === 'x' ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
+  }
 
   async signUp() {
     this.loading = true;
@@ -30,7 +37,7 @@ export class SignUpComponent {
       // Build a JSON-encoded payload with the required fields.
       const payload = JSON.stringify({
         // userId: this.userId,
-        userId: 'b4c82498-1031-70e1-976b-d6da3060b5fd',
+        userId: this.generateGUID(),
         locationLat: Number(this.lat),
         locationLng: Number(this.lng),
       });
@@ -39,7 +46,7 @@ export class SignUpComponent {
         action: 'create',
         payload,
       });
-      this.message = result;
+      this.message = result.data;
     } catch (error: any) {
       console.error('Error signing up:', error);
       this.message = error.message;

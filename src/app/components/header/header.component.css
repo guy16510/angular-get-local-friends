@@ -1,61 +1,39 @@
-header {
-    background-color: rgba(219, 219, 219, 0.9);
-    color: #000;
-    backdrop-filter: blur(8px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    border-bottom-left-radius: 2rem;
-    border-bottom-right-radius: 2rem;
-    font-family: "Open Sans", sans-serif;
-    width: 100%;
-  }
-  
-  .header-container {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1rem 1.5rem;
-  }
-  
-  .branding {
-    font-size: 1.5rem;
-    font-weight: 700;
-    letter-spacing: 0.05rem;
-  }
-  
-  .branding a {
-    text-decoration: none;
-    color: inherit;
-  }
-  
+.header-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.branding a {
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-decoration: none;
+  color: inherit;
+}
+
+.nav-links {
+  display: flex;
+  gap: 1rem;
+}
+
+.nav-links a {
+  text-decoration: none;
+  font-size: 1rem;
+  color: inherit;
+}
+
+.menu-button {
+  display: none;
+}
+
+@media (max-width: 768px) {
   .nav-links {
-    display: flex;
-    gap: 1.5rem;
-    font-size: 1rem;
-    align-items: center;
+    display: none; /* Hide desktop nav on small screens */
   }
-  
-  .nav-links a {
-    text-decoration: none;
-    color: inherit;
-    font-weight: 400;
+
+  .menu-button {
+    display: block; /* Show hamburger menu button */
   }
-  
-  .header-extras {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-  }
-  
-  .switchfield {
-    display: flex;
-    align-items: center;
-    /* Additional styles for switch (if needed) */
-  }
-  
-  .menu-btn {
-    border-radius: 0.5rem;
-    display: none; /* Toggle display as needed for responsiveness */
-    background: none;
-    border: none;
-    cursor: pointer;
-  }
+}

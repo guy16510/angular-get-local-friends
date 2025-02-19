@@ -10,18 +10,35 @@ export class ThemeService {
 
   constructor() {
     const storedTheme = localStorage.getItem('dark-mode');
-    this.darkMode.next(storedTheme === 'true');
+    const isDark = storedTheme === 'true';
+
+    // Set the theme state
+    this.darkMode.next(isDark);
+
+    // Apply the theme immediately
+    this.applyTheme(isDark);
   }
 
   toggleDarkMode(): void {
     const isDark = !this.darkMode.value;
     this.darkMode.next(isDark);
     localStorage.setItem('dark-mode', String(isDark));
-    document.body.classList.toggle('dark-theme', isDark);
-    document.body.classList.toggle('light-theme', !isDark);
+
+    // Apply the theme change
+    this.applyTheme(isDark);
   }
 
   isDarkMode(): boolean {
     return this.darkMode.value;
+  }
+
+  private applyTheme(isDark: boolean): void {
+    if (isDark) {
+      document.body.classList.add('dark-theme');
+      document.body.classList.remove('light-theme');
+    } else {
+      document.body.classList.add('light-theme');
+      document.body.classList.remove('dark-theme');
+    }
   }
 }

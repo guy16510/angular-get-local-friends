@@ -1,4 +1,3 @@
-// import type { Handler } from 'aws-lambda';
 import type { Schema } from '../../data/resource';
 import AWS from 'aws-sdk';
 import ngeohash from 'ngeohash';
@@ -6,19 +5,29 @@ import ngeohash from 'ngeohash';
 const docClient = new AWS.DynamoDB.DocumentClient();
 const TABLE_NAME = process.env['USER_PROFILE_TABLE_NAME'] || null;
 
-
-if (!TABLE_NAME || TABLE_NAME.length === 0) {
+if (!TABLE_NAME) {
   console.error("ERROR: USER_PROFILE_TABLE_NAME is not set!");
   throw new Error("Missing environment variable: USER_PROFILE_TABLE_NAME");
 }
 
+/**
+ * Converts degrees to radians.
+ */
+function toRadians(degrees: number): number {
+  return degrees * (Math.PI / 180);
+}
 
 /**
- * Use low geohash precision to minimize cost and complexity.
- * (No extra distance filtering is done since you don’t care about precision.)
+ * Haversine formula to calculate the great-circle distance between two points.
  */
-function getGeohashPrecision(radius: number): number {
-  return radius <= 3 ? 6 : 5;
+function haversine(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 3958.8; // Earth radius in miles
+  const dLat = toRadians(lat2 - lat1);
+  const dLon = toRadians(lon2 - lon1);
+  const a = Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
+    Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
 }
 
 export const handler: Schema["findNearbyUsers"]["functionHandler"] = async (event) => {
@@ -31,30 +40,44 @@ export const handler: Schema["findNearbyUsers"]["functionHandler"] = async (even
     throw new Error("Radius must be between 1 and 5 miles");
   }
 
-  const precision = getGeohashPrecision(radius);
+  // ✅ Force geohash precision to match stored values (7)
+  const precision = 7;
   const centerHash = ngeohash.encode(lat, lng, precision);
+  console.log("Computed centerHash:", centerHash);
 
-  // Use a simple begins_with query on the secondary index (named "geohash")
+  // ✅ Query only by geohash (remove faulty rangeKey filtering)
   const params: AWS.DynamoDB.DocumentClient.QueryInput = {
     TableName: TABLE_NAME,
-    IndexName: 'userProfilesByGeohashAndRangeKey',
-    KeyConditionExpression: 'geohash = :hash AND begins_with(rangeKey, :prefix)',
+    IndexName: 'userProfilesByGeohashAndRangeKey', // Ensure this index exists
+    KeyConditionExpression: 'geohash = :hash',
     ExpressionAttributeValues: {
       ':hash': centerHash,
-      ':prefix': "somePrefixValue",  // Dynamically set based on userId or timestamp
     },
-    Limit: 10,
+    Limit: 20, // Increased limit to fetch more potential results
     ExclusiveStartKey: nextToken ? JSON.parse(nextToken) : undefined,
   };
 
-  const result = await docClient.query(params).promise();
+  console.log("DynamoDB Query Params:", JSON.stringify(params, null, 2));
 
-  // Build the response object
-  const response = {
-    nearbyUsers: result.Items || [],
-    nextToken: result.LastEvaluatedKey ? JSON.stringify(result.LastEvaluatedKey) : null,
-  };
+  try {
+    const result = await docClient.query(params).promise();
+    console.log("Raw DynamoDB Query Result:", JSON.stringify(result, null, 2));
 
-  // Return the response as a JSON string.
-  return JSON.stringify(response);
+    // ✅ Apply Haversine filter to refine results
+    const filteredUsers = (result.Items || []).filter(user =>
+      haversine(lat, lng, user['locationLat'], user['locationLng']) <= radius
+    );
+
+    console.log(`Filtered Users (within ${radius} miles):`, filteredUsers.length);
+
+    // ✅ Build response
+    return JSON.stringify({
+      nearbyUsers: filteredUsers,
+      nextToken: result.LastEvaluatedKey ? JSON.stringify(result.LastEvaluatedKey) : null,
+    });
+
+  } catch (error) {
+    console.error("DynamoDB Query Error:", error);
+    throw new Error("Failed to query nearby users.");
+  }
 };
