@@ -1,6 +1,7 @@
-<div class="contact-container" [ngClass]="isDarkMode ? 'dark-theme' : 'light-theme'">
-  <h2>Contact Us</h2>
-  
+<main class="contact-container">
+  <mat-card>
+    <mat-card-title>Contact Us</mat-card-title>
+    <mat-card-content>
   <form [formGroup]="contactForm" (ngSubmit)="onSubmit()" *ngIf="!success">
     <mat-form-field appearance="outline" class="form-group">
       <mat-label>Name</mat-label>
@@ -35,8 +36,9 @@
       {{ error }}
     </mat-card>
   </form>
-
+</mat-card-content>
+</mat-card>
   <mat-card class="alert alert-success" *ngIf="success">
     Thank you for your message! We will get back to you soon.
   </mat-card>
-</div>
+</main>

@@ -7,7 +7,6 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatCardModule } from '@angular/material/card';
 import { MatError } from '@angular/material/form-field';
-import { ThemeService } from '../../services/theme.service';
 import { MatButtonModule } from '@angular/material/button';
 
 @Component({
@@ -22,15 +21,13 @@ export class ContactUsComponent {
   submitted = false;
   success = false;
   error = '';
-  isDarkMode: boolean;
 
-  constructor(private fb: FormBuilder, private themeService: ThemeService) {
+  constructor(private fb: FormBuilder) {
     this.contactForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       name: ['', Validators.required],
       summary: ['', Validators.required]
     });
-    this.isDarkMode = this.themeService.isDarkMode();
   }
 
   async onSubmit() {
