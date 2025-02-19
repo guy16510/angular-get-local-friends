@@ -39,12 +39,12 @@ const schema = a.schema({
       allow.authenticated(),
     ]),
 
-  getUserProfile: a
+  fetchUserProfile: a
     .query()
     .arguments({
       userId: a.string().required(),
     })
-    .returns(a.string())  // or define a custom type if you prefer an object response
+    .returns(a.string()) // or define a custom type if you prefer an object response
     .handler(a.handler.function(getUserProfile))
     .authorization(allow => [allow.guest(), allow.authenticated()]),
     
