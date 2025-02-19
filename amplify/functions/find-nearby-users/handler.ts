@@ -37,7 +37,7 @@ export const handler: Schema["findNearbyUsers"]["functionHandler"] = async (even
   // Use a simple begins_with query on the secondary index (named "geohash")
   const params: AWS.DynamoDB.DocumentClient.QueryInput = {
     TableName: TABLE_NAME,
-    IndexName: 'userProfilesByGeohash',
+    IndexName: 'userProfilesByGeohashAndRangeKey',
     KeyConditionExpression: 'geohash = :hash AND begins_with(rangeKey, :prefix)',
     ExpressionAttributeValues: {
       ':hash': centerHash,
