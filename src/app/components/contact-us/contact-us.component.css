@@ -1,0 +1,17 @@
+.contact-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 1rem;
+  }
+  
+  .contact-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+  
+  .contact-details {
+    padding: 1.5rem;
+    border-radius: 8px;
+  }

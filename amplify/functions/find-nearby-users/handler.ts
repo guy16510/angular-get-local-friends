@@ -30,22 +30,32 @@ function haversine(lat1: number, lon1: number, lat2: number, lon2: number): numb
   return 2 * R * Math.asin(Math.sqrt(a));
 }
 
+/**
+ * Determines appropriate geohash precision based on the search radius.
+ */
+function getGeohashPrecision(radius: number): number {
+  if (radius <= 3) return 7;
+  if (radius <= 10) return 6;
+  if (radius <= 25) return 5;
+  return 4; // Larger area for 25-100mi searches
+}
+
 export const handler: Schema["findNearbyUsers"]["functionHandler"] = async (event) => {
   const { lat, lng, radius, nextToken } = event.arguments;
 
   if (typeof lat !== 'number' || typeof lng !== 'number' || typeof radius !== 'number') {
     throw new Error("lat, lng, and radius must be numbers");
   }
-  if (radius < 1 || radius > 5) {
-    throw new Error("Radius must be between 1 and 5 miles");
+  if (radius < 1 || radius > 100) {
+    throw new Error("Radius must be between 1 and 100 miles");
   }
 
-  // ✅ Force geohash precision to match stored values (7)
-  const precision = 7;
+  // ✅ Adjust geohash precision based on radius
+  const precision = getGeohashPrecision(radius);
   const centerHash = ngeohash.encode(lat, lng, precision);
-  console.log("Computed centerHash:", centerHash);
+  console.log(`Computed centerHash: ${centerHash} (Precision: ${precision})`);
 
-  // ✅ Query only by geohash (remove faulty rangeKey filtering)
+  // ✅ Query by geohash only
   const params: AWS.DynamoDB.DocumentClient.QueryInput = {
     TableName: TABLE_NAME,
     IndexName: 'userProfilesByGeohashAndRangeKey', // Ensure this index exists
@@ -53,7 +63,7 @@ export const handler: Schema["findNearbyUsers"]["functionHandler"] = async (even
     ExpressionAttributeValues: {
       ':hash': centerHash,
     },
-    Limit: 20, // Increased limit to fetch more potential results
+    Limit: 50, // Fetch more results for better filtering
     ExclusiveStartKey: nextToken ? JSON.parse(nextToken) : undefined,
   };
 
@@ -63,14 +73,15 @@ export const handler: Schema["findNearbyUsers"]["functionHandler"] = async (even
     const result = await docClient.query(params).promise();
     console.log("Raw DynamoDB Query Result:", JSON.stringify(result, null, 2));
 
-    // ✅ Apply Haversine filter to refine results
-    const filteredUsers = (result.Items || []).filter(user =>
-      haversine(lat, lng, user['locationLat'], user['locationLng']) <= radius
-    );
+    // ✅ Apply Haversine filter and add distance to each user
+    const filteredUsers = (result.Items || []).map(user => {
+      const distance = haversine(lat, lng, user['locationLat'], user['locationLng']);
+      return { ...user, distance }; // Include distance in response
+    }).filter(user => user.distance <= radius);
 
     console.log(`Filtered Users (within ${radius} miles):`, filteredUsers.length);
 
-    // ✅ Build response
+    // ✅ Build response with distance included
     return JSON.stringify({
       nearbyUsers: filteredUsers,
       nextToken: result.LastEvaluatedKey ? JSON.stringify(result.LastEvaluatedKey) : null,
