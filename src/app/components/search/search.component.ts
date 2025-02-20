@@ -9,13 +9,14 @@ import { LoadingComponent } from '../loading/loading.component';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { MatCardModule } from '@angular/material/card';
 import { SearchCacheService } from '../../services/search-cache.service';
+import { ImageDisplayComponent } from '../image-display/image-display.component';
 
 const client = generateClient<Schema>();
 
 @Component({
   selector: 'app-search',
   standalone: true,
-  imports: [CommonModule, FormsModule, LoadingComponent, MatGridListModule, MatCardModule],
+  imports: [CommonModule, FormsModule, LoadingComponent, MatGridListModule, MatCardModule, ImageDisplayComponent],
   templateUrl: './search.component.html',
   styleUrls: ['./search.component.css']
 })
@@ -34,7 +35,8 @@ export class SearchComponent implements OnInit {
 
   ngOnInit(): void {
     // Load cached search results if available
-    const cachedResults = this.searchCache.getSearchResults();
+    const cachedResults1 = this.searchCache.getSearchResults();
+    const cachedResults = [{"lastUpdated":"2025-02-19T02:09:24.627Z","locationLng":-71.454765,"locationLat":42.639072,"geoPrecision":7,"rangeKey":"drt4w40#f8d8478c-8c63-46b0-85f3-0dab036e6598","updatedAt":"2025-02-19T02:09:24.627Z","geohash":"drt4w40","createdAt":"2025-02-19T02:09:24.627Z","identityId":"us-east-1:660f914c-c740-cd46-7752-87ca9d0b6a6b","id":"us-east-1:660f914c-c740-cd46-7752-87ca9d0b6a6b","distance":0.06298551149750063},{"lastUpdated":"2025-02-19T02:08:29.872Z","locationLng":-71.4562031,"locationLat":42.6381061,"geoPrecision":7,"rangeKey":"drt4tfp#f66689f1-c03c-43c5-aee0-feb933a09dda","updatedAt":"2025-02-19T02:08:29.872Z","geohash":"drt4tfp","createdAt":"2025-02-19T02:08:29.872Z","identityId":"us-east-1:660f914c-c740-cd46-7752-87ca9d0b6a6c","id":"us-east-1:660f914c-c740-cd46-7752-87ca9d0b6a6c","distance":0.09021693462566867}];
     if (cachedResults.length > 0) {
       this.nearbyUsers = cachedResults;
       this.message = '';

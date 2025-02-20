@@ -1,0 +1,56 @@
+/* survey.component.css */
+
+/* Progress Container */
+.progress-container {
+  margin-bottom: 20px;
+}
+
+.survey-container {
+  margin: 2rem auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.light-theme .mat-mdc-progress-bar {
+  --mdc-linear-progress-active-indicator-color: var(--amplify-colors-brand-accent, #ff0055) !important;
+  /* background-color: var(--amplify-colors-brand-accent, #ff0055); */
+}
+mat-card {
+  max-width: 80%;
+  padding: 20px;
+}
+
+.form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* Adds spacing between form fields */
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+/* Light mode */
+.question-block {
+  margin-bottom: 20px;
+  padding: 15px;
+  border: 2px;
+  border-radius: 4px;
+}
+
+.question-text {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.checkbox-option {
+  margin-bottom: 5px;
+}
+
+.button-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}

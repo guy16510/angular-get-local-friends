@@ -29,11 +29,10 @@
   <div *ngIf="message">{{ message }}</div>
 
   <!-- Grid display using Angular Material -->
-  <mat-grid-list cols="3" rowHeight="1:1" gutterSize="16px" *ngIf="!loading && nearbyUsers.length">
+  <mat-grid-list cols="3" rowHeight="1:2" gutterSize="16px" *ngIf="!loading && nearbyUsers.length">
     <mat-grid-tile *ngFor="let user of nearbyUsers">
       <mat-card class="user-card">
-        <!-- Placeholder image -->
-        <!-- <img mat-card-image src="assets/placeholder.png" alt="User Image" /> -->
+        <app-image-display [identityId]="user.identityId"></app-image-display>
         <mat-card-content>
           <p><strong>Identity ID:</strong> {{ user.identityId }}</p>
           <p><strong>Distance:</strong> {{ user.distance | number:'1.2-2' }} miles</p>

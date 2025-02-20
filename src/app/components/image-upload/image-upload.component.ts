@@ -6,13 +6,14 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatGridTile, MatGridList } from '@angular/material/grid-list';
 import { MatInputModule } from '@angular/material/input';
 import { AuthService } from '../../services/auth.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
   standalone: true,
   selector: 'app-upload-image',
   templateUrl: './image-upload.component.html',
   styleUrls: ['./image-upload.component.css'],
-  imports: [MatGridTile, MatGridList, MatFormFieldModule, MatInputModule, MatButtonModule, MatSnackBarModule]
+  imports: [CommonModule, MatGridTile, MatGridList, MatFormFieldModule, MatInputModule, MatButtonModule, MatSnackBarModule]
 })
 export class UploadComponent {
   selectedFile?: File;

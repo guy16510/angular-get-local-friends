@@ -1,6 +1,6 @@
-<div class="profile-container">
+<mat-card class="profile-container mat-elevation-z4">
   <ng-container *ngIf="loading">
-    <p>Loading profile...</p>
+    <app-loading></app-loading>
   </ng-container>
 
   <ng-container *ngIf="error">
@@ -8,27 +8,28 @@
   </ng-container>
 
   <ng-container *ngIf="!loading && !error && identityId">
-    <div class="profile-header">
-      <!-- <h1>Welcome, {{ user.username }}!</h1> -->
-      <button (click)="signOut()" class="sign-out-btn">Sign Out</button>
-    </div>
-    
-    <app-upload-image></app-upload-image>
+    <mat-card-content>
+      <div class="profile-header">
+        <img [src]="profileImage" alt="Profile Picture" class="profile-image" (error)="profileImage = '/assets/images/noImageUploaded.jpg'" />
+        <button mat-raised-button color="warn" (click)="signOut()">Sign Out</button>
+      </div>
 
-    <div class="profile-details">
-      <h2>Profile Information</h2>
-      <!-- <p><strong>Username:</strong> {{ user.username }}</p>
-      <p><strong>User ID:</strong> {{ user.identityId }}</p>
-      <p><strong>Last Sign In:</strong> {{ user.signInDetails?.loginId }}</p> -->
-    </div>
+      <app-upload-image></app-upload-image>
 
-    <div class="dynamoProfile">
-      <pre>{{userProfile | json}}</pre>
-    </div>
+      <div class="profile-details">
+        <h2>Profile Information</h2>
+        <mat-list *ngIf="userProfile">
+          <mat-list-item *ngFor="let key of userProfile | keyvalue">
+            <mat-icon>account_circle</mat-icon>
+            <strong>{{ key.key | titlecase }}</strong>: {{ key.value }}
+          </mat-list-item>
+        </mat-list>
+      </div>
+    </mat-card-content>
   </ng-container>
 
   <ng-container *ngIf="!loading && !error && !identityId">
     <p>Please sign in to view your profile.</p>
-    <button routerLink="/login" class="sign-in-btn">Sign In</button>
+    <button mat-raised-button color="primary" routerLink="/login">Sign In</button>
   </ng-container>
-</div>
+</mat-card>

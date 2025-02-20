@@ -1,0 +1,61 @@
+<div class="progress-container">
+  <mat-progress-bar mode="determinate" [value]="progress"></mat-progress-bar>
+</div>
+
+<mat-card class="survey-container">
+  <form [formGroup]="surveyForm" (ngSubmit)="onSubmit()">
+    <div *ngFor="let question of steps[currentStep]" class="question-block">
+      <p class="question-text">{{ question.question }}</p>
+
+      <!-- Multiple-choice -->
+      <ng-container *ngIf="question.type === 'multiple-choice'">
+        <!-- Single-select: radio buttons -->
+        <ng-container *ngIf="!question.multiSelect && question.component === 'radio'">
+          <mat-radio-group [formControlName]="'q' + question.id">
+            <mat-radio-button *ngFor="let option of question.options" [value]="option">
+              {{ option }}
+            </mat-radio-button>
+          </mat-radio-group>
+        </ng-container>
+      </ng-container>
+
+      <!-- Multi-select: checkboxes (FormArray) -->
+      <ng-container *ngIf="question.multiSelect && question.component === 'checkbox'">
+        <div [formArrayName]="'q' + question.id">
+          <div *ngFor="let ctrl of getFormArray('q' + question.id)?.controls; let i = index">
+            <mat-checkbox [formControlName]="i">{{ question?.options[i] }}</mat-checkbox>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- True-False: button toggle -->
+      <ng-container *ngIf="question.type === 'true-false' && question.component === 'button-toggle'">
+        <mat-button-toggle-group [formControlName]="'q' + question.id" name="{{ 'q' + question.id }}">
+          <mat-button-toggle value="true">True</mat-button-toggle>
+          <mat-button-toggle value="false">False</mat-button-toggle>
+        </mat-button-toggle-group>
+      </ng-container>
+
+      <!-- Fill in the blank: text input -->
+      <ng-container *ngIf="question.type === 'fill-in-the-blank' && question.component === 'input'">
+        <mat-form-field appearance="fill">
+          <mat-label>Type your answer</mat-label>
+          <input matInput [formControlName]="'q' + question.id">
+        </mat-form-field>
+      </ng-container>
+      <!-- </div> -->
+
+      <div class="button-row">
+        <button mat-button type="button" (click)="previousStep()" [disabled]="currentStep === 0">
+          Previous
+        </button>
+        <button mat-button type="button" (click)="nextStep()" *ngIf="currentStep < steps.length - 1">
+          Next
+        </button>
+        <button mat-raised-button color="primary" type="submit" *ngIf="currentStep === steps.length - 1">
+          Submit
+        </button>
+      </div>
+    </div>
+  </form>
+</mat-card>

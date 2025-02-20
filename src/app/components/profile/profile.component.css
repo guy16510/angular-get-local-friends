@@ -1,55 +1,94 @@
-.profile-container {
-  max-width: 800px;
-  margin: 2rem auto;
-  padding: 1rem;
+/* Light Mode (Default) */
+:root {
+  --primary-bg: #ffffff;
+  --secondary-bg: #f4f4f4;
+  --text-color: #000000;
+  --card-bg: #ffffff;
+  --list-bg: #fafafa;
+  --button-bg: #e0e0e0;
+  --button-text: #000000;
 }
 
+/* Dark Mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --primary-bg: #1e1e1e;
+    --secondary-bg: #2e2e2e;
+    --text-color: #ffffff;
+    --card-bg: #252525;
+    --list-bg: #333333;
+    --button-bg: #444;
+    --button-text: #ffffff;
+  }
+}
+
+/* Container */
+.profile-container {
+  background: var(--primary-bg);
+  color: var(--text-color);
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 80%;
+  margin: auto;
+  transition: background 0.3s ease-in-out, color 0.3s ease-in-out;
+}
+
+/* Profile Header */
 .profile-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  justify-content: space-between;
 }
 
-.profile-details {
-  background-color: #f5f5f5;
-  padding: 1.5rem;
-  border-radius: 8px;
+/* Profile Image */
+.profile-image {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid var(--text-color);
+  transition: border 0.3s ease-in-out;
 }
 
-.sign-out-btn, .sign-in-btn {
-  padding: 0.5rem 1rem;
+/* Material UI Components */
+mat-card {
+  background: var(--card-bg) !important;
+  color: var(--text-color) !important;
+  transition: background 0.3s ease-in-out, color 0.3s ease-in-out;
+}
+
+mat-card-content {
+  padding: 20px;
+}
+
+mat-list {
+  background: var(--list-bg) !important;
+}
+
+mat-list-item {
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  transition: background 0.3s ease-in-out;
+}
+
+mat-icon {
+  margin-right: 10px;
+  color: var(--text-color);
+}
+
+/* Buttons */
+button {
+  background: var(--button-bg);
+  color: var(--button-text);
   border: none;
-  border-radius: 4px;
+  padding: 8px 16px;
+  border-radius: 5px;
   cursor: pointer;
-  font-weight: bold;
+  transition: background 0.3s ease-in-out, color 0.3s ease-in-out;
 }
 
-.sign-out-btn {
-  background-color: #dc3545;
-  color: white;
-}
-
-.sign-in-btn {
-  background-color: #007bff;
-  color: white;
-}
-
-.error {
-  color: #dc3545;
-  margin: 1rem 0;
-}
-
-h1 {
-  margin: 0;
-  color: #333;
-}
-
-h2 {
-  color: #444;
-  margin-bottom: 1rem;
-}
-
-strong {
-  color: #666;
+button:hover {
+  background: var(--text-color);
+  color: var(--primary-bg);
 }
