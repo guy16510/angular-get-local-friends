@@ -29,9 +29,9 @@ export class ProfileComponent implements OnInit {
     });
   }
 
-  async getUserProfile(userId: string) {
+  async getUserProfile(identityId: string) {
     const result: any = await client.queries.fetchUserProfile({
-      userId: userId
+      identityId: identityId
     });
     // Assuming your backend returns a JSON string, parse it
     this.userProfile = JSON.parse(result.data);
@@ -41,7 +41,7 @@ export class ProfileComponent implements OnInit {
     try {
       this.loading = true;
       this.user = await this.authService.getUserInfo();
-      await this.getUserProfile(this.user.userId);
+      await this.getUserProfile(this.user.identityId);
       this.error = null;
     } catch (error) {
       this.error = 'Failed to load user profile';

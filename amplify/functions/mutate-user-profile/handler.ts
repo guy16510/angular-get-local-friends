@@ -30,10 +30,10 @@ export const handler: Schema["mutateUserProfile"]["functionHandler"] = async (ev
     throw new Error("payload must be a valid JSON string");
   }
   
-  const { userId, locationLat, locationLng } = payload;
+  const { identityId, locationLat, locationLng } = payload;
   
-  if (!userId || typeof userId !== 'string') {
-    throw new Error("payload must include a userId (string)");
+  if (!identityId || typeof identityId !== 'string') {
+    throw new Error("payload must include a identityId (string)");
   }
   
   const now = new Date().toISOString();
@@ -46,14 +46,14 @@ export const handler: Schema["mutateUserProfile"]["functionHandler"] = async (ev
     
     // Compute geospatial fields
     const geohash = ngeohash.encode(locationLat, locationLng, GEO_PRECISION);
-    const rangeKey = `${geohash}#${userId}`; // Example concatenation
+    const rangeKey = `${geohash}#${identityId}`; // Example concatenation
     const geoPrecision = GEO_PRECISION;
     
     const params: AWS.DynamoDB.DocumentClient.PutItemInput = {
       TableName: TABLE_NAME,
       Item: {
-        id: userId,  // Use 'id' instead of 'userId' if your table requires it
-        userId,      // Keep userId for tracking, but 'id' is the PK
+        id: identityId,  // Use 'id' instead of 'identityId' if your table requires it
+        identityId,      // Keep identityId for tracking, but 'id' is the PK
         locationLat,
         locationLng,
         geohash,
@@ -67,7 +67,7 @@ export const handler: Schema["mutateUserProfile"]["functionHandler"] = async (ev
     };
     
     await docClient.put(params).promise();
-    return `UserProfile for ${userId} created successfully.`;
+    return `UserProfile for ${identityId} created successfully.`;
     
   } else if (action === 'update') {
     // For update, we also require locationLat and locationLng
@@ -77,12 +77,12 @@ export const handler: Schema["mutateUserProfile"]["functionHandler"] = async (ev
     
     // Recompute geospatial fields
     const geohash = ngeohash.encode(locationLat, locationLng, GEO_PRECISION);
-    const rangeKey = `${geohash}#${userId}`;
+    const rangeKey = `${geohash}#${identityId}`;
     const geoPrecision = GEO_PRECISION;
     
     const params: AWS.DynamoDB.DocumentClient.UpdateItemInput = {
       TableName: TABLE_NAME,
-      Key: { userId },
+      Key: { identityId },
       UpdateExpression: 'set locationLat = :lat, locationLng = :lng, geohash = :gh, rangeKey = :rk, geoPrecision = :gp, lastUpdated = :lu',
       ExpressionAttributeValues: {
         ':lat': locationLat,
@@ -92,22 +92,22 @@ export const handler: Schema["mutateUserProfile"]["functionHandler"] = async (ev
         ':gp': geoPrecision,
         ':lu': now,
       },
-      ConditionExpression: 'attribute_exists(userId)', // update only if exists
+      ConditionExpression: 'attribute_exists(identityId)', // update only if exists
     };
     
     await docClient.update(params).promise();
-    return `UserProfile for ${userId} updated successfully.`;
+    return `UserProfile for ${identityId} updated successfully.`;
     
   } else if (action === 'delete') {
-    // For delete, only userId is required.
+    // For delete, only identityId is required.
     const params: AWS.DynamoDB.DocumentClient.DeleteItemInput = {
       TableName: TABLE_NAME,
-      Key: { userId },
-      ConditionExpression: 'attribute_exists(userId)', // delete only if exists
+      Key: { identityId },
+      ConditionExpression: 'attribute_exists(identityId)', // delete only if exists
     };
     
     await docClient.delete(params).promise();
-    return `UserProfile for ${userId} deleted successfully.`;
+    return `UserProfile for ${identityId} deleted successfully.`;
   }
   
   throw new Error("Unhandled action");

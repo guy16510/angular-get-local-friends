@@ -1,6 +1,6 @@
 // src/app/services/file.service.ts
 import { Injectable } from '@angular/core';
-import { uploadData } from 'aws-amplify/storage';
+import { uploadData  } from 'aws-amplify/storage';
 
 @Injectable({
   providedIn: 'root'
@@ -15,7 +15,7 @@ export class FileService {
    *
    * With the default backend configuration, files uploaded with
    * this method will be stored at the "protected" access level,
-   * meaning Amplify will automatically prefix the key with "protected/<userId>/".
+   * meaning Amplify will automatically prefix the key with "protected/<identityId>/".
    *
    * @param file The file to upload.
    * @returns A Promise that resolves with the upload result.
@@ -61,4 +61,14 @@ export class FileService {
       };
     });
   }
+  // async listUserFiles(identityId: string): Promise<any[]> {
+  //   try {
+  //     // Lists files under the folder "protected/<identityId>/"
+  //     const files = await Storage.list(`protected/${identityId}/`);
+  //     return files;
+  //   } catch (error) {
+  //     console.error('Error listing files:', error);
+  //     throw error;
+  //   }
+  // }
 }

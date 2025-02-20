@@ -10,9 +10,9 @@ if (!TABLE_NAME || TABLE_NAME.length === 0) {
 }
 
 export const handler: Schema["updateUserImages"]["functionHandler"] = async (event) => {
-  const { userId, images } = event.arguments;
-  if (!userId) {
-    throw new Error("userId is required");
+  const { identityId, images } = event.arguments;
+  if (!identityId) {
+    throw new Error("identityId is required");
   }
   
   // The 'images' argument is expected to be an array of S3 keys/URLs.
@@ -20,7 +20,7 @@ export const handler: Schema["updateUserImages"]["functionHandler"] = async (eve
   
   const params = {
     TableName: TABLE_NAME,
-    Key: { userId },
+    Key: { identityId },
     UpdateExpression: 'set images = :imgs, updatedAt = :upd, lastUpdated = :upd',
     ExpressionAttributeValues: {
       ':imgs': images,
@@ -31,5 +31,5 @@ export const handler: Schema["updateUserImages"]["functionHandler"] = async (eve
   
   await docClient.update(params).promise();
   
-  return `UserProfile for ${userId} updated with images successfully.`;
+  return `UserProfile for ${identityId} updated with images successfully.`;
 };

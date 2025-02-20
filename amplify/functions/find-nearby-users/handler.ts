@@ -112,7 +112,7 @@ export const handler: Schema["findNearbyUsers"]["functionHandler"] = async (even
   // ✅ Step 3: Apply Haversine Distance Filtering
   const filteredUsers = allUsers.map(user => {
     const distance = haversine(lat, lng, user.locationLat, user.locationLng);
-    console.log(`User ${user.userId} is ${distance.toFixed(2)} miles away`);
+    console.log(`User ${user.identityId} is ${distance.toFixed(2)} miles away`);
     return { ...user, distance };
   }).filter(user => user.distance <= radius);
 

@@ -4,11 +4,6 @@
     <mat-card-content>
       <form (ngSubmit)="signUp()" class="form-container">
         <mat-form-field appearance="outline">
-          <mat-label>User ID</mat-label>
-          <input matInput type="text" [(ngModel)]="userId" name="userId" required />
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
           <mat-label>Latitude</mat-label>
           <input matInput type="number" [(ngModel)]="lat" name="lat" required />
         </mat-form-field>

@@ -10,14 +10,14 @@ if (!TABLE_NAME || TABLE_NAME.length === 0) {
 }
 
 export const handler: Schema["fetchUserProfile"]["functionHandler"] = async (event) => {
-  const { userId } = event.arguments;
-  if (!userId) {
-    throw new Error("userId is required");
+  const { identityId } = event.arguments;
+  if (!identityId) {
+    throw new Error("identityId is required");
   }
 
   const params = {
     TableName: TABLE_NAME,
-    Key: { id: userId },
+    Key: { id: identityId },
   };
 
   const result = await docClient.get(params).promise();

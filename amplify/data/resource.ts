@@ -8,7 +8,7 @@ import { getUserProfile } from '../functions/get-user-profile/resource';
 /*== DATA MODEL ===============================================================
 This schema defines several models. In addition to existing models, we add a
 UserProfile model with geospatial fields and an images field to store S3 keys:
-  - userId: Unique user ID
+  - identityId: Unique user ID
   - locationLat: Latitude coordinate
   - locationLng: Longitude coordinate
   - geohash: Geohash string for spatial queries
@@ -42,7 +42,7 @@ const schema = a.schema({
   fetchUserProfile: a
     .query()
     .arguments({
-      userId: a.string().required(),
+      identityId: a.string().required(),
     })
     .returns(a.string()) // or define a custom type if you prefer an object response
     .handler(a.handler.function(getUserProfile))
@@ -62,7 +62,7 @@ const schema = a.schema({
   updateUserImages: a
     .mutation()
     .arguments({
-      userId: a.string().required(),
+      identityId: a.string().required(),
       images: a.string().array(), // array of S3 keys or URLs
     })
     .returns(a.string())
@@ -79,7 +79,7 @@ const schema = a.schema({
 
   UserProfile: a
     .model({
-      userId: a.string().required(),        // Unique user ID
+      identityId: a.string().required(),        // Unique user ID
       locationLat: a.float().required(),      // Latitude coordinate
       locationLng: a.float().required(),      // Longitude coordinate
       geohash: a.string().required(),         // Geohash for spatial queries

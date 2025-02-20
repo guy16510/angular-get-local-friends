@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { signIn, signOut, getCurrentUser } from 'aws-amplify/auth';
+import { signIn, signOut, getCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
 import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
@@ -48,11 +48,22 @@ export class AuthService {
       const currentUser = await getCurrentUser();
       return {
         username: currentUser.username,
-        userId: currentUser.userId,
+        userId: currentUser.userId, // from the User Pool
         signInDetails: currentUser.signInDetails
       };
     } catch (error) {
       console.error('Error getting user info:', error);
+      return null;
+    }
+  }
+
+  async getIdentityId(): Promise<any> {
+    try {
+      const session = await fetchAuthSession();
+      debugger;
+      return session.identityId;
+    } catch (error) {
+      console.error('Error getting identity ID:', error);
       return null;
     }
   }
