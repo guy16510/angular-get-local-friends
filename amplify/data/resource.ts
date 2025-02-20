@@ -69,14 +69,6 @@ const schema = a.schema({
     .handler(a.handler.function(updateUserImages))
     .authorization(allow => [allow.authenticated()]),
 
-  Todo: a
-    .model({
-      content: a.string(),
-      createdAt: a.datetime(),
-      updatedAt: a.datetime(),
-    })
-    .authorization(allow => [allow.owner()]),
-
   UserProfile: a
     .model({
       identityId: a.string().required(),        // Unique user ID
