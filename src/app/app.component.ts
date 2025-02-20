@@ -7,6 +7,7 @@ import { HeaderComponent } from './components/header/header.component';
 import { AmplifyAuthenticatorModule, AuthenticatorService } from '@aws-amplify/ui-angular';
 import { FooterComponent } from './components/footer/footer.component';
 
+
 Amplify.configure(outputs);
 
 @Component({

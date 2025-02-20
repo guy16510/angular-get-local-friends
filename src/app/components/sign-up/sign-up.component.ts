@@ -30,7 +30,7 @@ const client = generateClient<Schema>();
 })
 export class SignUpComponent implements OnInit {
   loading = false;
-  identityId = '';
+  identityId: string | null = null;
   lat!: number;
   lng!: number;
   message = '';

@@ -1,6 +1,5 @@
-// src/app/services/file.service.ts
 import { Injectable } from '@angular/core';
-import { uploadData  } from 'aws-amplify/storage';
+import { uploadData, getUrl } from 'aws-amplify/storage';
 
 @Injectable({
   providedIn: 'root'
@@ -10,65 +9,88 @@ export class FileService {
   constructor() {}
 
   /**
-   * Uploads a file using Amplify's uploadData function.
-   * Reads the file as an ArrayBuffer and uploads it.
-   *
-   * With the default backend configuration, files uploaded with
-   * this method will be stored at the "protected" access level,
-   * meaning Amplify will automatically prefix the key with "protected/<identityId>/".
-   *
-   * @param file The file to upload.
-   * @returns A Promise that resolves with the upload result.
+   * Converts an image file to WebP format before uploading.
+   * @param file The file to convert.
+   * @returns A Promise resolving to a Blob containing the WebP image.
    */
-  uploadFile(file: File): Promise<any> {
+  private async convertToWebP(file: File): Promise<Blob> {
     return new Promise((resolve, reject) => {
-      const fileReader = new FileReader();
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
 
-      // Read the file as an ArrayBuffer
-      fileReader.readAsArrayBuffer(file);
+      reader.onload = async (event: any) => {
+        const img = new Image();
+        img.src = event.target.result;
 
-      fileReader.onload = async (event: any) => {
-        console.log("Complete file read successfully!", event.target.result);
-        try {
-          // Call uploadData with the file's data and its name as the path.
-          // With your Amplify backend's defaultAccessLevel set to 'protected',
-          // the file will automatically be stored under the user's folder.
-          // const result = await uploadData({
-          //   data: event.target.result,
-          //   path: file.name,
-          //   options: {
-          //     contentType: file.type,
-          //   }
-          // });
-          const result = await uploadData({
-            data: event.target.result,
-            // Use a function to build the path dynamically
-            path: ({ identityId }) => `protected/${identityId}/${file.name}`,
-            options: {
-              contentType: file.type
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+
+          if (!ctx) {
+            reject(new Error('Canvas context is not available.'));
+            return;
+          }
+
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0);
+
+          canvas.toBlob((blob) => {
+            if (blob) {
+              resolve(blob);
+            } else {
+              reject(new Error('Failed to convert image to WebP.'));
             }
-          });
-          resolve(result);
-        } catch (error) {
-          console.error("Error uploading file:", error);
-          reject(error);
-        }
+          }, 'image/webp', 0.8); // Adjust quality if needed
+        };
+
+        img.onerror = (error) => reject(error);
       };
 
-      fileReader.onerror = (error) => {
-        console.error("Error reading file:", error);
-        reject(error);
-      };
+      reader.onerror = (error) => reject(error);
     });
   }
-  // async listUserFiles(identityId: string): Promise<any[]> {
-  //   try {
-  //     // Lists files under the folder "protected/<identityId>/"
-  //     const files = await Storage.list(`protected/${identityId}/`);
-  //     return files;
-  //   } catch (error) {
-  //     console.error('Error listing files:', error);
-  //     throw error;
-  //   }
-  // }
+
+  /**
+   * Uploads a file as a WebP image named `profile.webp` to the user's protected storage.
+   * @param file The original file to upload.
+   * @returns A Promise that resolves with the upload result.
+   */
+  async uploadFile(file: File): Promise<any> {
+    try {
+      const webpBlob = await this.convertToWebP(file);
+
+      const result = await uploadData({
+        data: webpBlob,
+        path: ({ identityId }) => `protected/${identityId}/profile.webp`,
+        options: {
+          contentType: 'image/webp'
+        }
+      });
+
+      return result;
+    } catch (error) {
+      console.error("Error uploading WebP file:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Fetch the signed URL for the user's profile image.
+   * @param identityId - The Cognito Identity ID of the user.
+   * @returns A Promise resolving to the signed image URL.
+   */
+  async getUserImage(identityId: string | null): Promise<string> {
+    if (!identityId) {
+      throw new Error('Identity ID is not available.');
+    }
+    try {
+      const result = await getUrl({ path: `protected/${identityId}/profile.webp` });
+
+      return result.url.toString() || '/assets/images/noImageUploaded.jpg'; // Fallback image
+    } catch (error) {
+      console.error('Error fetching image URL:', error);
+      return '/assets/images/noImageUploaded.jpg'; // Default image if not found
+    }
+  }
 }

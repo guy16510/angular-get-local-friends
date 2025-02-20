@@ -57,11 +57,10 @@ export class AuthService {
     }
   }
 
-  async getIdentityId(): Promise<any> {
+  async getIdentityId(): Promise<string | null> {
     try {
       const session = await fetchAuthSession();
-      debugger;
-      return session.identityId;
+      return session?.identityId || null;
     } catch (error) {
       console.error('Error getting identity ID:', error);
       return null;

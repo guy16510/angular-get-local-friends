@@ -4,13 +4,14 @@ import { RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { generateClient } from 'aws-amplify/api';
 import type { Schema } from '../../../../amplify/data/resource';
+import { UploadComponent } from '../image-upload/image-upload.component';
 
 const client = generateClient<Schema>();
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, UploadComponent],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css'
 })
@@ -19,14 +20,12 @@ export class ProfileComponent implements OnInit {
   loading = true;
   error: string | null = null;
   userProfile: any = null;
+  identityId: string | null = null;
 
   constructor(private authService: AuthService) {}
 
   ngOnInit() {
     this.loadUserProfile();
-    this.authService.user$.subscribe(user => {
-      this.user = user;
-    });
   }
 
   async getUserProfile(identityId: string) {
@@ -40,8 +39,11 @@ export class ProfileComponent implements OnInit {
   async loadUserProfile() {
     try {
       this.loading = true;
-      this.user = await this.authService.getUserInfo();
-      await this.getUserProfile(this.user.identityId);
+      this.identityId = await this.authService.getIdentityId();
+      if (!this.identityId) {
+        throw new Error('Identity ID not found');
+      }
+      await this.getUserProfile(this.identityId);
       this.error = null;
     } catch (error) {
       this.error = 'Failed to load user profile';

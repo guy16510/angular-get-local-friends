@@ -7,7 +7,6 @@ import { ErrorComponent } from './components/error/error.component';
 import { LoginComponent } from './components/login/login.component';
 import { SignUpComponent } from './components/sign-up/sign-up.component';
 import { SearchComponent } from './components/search/search.component';
-import { UploadComponent } from './components/upload-images/upload-images.component';
 
 export const routes: Routes = [
     {
@@ -17,10 +16,6 @@ export const routes: Routes = [
     {
         path: 'contact-us',
         component: ContactUsComponent
-    },
-    {
-        path: 'upload',
-        component: UploadComponent
     },
     {
         path: 'profile',

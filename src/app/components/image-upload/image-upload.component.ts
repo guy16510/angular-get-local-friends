@@ -5,25 +5,24 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatGridTile, MatGridList } from '@angular/material/grid-list';
 import { MatInputModule } from '@angular/material/input';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   standalone: true,
-  selector: 'app-upload-images',
-  templateUrl: './upload-images.component.html',
-  styleUrls: ['./upload-images.component.css'],
+  selector: 'app-upload-image',
+  templateUrl: './image-upload.component.html',
+  styleUrls: ['./image-upload.component.css'],
   imports: [MatGridTile, MatGridList, MatFormFieldModule, MatInputModule, MatButtonModule, MatSnackBarModule]
 })
 export class UploadComponent {
   selectedFile?: File;
-  uploadedKey: string = '';
-  uploadedUrl: string = '';
+  uploadedUrls: string[] = []; // ✅ Initialize uploadedUrls as an empty array
 
-  constructor(private fileService: FileService, private snackBar: MatSnackBar) {}
+  constructor(private fileService: FileService, private snackBar: MatSnackBar, private authSerivce: AuthService) {}
 
   onFileChange(event: any): void {
     const file: File = event.target.files[0];
     if (file) {
-      // Optionally, add file validations (e.g. file size, type, etc.)
       this.selectedFile = file;
     }
   }
@@ -34,10 +33,17 @@ export class UploadComponent {
       return;
     }
     try {
-      const result = await this.fileService.uploadFile(this.selectedFile);
-      this.uploadedKey = result.key;
+      await this.fileService.uploadFile(this.selectedFile);
+
+      // ✅ Fetch the newly uploaded file URL
+      const identityId = await this.authSerivce.getIdentityId() || null;
+      const uploadedImageUrl = await this.fileService.getUserImage(identityId);
+      
+      if (uploadedImageUrl) {
+        this.uploadedUrls.push(uploadedImageUrl); // ✅ Add URL to the array
+      }
+
       this.snackBar.open('File uploaded successfully!', 'Close', { duration: 3000 });
-      // Optionally, you can call Storage.get() here to retrieve a URL if needed.
     } catch (error) {
       console.error('Error uploading file:', error);
       this.snackBar.open('Error uploading file!', 'Close', { duration: 3000 });
