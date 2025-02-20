@@ -7,11 +7,16 @@ import { ErrorComponent } from './components/error/error.component';
 import { LoginComponent } from './components/login/login.component';
 import { SignUpComponent } from './components/sign-up/sign-up.component';
 import { SearchComponent } from './components/search/search.component';
+import { SurveyComponent } from './components/survey/survey.component';
 
 export const routes: Routes = [
     {
         path: '',
         component: HomeComponent
+    },
+    {
+        path: 'survey',
+        component: SurveyComponent
     },
     {
         path: 'contact-us',

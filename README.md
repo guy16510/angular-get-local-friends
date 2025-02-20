@@ -23,3 +23,9 @@ See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more inform
 ## License
 
 This library is licensed under the MIT-0 License. See the LICENSE file.
+
+
+
+## TODOS
+- add session based image caching to the search page.
+    - be mindful that the cognito signed URLS only last 15min.

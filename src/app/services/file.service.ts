@@ -80,17 +80,27 @@ export class FileService {
    * @param identityId - The Cognito Identity ID of the user.
    * @returns A Promise resolving to the signed image URL.
    */
-  async getUserImage(identityId: string | null): Promise<string> {
+  async getUserImage(identityId: string | null): Promise<string | null> {
     if (!identityId) {
-      throw new Error('Identity ID is not available.');
+      console.warn('Identity ID is not available.');
+      return null;
     }
+  
+    const filePath = `protected/${identityId}/profile.webp`;
+  
     try {
-      const result = await getUrl({ path: `protected/${identityId}/profile.webp` });
-
-      return result.url.toString() || '/assets/images/noImageUploaded.jpg'; // Fallback image
-    } catch (error) {
+      // ✅ Try to get the signed URL directly
+      const result = await getUrl({ path: filePath });
+      return result.url.toString() || null;
+    } catch (error: any) {
+      // ✅ If the file doesn't exist, return null (avoids unnecessary LIST request)
+      if (error.name === 'NoSuchKey' || error.message.includes('does not exist')) {
+        console.warn(`File not found: ${filePath}`);
+        return null;
+      }
+  
       console.error('Error fetching image URL:', error);
-      return '/assets/images/noImageUploaded.jpg'; // Default image if not found
+      return null;
     }
   }
 }
