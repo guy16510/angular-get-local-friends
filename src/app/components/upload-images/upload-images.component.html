@@ -1,21 +1,14 @@
-<!-- src/app/components/upload-images/upload-images.component.html -->
 <div class="upload-container">
   <h2>Upload Your Images</h2>
-  
-  <!-- File Input -->
-  <input type="file" (change)="onFileSelected($event)" multiple accept="image/*" />
-  
-  <!-- Upload Button -->
-  <button mat-raised-button color="primary" (click)="uploadFiles()" [disabled]="!selectedFiles.length">
+  <input type="file" (change)="onFileChange($event)" multiple accept="image/*" />
+  <button mat-raised-button color="primary" (click)="upload()" [disabled]="!selectedFile">
     Upload
   </button>
-  
-  <!-- Display Uploaded Images in a Grid -->
-  <div class="uploaded-images" *ngIf="uploadedUrls.length">
+  <div *ngIf="uploadedUrls.length">
     <h3>Uploaded Images</h3>
     <mat-grid-list cols="3" rowHeight="100px" gutterSize="16px">
       <mat-grid-tile *ngFor="let url of uploadedUrls">
-        <img [src]="url" alt="User Image" style="width: 100%; height: 100%; object-fit: cover;" />
+        <img [src]="url" alt="Uploaded Image" style="width: 100%; height: 100%; object-fit: cover;" />
       </mat-grid-tile>
     </mat-grid-list>
   </div>

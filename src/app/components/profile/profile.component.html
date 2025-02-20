@@ -19,6 +19,10 @@
       <p><strong>User ID:</strong> {{ user.userId }}</p>
       <p><strong>Last Sign In:</strong> {{ user.signInDetails?.loginId }}</p>
     </div>
+
+    <div class="dynamoProfile">
+      <pre>{{userProfile | json}}</pre>
+    </div>
   </ng-container>
 
   <ng-container *ngIf="!loading && !error && !user">

@@ -17,7 +17,7 @@ export const handler: Schema["fetchUserProfile"]["functionHandler"] = async (eve
 
   const params = {
     TableName: TABLE_NAME,
-    Key: { userId },
+    Key: { id: userId },
   };
 
   const result = await docClient.get(params).promise();
