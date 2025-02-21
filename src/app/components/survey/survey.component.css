@@ -12,10 +12,6 @@
   align-items: center;
 }
 
-.light-theme .mat-mdc-progress-bar {
-  --mdc-linear-progress-active-indicator-color: var(--amplify-colors-brand-accent, #ff0055) !important;
-  /* background-color: var(--amplify-colors-brand-accent, #ff0055); */
-}
 mat-card {
   max-width: 80%;
   padding: 20px;

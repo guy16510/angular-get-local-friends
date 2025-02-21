@@ -1,6 +1,5 @@
 <div class="progress-container">
-  <mat-progress-bar mode="determinate" [value]="progress"></mat-progress-bar>
-</div>
+<mat-progress-bar mode="determinate" [value]="progress" class="survey-progress-bar"></mat-progress-bar></div>
 
 <mat-card class="survey-container">
   <form [formGroup]="surveyForm" (ngSubmit)="onSubmit()">
@@ -20,12 +19,11 @@
       </ng-container>
 
       <!-- Multi-select: checkboxes (FormArray) -->
-      <ng-container *ngIf="question.multiSelect && question.component === 'checkbox'">
-        <div [formArrayName]="'q' + question.id">
-          <div *ngFor="let ctrl of getFormArray('q' + question.id)?.controls; let i = index">
-            <mat-checkbox [formControlName]="i">{{ question?.options[i] }}</mat-checkbox>
-          </div>
-        </div>
+      <ng-container *ngIf="question.options?.length">
+        <mat-checkbox *ngFor="let option of question.options; let i = index"
+                      [formControl]="getFormControl('q' + question.id, i)">
+          {{ option }}
+        </mat-checkbox>
       </ng-container>
 
       <!-- True-False: button toggle -->
@@ -43,19 +41,20 @@
           <input matInput [formControlName]="'q' + question.id">
         </mat-form-field>
       </ng-container>
-      <!-- </div> -->
+    </div> <!-- End of *ngFor loop -->
 
-      <div class="button-row">
-        <button mat-button type="button" (click)="previousStep()" [disabled]="currentStep === 0">
-          Previous
-        </button>
-        <button mat-button type="button" (click)="nextStep()" *ngIf="currentStep < steps.length - 1">
-          Next
-        </button>
-        <button mat-raised-button color="primary" type="submit" *ngIf="currentStep === steps.length - 1">
-          Submit
-        </button>
-      </div>
+    <!-- Move buttons outside of the loop -->
+    <div class="button-row">
+      <button mat-button type="button" (click)="previousStep()" [disabled]="currentStep === 0">
+        Previous
+      </button>
+      <button mat-button type="button" (click)="nextStep()" *ngIf="currentStep < steps.length - 1">
+        Next
+      </button>
+      <button mat-raised-button color="primary" type="submit" *ngIf="currentStep === steps.length - 1">
+        Submit
+      </button>
     </div>
+
   </form>
 </mat-card>

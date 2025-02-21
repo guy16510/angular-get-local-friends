@@ -1,38 +1,17 @@
 // survey.component.ts
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { QuestionnaireService } from '../../services/questionnaire.service';
 import { Question } from '../../models/question';
-import { MatStepperModule } from '@angular/material/stepper';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatRadioModule } from '@angular/material/radio';
-import { MatButtonModule } from '@angular/material/button';
-import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MaterialModule } from '../../shared/material.module';
 import { CommonModule } from '@angular/common';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatCard, MatCardContent } from '@angular/material/card';
-import { MatCheckboxModule } from '@angular/material/checkbox';
 
 @Component({
   standalone: true,
   selector: 'app-survey',
   templateUrl: './survey.component.html',
   styleUrls: ['./survey.component.css'],
-  imports: [   
-    CommonModule,
-    ReactiveFormsModule,
-    MatStepperModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatRadioModule,
-    MatButtonModule,
-    MatButtonToggleModule,
-    MatProgressBarModule,
-    MatCard,
-    MatCardContent,
-    MatCheckboxModule
-  ]
+  imports: [ReactiveFormsModule, MaterialModule, CommonModule],
 })
 export class SurveyComponent implements OnInit {
   questions: Question[] = [];
@@ -79,8 +58,14 @@ export class SurveyComponent implements OnInit {
     return ((this.currentStep + 1) / this.steps.length) * 100;
   }
   
-  getFormArray(key: string) {
-    return this.surveyForm.get(key);
+  getFormControl(controlName: string, index: number): FormControl {
+    const formArray = this.surveyForm.get(controlName) as FormArray;
+  
+    if (!formArray || !formArray.controls || index >= formArray.controls.length) {
+      return new FormControl(''); // Return a default FormControl to prevent errors
+    }
+  
+    return formArray.controls[index] as FormControl;
   }
 
   nextStep(): void {

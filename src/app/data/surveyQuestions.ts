@@ -10,31 +10,16 @@ export interface Question {
 }
 
 export const surveyQuestions: Question[] = [
-  // {
-  //   id: 1,
-  //   question: "What are your habits regarding drinking or smoking?",
-  //   type: "multiple-choice",
-  //   component: "radio",
-  //   // multiSelect: true,
-  //   options: [
-  //     "I don't drink or smoke",
-  //     "I drink socially",
-  //     "I smoke",
-  //     "I drink and smoke",
-  //     "Prefer not to say"
-  //   ]
-  // },
   {
     id: 1,
     question: "What kind of friends are you looking to connect with?",
     type: "multiple-choice",
-    component: "radio",
+    component: "checkbox",
     options: [
       "Local families",
       "Single parents",
       "Seniors/Retirees",
-      "Mixed-age groups",
-      "Other (please specify)"
+      "Mixed-age groups"
     ]
   },
   {
