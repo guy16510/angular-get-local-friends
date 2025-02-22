@@ -1,10 +1,6 @@
-// import * as global from 'global';
-// (window as any).global = global;
+(window as any).global = window;
 
-import { Buffer } from 'buffer';
-(window as any).Buffer = Buffer;
-
-import 'zone.js';  // Ensure zone.js is included
+import 'zone.js'; // Ensure zone.js is imported if needed
 import { bootstrapApplication } from '@angular/platform-browser';
 import { appConfig } from './app/app.config';
 import { AppComponent } from './app/app.component';
