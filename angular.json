@@ -20,6 +20,7 @@
               "crypto-js/sha256",
               "axios",
               "buffer",
+              "global",
               "camelcase-keys",
               "crypto-js/core",
               "crypto-js/enc-base64",
