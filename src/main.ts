@@ -1,4 +1,8 @@
-(window as any).global = window;
+// import * as global from 'global';
+// (window as any).global = global;
+
+import { Buffer } from 'buffer';
+(window as any).Buffer = Buffer;
 
 import 'zone.js';  // Ensure zone.js is included
 import { bootstrapApplication } from '@angular/platform-browser';
