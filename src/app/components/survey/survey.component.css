@@ -3,6 +3,11 @@
 /* Progress Container */
 .progress-container {
   margin-bottom: 20px;
+  margin-top: 70px;
+}
+
+.survey-progress-bar .mat-progress-bar-fill::after {
+  background-color: pink !important;
 }
 
 .survey-container {

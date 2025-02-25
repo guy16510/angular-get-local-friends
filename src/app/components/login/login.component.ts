@@ -10,7 +10,7 @@ import outputs from '../../../../amplify_outputs.json';
   standalone: true,
   imports: [RouterOutlet, AmplifyAuthenticatorModule],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.css'
+  styleUrl: './login.component.scss'
 })
 export class LoginComponent {
   constructor(public authenticator: AuthenticatorService) {

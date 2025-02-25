@@ -1,36 +1,26 @@
 <header>
   <div class="header-container">
-    <!-- Branding -->
     <div class="branding">
-      <a aria-current="page" class="active" href="/">Get Local Friends</a>
+      <a href="/">Get Local Friends</a>
     </div>
 
-    <!-- Desktop Navigation -->
+    <input type="checkbox" id="menu-toggle" class="menu-toggle" />
+    <label for="menu-toggle" class="menu-icon">
+      <span></span>
+      <span></span>
+      <span></span>
+    </label>
+
     <nav class="nav-links">
-      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Home</a>
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
       <a routerLink="/survey" routerLinkActive="active">Survey</a>
       <a routerLink="/contact-us" routerLinkActive="active">Contact Us</a>
       <a routerLink="/search" routerLinkActive="active">Search</a>
       <a routerLink="/sign-up" routerLinkActive="active">Sign Up</a>
       <a routerLink="/profile" routerLinkActive="active">Profile</a>
+      <div class="theme-toggle" (click)="toggleTheme()">
+        <mat-icon>{{ isDarkMode ? 'light_mode' : 'dark_mode' }}</mat-icon>
+      </div>
     </nav>
-
-    <!-- Mobile Navigation: Hamburger Menu -->
-    <button mat-icon-button class="menu-button" [matMenuTriggerFor]="menu">
-      <mat-icon>menu</mat-icon>
-    </button>
-    <mat-menu #menu="matMenu">
-      <button mat-menu-item routerLink="/" routerLinkActive="active">Home</button>
-      <button mat-menu-item routerLink="/survey" routerLinkActive="active">Survey</button>
-      <button mat-menu-item routerLink="/contact-us" routerLinkActive="active">Contact Us</button>
-      <button mat-menu-item routerLink="/search" routerLinkActive="active">Search</button>
-      <button mat-menu-item routerLink="/sign-up" routerLinkActive="active">Sign Up</button>
-      <button mat-menu-item routerLink="/profile" routerLinkActive="active">Profile</button>
-    </mat-menu>
-
-    <div class='lightMode' (click)="toggleTheme()">
-      <mat-icon *ngIf="isDarkMode">light_mode</mat-icon>
-      <mat-icon *ngIf="!isDarkMode">dark_mode</mat-icon>
-    </div>
   </div>
 </header>

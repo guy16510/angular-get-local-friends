@@ -2,15 +2,12 @@ import { Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { ThemeService } from '../../services/theme.service';
 import { MatIconModule } from '@angular/material/icon';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [RouterModule, MatIconModule, MatMenuModule, MatSlideToggleModule, FormsModule, CommonModule],
+  imports: [RouterModule, MatIconModule, CommonModule,],
   templateUrl: './header.component.html',
   styleUrl: './header.component.css'
 })

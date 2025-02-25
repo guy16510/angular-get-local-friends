@@ -1,5 +1,12 @@
+
 <div class="progress-container">
-<mat-progress-bar mode="determinate" [value]="progress" class="survey-progress-bar"></mat-progress-bar></div>
+  <mat-progress-bar
+  mode="determinate"
+  [value]="progress"
+  class="survey-progress-bar"
+  color="accent">
+</mat-progress-bar>
+</div>
 
 <mat-card class="survey-container">
   <form [formGroup]="surveyForm" (ngSubmit)="onSubmit()">
@@ -55,6 +62,5 @@
         Submit
       </button>
     </div>
-
   </form>
 </mat-card>

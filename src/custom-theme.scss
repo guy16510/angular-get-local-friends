@@ -26,15 +26,37 @@ $dark-theme: mat.define-dark-theme((
     accent: $dark-accent,
     warn: $dark-warn,
   ),
-  // Omitting typography and density to prevent duplication
 ));
 
-// Apply Light Theme Globally
 @include mat.all-component-themes($light-theme);
 
-// Apply Dark Theme Colors Only
+// Override Progress Bar Fill Color for Both Themes
+.survey-progress-bar.mat-mdc-progress-bar {
+  --mdc-linear-progress-active-indicator-color: var(--amplify-colors-brand-accent, #ff0055) !important;
+  --mdc-linear-progress-track-color: rgba(0, 0, 0, 0.1); /* Adjust track color */
+}
+
+// Override Dark Mode
+.dark-theme .survey-progress-bar.mat-mdc-progress-bar {
+  --mdc-linear-progress-active-indicator-color: var(--amplify-colors-brand-accent, #ff0055) !important;
+  --mdc-linear-progress-track-color: rgba(255, 255, 255, 0.2);
+}
+
+// Light Theme Header Styles
+.light-theme .header-container {
+  background-color: rgba(217,217,217, 0.8); // Light grey for light mode
+  color: #000000; // Black text
+}
+
+// Dark Theme Header Styles
+.dark-theme .header-container {
+  background-color: rgba(0, 0, 0, 0.4);
+  color: #ffffff; // White text
+}
+
 .dark-theme {
   @include mat.all-component-colors($dark-theme);
   background-color: #121212;
   color: #ffffff;
 }
+
