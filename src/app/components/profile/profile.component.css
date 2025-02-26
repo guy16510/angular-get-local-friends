@@ -1,32 +1,10 @@
-/* Light Mode (Default) */
-:root {
-  --primary-bg: #ffffff;
-  --secondary-bg: #f4f4f4;
-  --text-color: #000000;
-  --card-bg: #ffffff;
-  --list-bg: #fafafa;
-  --button-bg: #e0e0e0;
-  --button-text: #000000;
-}
-
-/* Dark Mode */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --primary-bg: #1e1e1e;
-    --secondary-bg: #2e2e2e;
-    --text-color: #ffffff;
-    --card-bg: #252525;
-    --list-bg: #333333;
-    --button-bg: #444;
-    --button-text: #ffffff;
-  }
-}
 
 /* Container */
 .profile-container {
   background: var(--primary-bg);
   color: var(--text-color);
   padding: 20px;
+  padding-top:80px;
   border-radius: 10px;
   max-width: 80%;
   margin: auto;

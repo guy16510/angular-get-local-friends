@@ -38,6 +38,7 @@ export class UploadComponent {
 
       // ✅ Fetch the newly uploaded file URL
       const identityId = await this.authSerivce.getIdentityId() || null;
+      console.log("TODO add state here.")
       const uploadedImageUrl = await this.fileService.getUserImage(identityId);
       
       if (uploadedImageUrl) {

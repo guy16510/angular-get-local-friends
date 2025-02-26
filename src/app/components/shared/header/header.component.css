@@ -1,7 +1,5 @@
 .header-container {
   display: flex;
-  border-bottom-right-radius: 10px;
-  border-bottom-left-radius: 10px;
   justify-content: space-between;
   align-items: center;
   padding: 1rem;
@@ -11,13 +9,40 @@
   left: 0;
   z-index: 1000;
   transition: background-color 0.3s ease-in-out;
+  /* border-radius, etc. if desired */
+}
+
+
+.branding {
+  margin: 0; /* remove negative margins */
 }
 
 .branding a {
-  font-size: 1.5rem;
-  font-weight: bold;
+  display: flex;
+  align-items: center;
   text-decoration: none;
   color: inherit;
+}
+
+#logo {
+  width: 50px;
+  margin-right: 0.5rem;
+  margin-left: -15px;
+  margin-top: -10px;
+}
+
+#logoText {
+  font-size: 1.5rem;
+  font-weight: bold;
+  /* optional additional styling */
+}
+
+.branding {
+  margin: 0; /* Remove negative margins */
+}
+
+span#logoText {
+  padding-left: 10px;
 }
 
 .nav-links {
@@ -29,6 +54,14 @@
   text-decoration: none;
   font-size: 1rem;
   color: inherit;
+}
+
+.header-container .nav-links > a.active{
+  color: var(--accent-color);
+  text-decoration: underline;
+  -webkit-text-decoration-color: var(--accent-color);
+  text-decoration-color: var(--accent-color);
+  text-underline-offset: 8px;
 }
 
 /* Hide checkbox input */
@@ -50,6 +83,9 @@
   margin: 4px 0;
   transition: 0.4s;
 }
+.signOut{
+  cursor:pointer;
+}
 
 /* Responsive styles */
 @media (max-width: 768px) {
@@ -65,6 +101,9 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
+  .theme-toggle {
+    padding-left: 10px;
+}
   .nav-links a {
     padding: 0.75rem 1rem;
   }

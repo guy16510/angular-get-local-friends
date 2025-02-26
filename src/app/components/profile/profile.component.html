@@ -1,17 +1,21 @@
 <mat-card class="profile-container mat-elevation-z4">
-  <ng-container *ngIf="loading">
+  <ng-container *ngIf="loading$ | async">
     <app-loading></app-loading>
   </ng-container>
 
-  <ng-container *ngIf="error">
+  <ng-container *ngIf="error$ | async as error">
     <p class="error">{{ error }}</p>
   </ng-container>
 
-  <ng-container *ngIf="!loading && !error && identityId">
+  <ng-container *ngIf="!(loading$ | async) && !(error$ | async) && identityId">
     <mat-card-content>
       <div class="profile-header">
-        <img [src]="profileImage" alt="Profile Picture" class="profile-image" (error)="profileImage = '/assets/images/noImageUploaded.jpg'" />
-        <button mat-raised-button color="warn" (click)="signOut()">Sign Out</button>
+        <img
+          [src]="profileImage"
+          alt="Profile Picture"
+          class="profile-image"
+          (error)="profileImage = '/assets/images/noImageUploaded.jpg'"
+        />
       </div>
 
       <app-upload-image></app-upload-image>
@@ -28,8 +32,8 @@
     </mat-card-content>
   </ng-container>
 
-  <ng-container *ngIf="!loading && !error && !identityId">
+  <!-- <ng-container *ngIf="!(loading$ | async) && !(error$ | async) && !identityId">
     <p>Please sign in to view your profile.</p>
     <button mat-raised-button color="primary" routerLink="/login">Sign In</button>
-  </ng-container>
+  </ng-container> -->
 </mat-card>

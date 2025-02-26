@@ -1,13 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { AuthService } from '../../services/auth.service';
+import { Store, Select } from '@ngxs/store';
+import { Observable, first } from 'rxjs';
+import { AuthState } from '../../store/states/auth.state';
+import { CheckAuth, FetchIdentityId } from '../../store/actions/auth.actions';
 import { FileService } from '../../services/file.service';
 import { generateClient } from 'aws-amplify/api';
 import type { Schema } from '../../../../amplify/data/resource';
 import { UploadComponent } from '../image-upload/image-upload.component';
 
-// ✅ Angular Material Imports
+// Angular Material Imports
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatListModule } from '@angular/material/list';
@@ -24,26 +27,50 @@ const client = generateClient<Schema>();
     RouterModule,
     UploadComponent,
     LoadingComponent,
-    // ✅ Material Modules
     MatCardModule,
     MatButtonModule,
     MatListModule,
     MatIconModule
   ],
   templateUrl: './profile.component.html',
-  styleUrl: './profile.component.css'
+  styleUrls: ['./profile.component.css']
 })
 export class ProfileComponent implements OnInit {
-  userProfile: Record<string, any> | null = null;
+  @Select(AuthState.identityId) identityId$!: Observable<string | null>;
+  @Select(AuthState.loading) loading$!: Observable<boolean>;
+  @Select(AuthState.error) error$!: Observable<string | null>;
+  @Select(AuthState.user) user$!: Observable<any>;
+
   identityId: string | null = null;
+  userProfile: Record<string, any> | null = null;
   profileImage: string = '/assets/images/noImageUploaded.jpg';
   loading = true;
   error: string | null = null;
 
-  constructor(private authService: AuthService, private fileService: FileService) {}
+  constructor(private store: Store, private fileService: FileService) {}
 
   ngOnInit() {
-    this.loadUserProfile();
+    // Check if identityId is missing; if so, dispatch CheckAuth and FetchIdentityId.
+    this.identityId$.pipe(first()).subscribe((id) => {
+      if (!id) {
+        console.log('[ProfileComponent] identityId is null; dispatching CheckAuth and FetchIdentityId');
+        this.store.dispatch(new CheckAuth());
+        this.store.dispatch(new FetchIdentityId());
+      }
+    });
+
+    // Subscribe to identityId changes.
+    this.identityId$.subscribe((id) => {
+      console.log('[ProfileComponent] identityId from store:', id);
+      this.identityId = id;
+      if (this.identityId) {
+        this.loadUserProfile();
+      }
+    });
+
+    // Subscribe to loading and error state if you want to use them in the component directly.
+    this.loading$.subscribe((load) => (this.loading = load));
+    this.error$.subscribe((err) => (this.error = err));
   }
 
   async getUserProfile(identityId: string) {
@@ -58,34 +85,19 @@ export class ProfileComponent implements OnInit {
 
   async loadUserProfile() {
     try {
-      this.loading = true;
-      this.identityId = await this.authService.getIdentityId();
       if (!this.identityId) {
         throw new Error('Identity ID not found');
       }
-
       await this.getUserProfile(this.identityId);
-
-      // ✅ Fetch user profile image
+      // Fetch user profile image
       const imgSrc = await this.fileService.getUserImage(this.identityId);
       if (imgSrc) {
         this.profileImage = imgSrc;
       }
-
       this.error = null;
     } catch (error) {
-      this.error = 'Failed to load user profile';
       console.error(error);
-    } finally {
-      this.loading = false;
-    }
-  }
-
-  async signOut() {
-    try {
-      await this.authService.logout();
-    } catch (error) {
-      console.error('Error signing out:', error);
+      this.error = 'Failed to load user profile';
     }
   }
 }

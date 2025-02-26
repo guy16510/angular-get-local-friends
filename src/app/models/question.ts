@@ -1,8 +1,10 @@
-export interface Question {
+export type QuestionType = 'multiple-choice' | 'multiple-select' | 'true-false' | 'fill-in' | 'sliding-scale';
+
+export interface SurveyQuestion {
   id: number;
+  category: string;
   question: string;
-  type: 'multiple-choice' | 'true-false' | 'fill-in-the-blank';
-  component: string;      // "radio", "checkbox", "button-toggle", "input"
-  multiSelect?: boolean;  // Indicates if multiple choices are allowed
-  options?: string[];     // For multiple-choice questions
+  type: QuestionType;
+  options?: string[];
+  scale?: { min: number; max: number };
 }

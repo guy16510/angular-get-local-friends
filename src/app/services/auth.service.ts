@@ -1,69 +1,28 @@
-import { Injectable } from '@angular/core';
-import { signIn, signOut, getCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
-import { BehaviorSubject } from 'rxjs';
+import {  Injectable } from '@angular/core';
+import { Store } from '@ngxs/store';
+import {  fetchAuthSession } from 'aws-amplify/auth';
+import { Login, Logout, CheckAuth, FetchIdentityId} from '../store/actions/auth.actions';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private userSubject = new BehaviorSubject<any>(null);
-  user$ = this.userSubject.asObservable();
+  constructor(private store: Store) {}
 
-  constructor() {
-    this.checkAuthStatus();
+  login(username: string, password: string) {
+    return this.store.dispatch(new Login(username, password));
   }
 
-  async checkAuthStatus() {
-    try {
-      const currentUser = await getCurrentUser();
-      this.userSubject.next(currentUser);
-    } catch (error) {
-      this.userSubject.next(null);
-    }
+  logout() {
+    return this.store.dispatch(new Logout());
   }
 
-  async login(username: string, password: string) {
-    try {
-      const signInResult = await signIn({ username, password });
-      await this.checkAuthStatus();
-      return signInResult;
-    } catch (error) {
-      console.error('Error signing in:', error);
-      throw error;
-    }
+  checkAuth() {
+    return this.store.dispatch(new CheckAuth());
   }
 
-  async logout() {
-    try {
-      await signOut();
-      this.userSubject.next(null);
-    } catch (error) {
-      console.error('Error signing out:', error);
-      throw error;
-    }
+  getIdentityId() {
+    return this.store.dispatch(new FetchIdentityId());
   }
 
-  async getUserInfo() {
-    try {
-      const currentUser = await getCurrentUser();
-      return {
-        username: currentUser.username,
-        userId: currentUser.userId, // from the User Pool
-        signInDetails: currentUser.signInDetails
-      };
-    } catch (error) {
-      console.error('Error getting user info:', error);
-      return null;
-    }
-  }
-
-  async getIdentityId(): Promise<string | null> {
-    try {
-      const session = await fetchAuthSession();
-      return session?.identityId || null;
-    } catch (error) {
-      console.error('Error getting identity ID:', error);
-      return null;
-    }
-  }
 }

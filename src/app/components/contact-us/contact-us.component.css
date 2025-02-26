@@ -1,13 +1,10 @@
 .contact-container {
-  margin: 2rem auto;
   display: flex;
   justify-content: center;
   align-items: center;
-}
-
-mat-card {
-  width: 400px;
-  padding: 20px;
+  margin: auto;
+  width: 80%;
+  margin-top: 100px;
 }
 
 .form-container {

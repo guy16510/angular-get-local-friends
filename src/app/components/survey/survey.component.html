@@ -1,66 +1,79 @@
+<app-progress-bar [progress]="progress"></app-progress-bar>
 
-<div class="progress-container">
-  <mat-progress-bar
-  mode="determinate"
-  [value]="progress"
-  class="survey-progress-bar"
-  color="accent">
-</mat-progress-bar>
-</div>
+<main class="survey-container">
+  <mat-card>
+    <mat-card-title>Survey</mat-card-title>
+    <mat-card-content>
+      <form [formGroup]="surveyForm" (ngSubmit)="onSubmit()">
+        <div class="question" *ngFor="let question of paginatedQuestions">
+          <h3>{{ question.question }}</h3>
+          <ng-container [ngSwitch]="question.type">
+            <!-- Multiple Choice -->
+            <div *ngSwitchCase="'multiple-choice'">
+              <mat-radio-group formControlName="{{question.id}}">
+                <mat-radio-button *ngFor="let option of question.options" [value]="option">
+                  {{ option }}
+                </mat-radio-button>
+              </mat-radio-group>
+            </div>
 
-<mat-card class="survey-container">
-  <form [formGroup]="surveyForm" (ngSubmit)="onSubmit()">
-    <div *ngFor="let question of steps[currentStep]" class="question-block">
-      <p class="question-text">{{ question.question }}</p>
+            <!-- Multiple Select (Checkboxes) -->
+            <div *ngSwitchCase="'multiple-select'">
+              <div *ngFor="let option of question.options">
+                <mat-checkbox 
+                  [checked]="isChecked(question.id, option)" 
+                  (change)="toggleSelection(question.id, option)">
+                  {{ option }}
+                </mat-checkbox>
+              </div>
+            </div>
 
-      <!-- Multiple-choice -->
-      <ng-container *ngIf="question.type === 'multiple-choice'">
-        <!-- Single-select: radio buttons -->
-        <ng-container *ngIf="!question.multiSelect && question.component === 'radio'">
-          <mat-radio-group [formControlName]="'q' + question.id">
-            <mat-radio-button *ngFor="let option of question.options" [value]="option">
-              {{ option }}
-            </mat-radio-button>
-          </mat-radio-group>
-        </ng-container>
-      </ng-container>
+            <!-- True/False -->
+            <div *ngSwitchCase="'true-false'">
+              <mat-radio-group formControlName="{{question.id}}">
+                <mat-radio-button value="true">True</mat-radio-button>
+                <mat-radio-button value="false">False</mat-radio-button>
+              </mat-radio-group>
+            </div>
 
-      <!-- Multi-select: checkboxes (FormArray) -->
-      <ng-container *ngIf="question.options?.length">
-        <mat-checkbox *ngFor="let option of question.options; let i = index"
-                      [formControl]="getFormControl('q' + question.id, i)">
-          {{ option }}
-        </mat-checkbox>
-      </ng-container>
+            <!-- Fill-In -->
+            <div *ngSwitchCase="'fill-in'">
+              <mat-form-field appearance="outline" class="form-group">
+                <mat-label>Your answer</mat-label>
+                <input matInput placeholder="Type your answer here" formControlName="{{question.id}}">
+              </mat-form-field>
+            </div>
 
-      <!-- True-False: button toggle -->
-      <ng-container *ngIf="question.type === 'true-false' && question.component === 'button-toggle'">
-        <mat-button-toggle-group [formControlName]="'q' + question.id" name="{{ 'q' + question.id }}">
-          <mat-button-toggle value="true">True</mat-button-toggle>
-          <mat-button-toggle value="false">False</mat-button-toggle>
-        </mat-button-toggle-group>
-      </ng-container>
+            <!-- Sliding Scale replaced with radio buttons 1-10 -->
+            <div *ngSwitchCase="'sliding-scale'">
+              <mat-radio-group formControlName="{{question.id}}">
+                <mat-radio-button *ngFor="let value of scaleRange" [value]="value">
+                  {{ value }}
+                </mat-radio-button>
+              </mat-radio-group>
+            </div>
+          </ng-container>
+        </div>
 
-      <!-- Fill in the blank: text input -->
-      <ng-container *ngIf="question.type === 'fill-in-the-blank' && question.component === 'input'">
-        <mat-form-field appearance="fill">
-          <mat-label>Type your answer</mat-label>
-          <input matInput [formControlName]="'q' + question.id">
-        </mat-form-field>
-      </ng-container>
-    </div> <!-- End of *ngFor loop -->
+        <div class="navigation-buttons">
+          <!-- Previous button on left -->
+          <button mat-button type="button" (click)="previousPage()" [disabled]="currentPage === 0">
+            Previous
+          </button>
 
-    <!-- Move buttons outside of the loop -->
-    <div class="button-row">
-      <button mat-button type="button" (click)="previousStep()" [disabled]="currentStep === 0">
-        Previous
-      </button>
-      <button mat-button type="button" (click)="nextStep()" *ngIf="currentStep < steps.length - 1">
-        Next
-      </button>
-      <button mat-raised-button color="primary" type="submit" *ngIf="currentStep === steps.length - 1">
-        Submit
-      </button>
-    </div>
-  </form>
-</mat-card>
+          <!-- Next button if not on last page; Submit button on last page -->
+          <ng-container *ngIf="!isLastPage(); else submitBlock">
+            <button mat-button type="button" (click)="nextPage()" [disabled]="!arePageQuestionsValid()">
+              Next
+            </button>
+          </ng-container>
+          <ng-template #submitBlock>
+            <button mat-button color="primary" type="submit" [disabled]="!arePageQuestionsValid()">
+              Submit
+            </button>
+          </ng-template>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</main>

@@ -1,7 +1,10 @@
 <header>
   <div class="header-container">
     <div class="branding">
-      <a href="/">Get Local Friends</a>
+      <a routerLink="/">
+        <img id="logo" src='/assets/images/logo.svg' />
+        <span id="logoText">Get Local</span>
+      </a>
     </div>
 
     <input type="checkbox" id="menu-toggle" class="menu-toggle" />
@@ -15,9 +18,16 @@
       <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
       <a routerLink="/survey" routerLinkActive="active">Survey</a>
       <a routerLink="/contact-us" routerLinkActive="active">Contact Us</a>
-      <a routerLink="/search" routerLinkActive="active">Search</a>
-      <a routerLink="/sign-up" routerLinkActive="active">Sign Up</a>
-      <a routerLink="/profile" routerLinkActive="active">Profile</a>
+      <ng-container *ngIf="(isLoggedIn$ | async); else loggedOut">
+        <a routerLink="/search" routerLinkActive="active">Search</a>
+        <a routerLink="/profile" routerLinkActive="active">Profile</a>
+        <a class="signOut" (click)="signOut()">Logout</a>
+      </ng-container>
+      <ng-template #loggedOut>
+        <a routerLink="/sign-up" routerLinkActive="active">Sign Up</a>
+        <a routerLink="/login" routerLinkActive="active">Login</a>
+      </ng-template>
+
       <div class="theme-toggle" (click)="toggleTheme()">
         <mat-icon>{{ isDarkMode ? 'light_mode' : 'dark_mode' }}</mat-icon>
       </div>

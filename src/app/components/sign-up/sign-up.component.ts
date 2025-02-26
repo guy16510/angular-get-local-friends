@@ -38,7 +38,7 @@ export class SignUpComponent implements OnInit {
   constructor(private geoService: GeolocationService, private authService: AuthService) {}
 
   async ngOnInit() {
-    this.identityId = await this.authService.getIdentityId();
+    // this.identityId = await this.authService.getIdentityId();
   }
 
   // generateGUID() {
