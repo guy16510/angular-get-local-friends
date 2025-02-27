@@ -1,30 +1,73 @@
-## AWS Amplify Angular.js Starter Template
-
-This repository provides a starter template for creating applications using Angular.js and AWS Amplify, emphasizing easy setup for authentication, API, and database capabilities.
+# Amplify Backend API
 
 ## Overview
+This project is built with AWS Amplify and integrates backend services such as authentication, storage, and serverless functions. The backend primarily consists of AWS Lambda functions interacting with DynamoDB.
 
-This template equips you with a foundational Angular.js application integrated with AWS Amplify, streamlined for scalability and performance. It is ideal for developers looking to jumpstart their project with pre-configured AWS services like Cognito, AppSync, and DynamoDB.
+## Architecture
 
-## Features
+### AWS Services Used:
+- **AWS Lambda** - Serverless functions handling business logic.
+- **Amazon DynamoDB** - NoSQL database for user profiles.
+- **AWS Amplify** - Framework for managing backend resources.
+- **Amazon Cognito** - Handles authentication and user management.
 
-- **Authentication**: Setup with Amazon Cognito for secure user authentication.
-- **API**: Ready-to-use GraphQL endpoint with AWS AppSync.
-- **Database**: Real-time database powered by Amazon DynamoDB.
+### API Flow
 
-## Deploying to AWS
+```mermaid
+graph TD;
+    A[User] -->|Request| B[GraphQL API];
+    B -->|Mutation| C[AWS Lambda: mutate-user-profile];
+    C -->|Update| D[DynamoDB: User Profile Table];
+    B -->|Query| E[AWS Lambda: find-nearby-users];
+    E -->|Scan| D;
+    B -->|Other Operations| F[Additional Backend Functions];
+    
+    subgraph AWS Services
+        C;
+        D;
+        E;
+        F;
+    end
+```
 
-For detailed instructions on deploying your application, refer to the [deployment section](https://docs.amplify.aws/angular/start/quickstart/#deploy-a-fullstack-app-to-aws) of our documentation.
+## Backend Functions
 
-## Security
+### 1. `mutate-user-profile`
+- **Purpose:** Updates user profile information.
+- **Triggers:** GraphQL API Mutation.
+- **Database Interaction:** Updates user profile records in DynamoDB.
+- **Dependencies:** AWS SDK, GeoHash for location indexing.
 
-See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
+### 2. `find-nearby-users`
+- **Purpose:** Finds users near a given location.
+- **Triggers:** GraphQL API Query.
+- **Database Interaction:** Scans the DynamoDB user profile table based on GeoHash location.
+- **Dependencies:** AWS SDK.
+
+## Setup Instructions
+
+1. **Install dependencies**
+   ```sh
+   npm install -g @aws-amplify/cli
+   amplify pull
+   ```
+
+2. **Deploy the backend**
+   ```sh
+   amplify push
+   ```
+
+3. **Run local development**
+   ```sh
+   amplify mock function mutate-user-profile
+   amplify mock function find-nearby-users
+   ```
+
+## Contributing
+Please follow best practices for serverless development and GraphQL schema design.
 
 ## License
-
-This library is licensed under the MIT-0 License. See the LICENSE file.
-
-
+This project is licensed under the MIT License.
 
 ## TODOS
 - add session based image caching to the search page.
