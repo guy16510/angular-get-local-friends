@@ -1,7 +1,9 @@
-# Amplify Backend API
+# Get Local Friends
 
 ## Overview
-This AWS Amplify project integrates multiple backend services, including authentication, storage, and serverless functions. The architecture leverages AWS Lambda, DynamoDB, GraphQL, and S3 for handling user data, geospatial queries, and media storage.
+This project is dedicated to helping people find friends locally, based on geolocation and a personality quiz.
+
+This is an AWS Amplify project integrates multiple backend services, including authentication, storage, and serverless functions. The architecture leverages AWS Lambda, DynamoDB, GraphQL, and S3 for handling user data, geospatial queries, and media storage.
 
 ## Architecture
 
