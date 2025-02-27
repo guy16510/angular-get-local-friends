@@ -52,15 +52,18 @@ $brand-primary-light: (
   )
 );
 
-// For simplicity, use the same map for dark mode (adjust as needed)
 $brand-primary-dark: $brand-primary-light;
 
 //-----------------------------------------------------
-// Define Light Theme
+// Define Light and Dark Themes
 //-----------------------------------------------------
 $light-primary: mat.define-palette($brand-primary-light);
 $light-accent: mat.define-palette(mat.$deep-orange-palette, A200, A100, A400);
 $light-warn: mat.define-palette(mat.$red-palette);
+
+$dark-primary: mat.define-palette($brand-primary-dark);
+$dark-accent: mat.define-palette(mat.$deep-orange-palette, A200, A100, A400);
+$dark-warn: mat.define-palette(mat.$red-palette);
 
 $light-theme: mat.define-light-theme((
   color: (
@@ -71,13 +74,6 @@ $light-theme: mat.define-light-theme((
   typography: mat.define-typography-config(),
   density: 0,
 ));
-
-//-----------------------------------------------------
-// Define Dark Theme
-//-----------------------------------------------------
-$dark-primary: mat.define-palette($brand-primary-dark);
-$dark-accent: mat.define-palette(mat.$deep-orange-palette, A200, A100, A400);
-$dark-warn: mat.define-palette(mat.$red-palette);
 
 $dark-theme: mat.define-dark-theme((
   color: (
@@ -92,9 +88,17 @@ $dark-theme: mat.define-dark-theme((
 //-----------------------------------------------------
 @include mat.all-component-themes($light-theme);
 
+.dark-theme {
+  @include mat.all-component-colors($dark-theme);
+  background-color: #121212;
+  color: #ffffff;
+}
+
 //-----------------------------------------------------
-// Component Overrides
+// Custom Component Overrides
 //-----------------------------------------------------
+
+/* ---- Progress Bar ---- */
 .survey-progress-bar.mat-mdc-progress-bar {
   --mdc-linear-progress-active-indicator-color: var(--amplify-colors-brand-accent, #ff0055) !important;
   --mdc-linear-progress-track-color: rgba(0, 0, 0, 0.1);
@@ -105,22 +109,194 @@ $dark-theme: mat.define-dark-theme((
 .dark-theme .survey-progress-bar.mat-mdc-progress-bar {
   --mdc-linear-progress-active-indicator-color: var(--amplify-colors-brand-accent, #ff0055) !important;
   --mdc-linear-progress-track-color: rgba(255, 255, 255, 0.2);
-  --mdc-linear-progress-track-height: 8px;
-  --mdc-linear-progress-active-indicator-height: 8px;
 }
 
+/* ---- Header Container ---- */
 .light-theme .header-container {
-  background-color: rgba(217,217,217, 0.8); // Light grey for light mode
-  color: #000000; // Black text
+  background-color: rgba(217, 217, 217, 0.8); // Light grey for light mode
+  color: #000000;
 }
 
 .dark-theme .header-container {
   background-color: rgba(0, 0, 0, 0.4);
-  color: #ffffff; // White text
-}
-
-.dark-theme {
-  @include mat.all-component-colors($dark-theme);
-  background-color: #121212;
   color: #ffffff;
 }
+
+/* ---- Radio Button Custom Styling ---- */
+.mat-mdc-radio-button {
+  --mdc-radio-selected-icon-color: #ff0055; /* Selected radio button color */
+  --mdc-radio-unselected-icon-color: #bdbdbd; /* Default color */
+  --mdc-radio-disabled-icon-color: #e0e0e0; /* Disabled state */
+  --mdc-radio-selected-hover-icon-color: #d30046; /* Hover state */
+  --mdc-radio-selected-focus-icon-color: #b7003c;
+  --mdc-radio-selected-pressed-icon-color: #8a0029;
+
+  .mdc-radio__background {
+    border-color: mat.get-color-from-palette($brand-primary-light, 500);
+  }
+
+  .mdc-radio__inner-circle {
+    background-color: mat.get-color-from-palette($brand-primary-light, 500);
+  }
+}
+
+/* Dark Mode Radio Buttons */
+.dark-theme .mat-mdc-radio-button {
+  --mdc-radio-selected-icon-color: #ff4d6e;
+  --mdc-radio-unselected-icon-color: #757575;
+
+  .mdc-radio__background {
+    border-color: mat.get-color-from-palette($brand-primary-dark, 500);
+  }
+
+  .mdc-radio__inner-circle {
+    background-color: mat.get-color-from-palette($brand-primary-dark, 500);
+  }
+}
+
+/* ---- Adjust Radio Button Size ---- */
+.mat-mdc-radio-button {
+  .mdc-radio {
+    width: 20px; /* Adjust size */
+    height: 20px;
+  }
+}
+
+.dark-theme .mat-mdc-radio-button {
+  .mdc-radio {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+/* ---- Typography (Optional, Adjust as Needed) ---- */
+html, body {
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+}
+
+/* ---- General Button Styles ---- */
+.mat-mdc-button, .mat-mdc-raised-button, .mat-mdc-fab {
+  --mdc-text-button-label-text-color: #ff0055;
+  --mdc-filled-button-container-color: #ff0055;
+  --mdc-filled-button-label-text-color: white;
+}
+
+.dark-theme .mat-mdc-button, 
+.dark-theme .mat-mdc-raised-button, 
+.dark-theme .mat-mdc-fab {
+  --mdc-text-button-label-text-color: #ff4d6e;
+  --mdc-filled-button-container-color: #ff4d6e;
+  --mdc-filled-button-label-text-color: white;
+}
+
+
+//-----------------------------------------------------
+// Custom Styling for Radio Buttons & Checkboxes
+//-----------------------------------------------------
+
+/* ---- Radio Button Custom Styles ---- */
+.mat-mdc-radio-button {
+  --mdc-radio-selected-icon-color: #ff0055; /* Selected color */
+  --mdc-radio-unselected-icon-color: #bdbdbd; /* Default color */
+  --mdc-radio-disabled-icon-color: #e0e0e0; /* Disabled state */
+  --mdc-radio-selected-hover-icon-color: #d30046; /* Hover */
+  --mdc-radio-selected-focus-icon-color: #b7003c; /* Focus */
+  --mdc-radio-selected-pressed-icon-color: #8a0029; /* Pressed */
+  --mdc-radio-unselected-hover-icon-color: #616161; /* Hover when unselected */
+  --mdc-radio-ripple-color: rgba(255, 0, 85, 0.3); /* Ripple */
+  --mdc-radio-checked-ripple-color: rgba(255, 0, 85, 0.5);
+}
+
+/* Dark Mode for Radio Button */
+.dark-theme .mat-mdc-radio-button {
+  --mdc-radio-selected-icon-color: #ff4d6e;
+  --mdc-radio-unselected-icon-color: #757575;
+  --mdc-radio-ripple-color: rgba(255, 77, 110, 0.3);
+  --mdc-radio-checked-ripple-color: rgba(255, 77, 110, 0.5);
+}
+
+/* ---- Checkbox Custom Styles ---- */
+.mat-mdc-checkbox {
+  --mdc-checkbox-selected-checkmark-color: white; /* Checkmark color */
+  --mdc-checkbox-selected-container-color: #ff0055; /* Background when selected */
+  --mdc-checkbox-unselected-container-color: transparent;
+  --mdc-checkbox-selected-hover-container-color: #d30046;
+  --mdc-checkbox-selected-focus-container-color: #b7003c;
+  --mdc-checkbox-selected-pressed-container-color: #8a0029;
+  --mdc-checkbox-ripple-color: rgba(255, 0, 85, 0.3);
+  --mdc-checkbox-checked-ripple-color: rgba(255, 0, 85, 0.5);
+}
+
+/* Dark Mode for Checkbox */
+.dark-theme .mat-mdc-checkbox {
+  --mdc-checkbox-selected-container-color: #ff4d6e;
+  --mdc-checkbox-selected-hover-container-color: #d30046;
+  --mdc-checkbox-selected-focus-container-color: #b7003c;
+  --mdc-checkbox-selected-pressed-container-color: #8a0029;
+  --mdc-checkbox-ripple-color: rgba(255, 77, 110, 0.3);
+  --mdc-checkbox-checked-ripple-color: rgba(255, 77, 110, 0.5);
+}
+
+//-----------------------------------------------------
+// Other Component Overrides
+//-----------------------------------------------------
+.mat-mdc-button, .mat-mdc-raised-button, .mat-mdc-fab {
+  --mdc-text-button-label-text-color: #ff0055;
+  --mdc-filled-button-container-color: #ff0055;
+  --mdc-filled-button-label-text-color: white;
+}
+
+.dark-theme .mat-mdc-button, 
+.dark-theme .mat-mdc-raised-button, 
+.dark-theme .mat-mdc-fab {
+  --mdc-text-button-label-text-color: #ff4d6e;
+  --mdc-filled-button-container-color: #ff4d6e;
+  --mdc-filled-button-label-text-color: white;
+}
+
+//-----------------------------------------------------
+// Adjustments for Forms and Inputs
+//-----------------------------------------------------
+.mat-mdc-form-field {
+  --mdc-filled-text-field-label-text-color: #ff0055;
+  --mdc-filled-text-field-input-text-color: #212121;
+  --mdc-filled-text-field-container-color: rgba(255, 0, 85, 0.05);
+}
+
+.dark-theme .mat-mdc-form-field {
+  --mdc-filled-text-field-label-text-color: #ff4d6e;
+  --mdc-filled-text-field-input-text-color: white;
+  --mdc-filled-text-field-container-color: rgba(255, 77, 110, 0.1);
+}
+
+/* ---- Selected Checkbox ---- */
+.mat-mdc-checkbox.mat-mdc-checkbox-checked {
+  .mdc-checkbox__background {
+    background-color: #ff0055 !important; /* Custom primary background */
+    border-color: #ff0055 !important; /* Custom border color */
+  }
+
+  .mdc-checkbox__checkmark-path {
+    stroke: white !important; /* Checkmark color */
+  }
+}
+
+
+/* ---- Selected Radio Button ---- */
+.mat-mdc-radio-button.mat-mdc-radio-checked {
+  .mdc-radio__background {
+    border-color: #ff0055 !important; /* Custom border color */
+  }
+
+  .mdc-radio__inner-circle {
+    background-color: white !important; /* Inner circle color */
+    border-color: #ff0055 !important; /* Custom border color */
+  }
+
+  .mdc-radio__outer-circle {
+    border-color: #ff0055 !important; /* Outer ring color */
+  }
+}
+
+

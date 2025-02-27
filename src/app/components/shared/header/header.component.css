@@ -1,3 +1,4 @@
+/* Header Container */
 .header-container {
   display: flex;
   justify-content: space-between;
@@ -9,12 +10,11 @@
   left: 0;
   z-index: 1000;
   transition: background-color 0.3s ease-in-out;
-  /* border-radius, etc. if desired */
 }
 
-
+/* Branding */
 .branding {
-  margin: 0; /* remove negative margins */
+  margin: 0;
 }
 
 .branding a {
@@ -34,17 +34,13 @@
 #logoText {
   font-size: 1.5rem;
   font-weight: bold;
-  /* optional additional styling */
-}
-
-.branding {
-  margin: 0; /* Remove negative margins */
 }
 
 span#logoText {
   padding-left: 10px;
 }
 
+/* Navigation Links */
 .nav-links {
   display: flex;
   gap: 1rem;
@@ -56,11 +52,9 @@ span#logoText {
   color: inherit;
 }
 
-.header-container .nav-links > a.active{
+.header-container .nav-links > a.active {
   color: var(--accent-color);
   text-decoration: underline;
-  -webkit-text-decoration-color: var(--accent-color);
-  text-decoration-color: var(--accent-color);
   text-underline-offset: 8px;
 }
 
@@ -83,11 +77,108 @@ span#logoText {
   margin: 4px 0;
   transition: 0.4s;
 }
-.signOut{
-  cursor:pointer;
+
+.signOut {
+  cursor: pointer;
 }
 
-/* Responsive styles */
+/* ======= Profile Dropdown ======= */
+.profile-container {
+  position: relative;
+  display: inline-block;
+}
+
+/* Desktop Dropdown */
+@media (min-width: 769px) {
+  .profile-dropdown {
+    position: absolute;
+    right: 0;
+    top: 40px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    white-space: nowrap;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+
+  /* Show dropdown on hover */
+  .profile-container:hover .profile-dropdown,
+  .profile-dropdown:hover {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+/* Mobile: Integrate into Mobile Menu */
+@media (max-width: 768px) {
+  .profile-container {
+    display: block;
+    width: 100%;
+  }
+
+  .profile-dropdown {
+    display: block;
+    position: static;
+    opacity: 1;
+    visibility: visible;
+    background: none;
+    box-shadow: none;
+    border-radius: 0;
+  }
+
+  .profile-dropdown a {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    text-align: left;
+    color: inherit;
+  }
+}
+
+/* Light and Dark Mode for Dropdown */
+.light-theme .profile-dropdown {
+  background: rgb(255, 255, 255);
+  color: black;
+}
+
+.dark-theme .profile-dropdown {
+  background: rgba(20, 20, 20, 0.9);
+  color: white;
+}
+
+/* Dropdown Items */
+.light-theme .profile-dropdown a {
+  color: black;
+}
+
+.dark-theme .profile-dropdown a {
+  color: white;
+}
+
+/* Hover Effects */
+.light-theme .profile-dropdown a:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.dark-theme .profile-dropdown a:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ======= Navbar Darkens on Scroll ======= */
+.header-container {
+  background-color: rgba(0, 0, 0, 0.3);
+  transition: background-color 0.3s ease-in-out;
+}
+
+.header-container.scrolled {
+  background-color: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
+}
+
+/* ======= Responsive Styles ======= */
 @media (max-width: 768px) {
   .nav-links {
     display: none;
@@ -103,7 +194,8 @@ span#logoText {
 
   .theme-toggle {
     padding-left: 10px;
-}
+  }
+
   .nav-links a {
     padding: 0.75rem 1rem;
   }

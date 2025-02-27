@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { Store, Select } from '@ngxs/store';
+import { Store } from '@ngxs/store';
 import { Observable, first } from 'rxjs';
 import { AuthState } from '../../store/states/auth.state';
 import { CheckAuth, FetchIdentityId } from '../../store/actions/auth.actions';
@@ -36,10 +36,12 @@ const client = generateClient<Schema>();
   styleUrls: ['./profile.component.css']
 })
 export class ProfileComponent implements OnInit {
-  @Select(AuthState.identityId) identityId$!: Observable<string | null>;
-  @Select(AuthState.loading) loading$!: Observable<boolean>;
-  @Select(AuthState.error) error$!: Observable<string | null>;
-  @Select(AuthState.user) user$!: Observable<any>;
+  // Use the new inject(Store) method to set up selectors.
+  private store = inject(Store);
+  identityId$: Observable<string | null> = this.store.select(AuthState.identityId);
+  loading$: Observable<boolean> = this.store.select(AuthState.loading);
+  error$: Observable<string | null> = this.store.select(AuthState.error);
+  user$: Observable<any> = this.store.select(AuthState.user);
 
   identityId: string | null = null;
   userProfile: Record<string, any> | null = null;
@@ -47,17 +49,19 @@ export class ProfileComponent implements OnInit {
   loading = true;
   error: string | null = null;
 
-  constructor(private store: Store, private fileService: FileService) {}
+  constructor(private fileService: FileService) {}
 
   ngOnInit() {
-    // Check if identityId is missing; if so, dispatch CheckAuth and FetchIdentityId.
-    this.identityId$.pipe(first()).subscribe((id) => {
-      if (!id) {
-        console.log('[ProfileComponent] identityId is null; dispatching CheckAuth and FetchIdentityId');
-        this.store.dispatch(new CheckAuth());
-        this.store.dispatch(new FetchIdentityId());
-      }
-    });
+    // One-time check: if identityId is missing, dispatch CheckAuth and FetchIdentityId.
+    this.identityId$
+      .pipe(first())
+      .subscribe((id) => {
+        if (!id) {
+          console.log('[ProfileComponent] identityId is null; dispatching CheckAuth and FetchIdentityId');
+          this.store.dispatch(new CheckAuth());
+          this.store.dispatch(new FetchIdentityId());
+        }
+      });
 
     // Subscribe to identityId changes.
     this.identityId$.subscribe((id) => {
@@ -68,7 +72,7 @@ export class ProfileComponent implements OnInit {
       }
     });
 
-    // Subscribe to loading and error state if you want to use them in the component directly.
+    // Subscribe to loading and error state.
     this.loading$.subscribe((load) => (this.loading = load));
     this.error$.subscribe((err) => (this.error = err));
   }
@@ -89,7 +93,7 @@ export class ProfileComponent implements OnInit {
         throw new Error('Identity ID not found');
       }
       await this.getUserProfile(this.identityId);
-      // Fetch user profile image
+      // Fetch user profile image.
       const imgSrc = await this.fileService.getUserImage(this.identityId);
       if (imgSrc) {
         this.profileImage = imgSrc;

@@ -1,8 +1,8 @@
 // questionnaire.service.ts
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { surveyQuestions } from '../data/surveyQuestions';
-import { Question } from '../models/question';
+import { SURVEY_QUESTIONS } from '../data/surveyQuestions';
+import { SurveyQuestion } from '../models/question';
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +10,7 @@ import { Question } from '../models/question';
 export class QuestionnaireService {
   constructor() { }
 
-  getQuestions(): Observable<Question[]> {
-    return of(surveyQuestions);
+  getQuestions(): Observable<SurveyQuestion[]> {
+    return of(SURVEY_QUESTIONS);
   }
 }

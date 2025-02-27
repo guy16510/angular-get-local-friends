@@ -5,21 +5,34 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatGridTile, MatGridList } from '@angular/material/grid-list';
 import { MatInputModule } from '@angular/material/input';
-import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
+import { Store } from '@ngxs/store';
+import { AuthState } from '../../store/states/auth.state';
 
 @Component({
   standalone: true,
   selector: 'app-upload-image',
   templateUrl: './image-upload.component.html',
   styleUrls: ['./image-upload.component.css'],
-  imports: [CommonModule, MatGridTile, MatGridList, MatFormFieldModule, MatInputModule, MatButtonModule, MatSnackBarModule]
+  imports: [
+    CommonModule,
+    MatGridTile,
+    MatGridList,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatSnackBarModule
+  ]
 })
 export class UploadComponent {
   selectedFile?: File;
-  uploadedUrls: string[] = []; // ✅ Initialize uploadedUrls as an empty array
+  uploadedUrls: string[] = []; // Initialize uploadedUrls as an empty array
 
-  constructor(private fileService: FileService, private snackBar: MatSnackBar, private authSerivce: AuthService) {}
+  constructor(
+    private fileService: FileService,
+    private snackBar: MatSnackBar,
+    private store: Store
+  ) {}
 
   onFileChange(event: any): void {
     const file: File = event.target.files[0];
@@ -36,13 +49,18 @@ export class UploadComponent {
     try {
       await this.fileService.uploadFile(this.selectedFile);
 
-      // ✅ Fetch the newly uploaded file URL
-      const identityId = await this.authSerivce.getIdentityId() || null;
-      console.log("TODO add state here.")
+      // Retrieve the identityId from the NGXS store synchronously.
+      //TODO make a fucntion to get this value if null
+      const identityId: string | null = this.store.selectSnapshot(AuthState.identityId);
+      if (!identityId) {
+        this.snackBar.open('User identity not found. Please sign in.', 'Close', { duration: 3000 });
+        return;
+      }
+
+      // Fetch the newly uploaded file URL.
       const uploadedImageUrl = await this.fileService.getUserImage(identityId);
-      
       if (uploadedImageUrl) {
-        this.uploadedUrls.push(uploadedImageUrl); // ✅ Add URL to the array
+        this.uploadedUrls.push(uploadedImageUrl); // Add URL to the array
       }
 
       this.snackBar.open('File uploaded successfully!', 'Close', { duration: 3000 });

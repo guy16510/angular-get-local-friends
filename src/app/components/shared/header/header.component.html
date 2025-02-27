@@ -20,8 +20,15 @@
       <a routerLink="/contact-us" routerLinkActive="active">Contact Us</a>
       <ng-container *ngIf="(isLoggedIn$ | async); else loggedOut">
         <a routerLink="/search" routerLinkActive="active">Search</a>
-        <a routerLink="/profile" routerLinkActive="active">Profile</a>
-        <a class="signOut" (click)="signOut()">Logout</a>
+
+        <!-- Profile dropdown (desktop hover, mobile integrated) -->
+        <div class="profile-container">
+          <mat-icon>person</mat-icon>
+          <div class="profile-dropdown">
+            <a routerLink="/profile">Profile</a>
+            <a class="signOut" (click)="signOut()">Logout</a>
+          </div>
+        </div>
       </ng-container>
       <ng-template #loggedOut>
         <a routerLink="/sign-up" routerLinkActive="active">Sign Up</a>

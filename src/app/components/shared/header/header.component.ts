@@ -1,12 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { ThemeService } from '../../../services/theme.service';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
-import { AuthService } from '../../../services/auth.service';
 import { Observable, Subscription } from 'rxjs';
-import { Select } from '@ngxs/store';
+import { Select, Store } from '@ngxs/store';
 import { AuthState } from '../../../store/states/auth.state';
+import { Logout } from '../../../store/actions/auth.actions';
 
 @Component({
   selector: 'app-header',
@@ -17,10 +17,20 @@ import { AuthState } from '../../../store/states/auth.state';
 })
 export class HeaderComponent{
   @Select(AuthState.isLoggedIn) isLoggedIn$!: Observable<boolean>;
-
+  // On scroll darken header
+  @HostListener("window:scroll", [])
+  onWindowScroll() {
+    const header = document.querySelector('.header-container');
+    if (window.scrollY > 50) {
+      header?.classList.add('scrolled');
+    } else {
+      header?.classList.remove('scrolled');
+    }
+  }
+  
   isDarkMode = false;
 
-  constructor(private themeService: ThemeService, private authService: AuthService) {
+  constructor(private themeService: ThemeService, private store: Store) {
     this.isDarkMode = this.themeService.isDarkMode();
   }
 
@@ -31,7 +41,7 @@ export class HeaderComponent{
 
   async signOut() {
     try {
-      await this.authService.logout();
+      this.store.dispatch(new Logout());
     } catch (error) {
       console.error('Error signing out:', error);
     }

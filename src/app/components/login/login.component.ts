@@ -14,31 +14,34 @@ import { SetAuthenticatedUser, Logout } from '../../store/actions/auth.actions';
   styleUrls: ['./login.component.scss']
 })
 export class LoginComponent implements OnInit {
+  private hubListener!: (data: any) => void;
+  private hasDispatchedLogout = false;
+
   constructor(private store: Store, private router: Router) {
     Amplify.configure(outputs);
   }
 
   ngOnInit() {
-    // Listen to auth events via Hub
-    Hub.listen('auth', (data: any) => {
+    this.hubListener = (data: any) => {
       const { payload } = data;
-      // Check against the correct event names.
       if (payload.event === 'signedIn' && payload.data) {
         console.log('User signed in:', payload.data);
         this.store.dispatch(new SetAuthenticatedUser(payload.data));
-        // on success redirect to home page.
         this.router.navigate(['/']);
       } else if (payload.event === 'signedOut') {
         console.log('User signed out');
-        this.store.dispatch(new Logout());
+        if (!this.hasDispatchedLogout) {
+          this.hasDispatchedLogout = true;
+          this.store.dispatch(new Logout());
+        }
       }
-    });
+    };
+
+    Hub.listen('auth', this.hubListener);
   }
 
-  // Optional: Wrap signOut if you want to trigger it manually.
+  // Optionally, if you need to manually trigger sign out, you can do so.
   handleSignOut(signOutFn: Function) {
     signOutFn();
-    // Optionally dispatch Logout directly if needed.
-    // this.store.dispatch(new Logout());
   }
 }

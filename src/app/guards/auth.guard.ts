@@ -1,14 +1,13 @@
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthenticatorService } from '@aws-amplify/ui-angular';
+import { Store } from '@ngxs/store';
+import { AuthState } from '../store/states/auth.state';
 
-export const authGuard = async () => {
-  const authenticator = inject(AuthenticatorService);
+export const authGuard = () => {
   const router = inject(Router);
-
-  if (authenticator.authStatus === 'authenticated') {
-    return true;
-  }
-
-  return router.parseUrl('/login');
+  const store = inject(Store);
+  const isLoggedIn = store.selectSnapshot(AuthState.isLoggedIn);
+  
+  // If logged in, proceed; otherwise, redirect to login.
+  return isLoggedIn ? true : router.parseUrl('/login');
 };
