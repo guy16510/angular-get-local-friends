@@ -102,6 +102,9 @@ span#logoText {
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.3s ease, visibility 0.3s ease;
+    width: 5em;
+    text-align: center;
+    padding: 0.5em;
   }
 
   /* Show dropdown on hover */
@@ -117,6 +120,9 @@ span#logoText {
   .profile-container {
     display: block;
     width: 100%;
+  }
+  .profile-container mat-icon{
+    display:none;
   }
 
   .profile-dropdown {
@@ -168,14 +174,17 @@ span#logoText {
 }
 
 /* ======= Navbar Darkens on Scroll ======= */
-.header-container {
+.dark-theme .header-container{
   background-color: rgba(0, 0, 0, 0.3);
   transition: background-color 0.3s ease-in-out;
+  transition: color 0.3s ease-in-out;
 }
 
-.header-container.scrolled {
+.header-container.scrolled,
+.header-container.scrolled .profile-dropdown {
   background-color: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(5px);
+  color: white;
 }
 
 /* ======= Responsive Styles ======= */

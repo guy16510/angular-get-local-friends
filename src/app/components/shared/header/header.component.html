@@ -25,8 +25,12 @@
         <div class="profile-container">
           <mat-icon>person</mat-icon>
           <div class="profile-dropdown">
-            <a routerLink="/profile">Profile</a>
-            <a class="signOut" (click)="signOut()">Logout</a>
+            <div>
+              <a routerLink="/profile">Profile</a>
+            </div>
+            <div>
+              <a class="signOut" (click)="signOut()">Logout</a>
+            </div>
           </div>
         </div>
       </ng-container>

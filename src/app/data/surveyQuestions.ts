@@ -57,7 +57,7 @@ export const SURVEY_QUESTIONS: SurveyQuestion[] = [
     category: 'Friendship Preferences',
     question: 'What age group are your children in (if applicable)?',
     type: 'multiple-select',
-    options: ['Infant (0-1)', 'Toddler (2-4)', 'Young Child (5-9)', 'Pre-Teen (10-12)', 'Teen (13-18)', 'Adult (18+)'],
+    options: ['Infant (0-1)', 'Toddler (2-4)', 'Young Child (5-9)', 'Pre-Teen (10-12)', 'Teen (13-18)', 'Adult (18+)', 'N/A'],
   },
   {
     id: 8,

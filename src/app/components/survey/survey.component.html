@@ -1,16 +1,17 @@
+<!-- survey.component.html -->
 <app-progress-bar [progress]="progress"></app-progress-bar>
 
 <main class="survey-container">
   <mat-card>
     <mat-card-title>Survey</mat-card-title>
     <mat-card-content>
-      <form [formGroup]="surveyForm" (ngSubmit)="onSubmit()">
+      <form [formGroup]="surveyForm" ngxsForm="survey.surveyForm" (ngSubmit)="onSubmit()">
         <div class="question" *ngFor="let question of paginatedQuestions">
           <h3>{{ question.question }}</h3>
           <ng-container [ngSwitch]="question.type">
             <!-- Multiple Choice -->
             <div *ngSwitchCase="'multiple-choice'">
-              <mat-radio-group formControlName="{{question.id}}">
+              <mat-radio-group [formControlName]="question.id.toString()">
                 <mat-radio-button *ngFor="let option of question.options" [value]="option">
                   {{ option }}
                 </mat-radio-button>
@@ -30,7 +31,7 @@
 
             <!-- True/False -->
             <div *ngSwitchCase="'true-false'">
-              <mat-radio-group formControlName="{{question.id}}">
+              <mat-radio-group [formControlName]="question.id.toString()">
                 <mat-radio-button value="true">Yes</mat-radio-button>
                 <mat-radio-button value="false">No</mat-radio-button>
               </mat-radio-group>
@@ -40,13 +41,13 @@
             <div *ngSwitchCase="'fill-in'">
               <mat-form-field appearance="outline" class="form-group">
                 <mat-label>Your answer</mat-label>
-                <input matInput placeholder="Type your answer here" formControlName="{{question.id}}">
+                <input matInput placeholder="Type your answer here" [formControlName]="question.id.toString()">
               </mat-form-field>
             </div>
 
             <!-- Sliding Scale replaced with radio buttons 1-10 -->
             <div *ngSwitchCase="'sliding-scale'">
-              <mat-radio-group formControlName="{{question.id}}">
+              <mat-radio-group [formControlName]="question.id.toString()">
                 <mat-radio-button *ngFor="let value of scaleRange" [value]="value">
                   {{ value }}
                 </mat-radio-button>

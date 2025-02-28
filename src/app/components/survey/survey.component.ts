@@ -1,10 +1,12 @@
+// survey.component.ts
 import { Component, OnInit } from '@angular/core';
 import { SURVEY_QUESTIONS, SurveyQuestion } from '../../data/surveyQuestions';
 import { MaterialModule } from '../../shared/material.module';
-import { ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormControl, FormGroup, Validators, ValidatorFn, AbstractControl } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { ProgressBarComponent } from '../shared/progress-bar/progress-bar.component';
+import { NgxsFormDirective } from '@ngxs/form-plugin';
+import { Store } from '@ngxs/store';
 
 /**
  * Custom validator for multiple-select questions.
@@ -23,8 +25,8 @@ export function minLengthArray(min: number): ValidatorFn {
   selector: 'app-survey',
   templateUrl: './survey.component.html',
   styleUrls: ['./survey.component.css'],
-  imports: [MaterialModule, CommonModule, ReactiveFormsModule, ProgressBarComponent],
-  standalone: true
+  standalone: true,
+  imports: [MaterialModule, CommonModule, ReactiveFormsModule, ProgressBarComponent, NgxsFormDirective]
 })
 export class SurveyComponent implements OnInit {
   surveyForm!: FormGroup;
@@ -33,11 +35,11 @@ export class SurveyComponent implements OnInit {
   pageSize = 10;
   scaleRange: number[] = [];
 
-  constructor(private fb: FormBuilder) {}
+  constructor(private fb: FormBuilder, private store: Store) {}
 
   ngOnInit(): void {
     // Generate the scale range for sliding-scale (replaced with radio buttons 1-10)
-    this.scaleRange = Array.from({ length: 10 }, (_, i) => i + 1);
+    this.scaleRange = Array.from({ length: 5 }, (_, i) => i + 1);
 
     // Build a form control for each question (using question.id as key)
     const formGroupConfig: { [key: string]: any } = {};
@@ -51,6 +53,42 @@ export class SurveyComponent implements OnInit {
       }
     }
     this.surveyForm = this.fb.group(formGroupConfig);
+
+    // With the NGXS Form Plugin bound (via ngxsForm directive in the template),
+    // the form is automatically patched with the saved state.
+    // However, we need to compute the correct page based on existing answers.
+    // Use a timeout to ensure that the plugin has time to sync the state.
+    setTimeout(() => {
+      this.restoreCurrentPage();
+    }, 0);
+  }
+
+  /**
+   * Computes the appropriate currentPage based on saved answers.
+   * It iterates through pages and finds the first page where not all questions have been answered.
+   * If all pages are complete, it sets the currentPage to the last page.
+   */
+  private restoreCurrentPage(): void {
+    const totalPages = this.totalPages;
+    for (let i = 0; i < totalPages; i++) {
+      const start = i * this.pageSize;
+      const pageQuestions = this.questions.slice(start, start + this.pageSize);
+      // Check if every control on this page has a non-null value.
+      const allAnswered = pageQuestions.every(q => {
+        const control = this.surveyForm.get(q.id.toString());
+        if (!control) { return false; }
+        if (Array.isArray(control.value)) {
+          return control.value.length > 0;
+        }
+        return control.value !== null && control.value !== undefined;
+      });
+      if (!allAnswered) {
+        this.currentPage = i;
+        return;
+      }
+    }
+    // If all pages are complete, default to the last page.
+    this.currentPage = totalPages - 1;
   }
 
   // Returns the questions for the current page.
@@ -81,7 +119,10 @@ export class SurveyComponent implements OnInit {
 
   nextPage(): void {
     if (!this.isLastPage() && this.arePageQuestionsValid()) {
+      // With the form plugin, the state is automatically in sync,
+      // so no manual dispatch is necessary.
       this.currentPage++;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 
@@ -97,8 +138,8 @@ export class SurveyComponent implements OnInit {
 
   onSubmit(): void {
     if (this.surveyForm.valid) {
-      console.log("Form submitted!", this.surveyForm.value);
-      // Here you can dispatch your state management action or call an API.
+      console.log("📨 Form submitted!", this.surveyForm.value);
+      //TODO submit to the API, but first ensure user is logged in
     }
   }
 

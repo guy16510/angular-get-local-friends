@@ -299,4 +299,24 @@ html, body {
   }
 }
 
+// Login component
+.amplify-button--primary {
+  background-color: #ff0055 !important;
+}
+.amplify-tabs__item--active {
+  color: var(--amplify-colors-brand-accent, #ff0055) !important;
+  border-color: var(--amplify-colors-brand-accent, #ff0055) !important;
+  transition-property: none;
+}
 
+.dark-theme .amplify-tabs__panel.amplify-tabs__panel--active,
+.dark-theme .amplify-tabs__item,
+.dark-theme{
+  color:white;
+  background-color: #181818;
+}
+.dark-theme .amplify-label,
+.dark-theme .amplify-input{
+  color:white!important;
+  background-color:black;
+}
