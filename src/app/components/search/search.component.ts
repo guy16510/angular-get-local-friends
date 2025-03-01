@@ -81,8 +81,8 @@ export class SearchComponent implements OnInit {
     this.loading = true;
     try {
       const position = await this.geoService.getCurrentPosition();
-      this.lat = position.coords.latitude;
-      this.lng = position.coords.longitude;
+      this.lat = position.lat;
+      this.lng = position.lng;
     } catch (error: any) {
       console.error('Error getting current location:', error);
       this.message = error.message;

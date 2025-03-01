@@ -1,5 +1,6 @@
 // survey.component.ts
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { SURVEY_QUESTIONS, SurveyQuestion } from '../../data/surveyQuestions';
 import { MaterialModule } from '../../shared/material.module';
 import { ReactiveFormsModule, FormBuilder, FormControl, FormGroup, Validators, ValidatorFn, AbstractControl } from '@angular/forms';
@@ -7,6 +8,7 @@ import { CommonModule } from '@angular/common';
 import { ProgressBarComponent } from '../shared/progress-bar/progress-bar.component';
 import { NgxsFormDirective } from '@ngxs/form-plugin';
 import { Store } from '@ngxs/store';
+// import {SaveSurveyAnswers} from '../../store/actions/survey.actions';
 
 /**
  * Custom validator for multiple-select questions.
@@ -35,7 +37,7 @@ export class SurveyComponent implements OnInit {
   pageSize = 10;
   scaleRange: number[] = [];
 
-  constructor(private fb: FormBuilder, private store: Store) {}
+  constructor(private fb: FormBuilder, private store: Store, private router: Router) { }
 
   ngOnInit(): void {
     // Generate the scale range for sliding-scale (replaced with radio buttons 1-10)
@@ -136,10 +138,10 @@ export class SurveyComponent implements OnInit {
     return (this.currentPage + 1) >= this.totalPages;
   }
 
-  onSubmit(): void {
+
+  async onSubmit(): Promise<void> {
     if (this.surveyForm.valid) {
-      console.log("📨 Form submitted!", this.surveyForm.value);
-      //TODO submit to the API, but first ensure user is logged in
+      this.router.navigate(['/account-setup']);
     }
   }
 

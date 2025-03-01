@@ -1,0 +1,48 @@
+.account-setup-container {
+    margin-top: 70px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+  
+  mat-card {
+    width: 100%;
+    max-width: 800px;
+    padding: 20px;
+    text-align: center;
+  }
+  
+  /* Full-width location card */
+  .location-card {
+    width: 100%;
+    background-color: #f5f5f5;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    text-align: center;
+  }
+  
+  .location-text {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  /* Center the button below the location */
+  .button-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 15px;
+  }
+  
+  /* Button styling */
+  .btn-submit {
+    width: 80%;
+    max-width: 300px;
+    height: 4em;
+  }
+.bold{
+  font-weight: bold;
+}

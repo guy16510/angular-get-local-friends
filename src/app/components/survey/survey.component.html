@@ -5,8 +5,7 @@
   <mat-card>
     <mat-card-title>Survey</mat-card-title>
     <mat-card-content>
-      <form [formGroup]="surveyForm" ngxsForm="survey.surveyForm" (ngSubmit)="onSubmit()">
-        <div class="question" *ngFor="let question of paginatedQuestions">
+      <form [formGroup]="surveyForm" ngxsForm="survey.form" ngxsFormDebounce="-1" (ngSubmit)="onSubmit()">        <div class="question" *ngFor="let question of paginatedQuestions">
           <h3>{{ question.question }}</h3>
           <ng-container [ngSwitch]="question.type">
             <!-- Multiple Choice -->

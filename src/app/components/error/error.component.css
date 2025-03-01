@@ -1,0 +1,33 @@
+.not-found-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+  
+  mat-card {
+    width: 100%;
+    max-width: 600px;
+    padding: 20px;
+    text-align: center;
+  }
+  
+  .alert {
+    padding: 15px;
+    border-radius: 5px;
+  }
+  
+  .alert-warning {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+  }
+  
+  .btn-submit {
+    width: 80%;
+    max-width: 300px;
+  }
+  .clickMe{
+    cursor: pointer;
+  }

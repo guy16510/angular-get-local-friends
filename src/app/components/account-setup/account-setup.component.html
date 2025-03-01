@@ -1,0 +1,55 @@
+<main class="account-setup-container">
+  <mat-card>
+    <mat-card-title>You're Almost There!</mat-card-title>
+    <mat-card-content>
+      <p>
+        You've completed your survey, great job! Now, let's make your experience even better.
+        By sharing your location, we can match you with people <strong>nearby</strong> who share your personality and interests. 
+        This means <strong>more meaningful connections</strong> and a better chance of finding like-minded friends!
+      </p>
+
+      <br />
+
+      <!-- Large Full-Width Location Card -->
+      <mat-card class="location-card">
+        <mat-card-title>Your Estimated Location</mat-card-title>
+        <mat-card-content>
+          <p class="location-text">{{ locationMessage }}</p>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Button to Allow Precise Location -->
+      <div class="button-container">
+        <button mat-raised-button color="primary" (click)="requestPreciseLocation()" 
+                *ngIf="!preciseLocationGranted && !(geoLoading$ | async)" class="btn-submit">
+          Use My Precise Location for the Best Matches
+        </button>
+      </div>
+
+      <mat-card class="alert alert-info mt-3" *ngIf="preciseLocationGranted"><p>
+        ✅ Thank you! Your precise location will help us find the <strong>best matches</strong> for you.
+      </p>
+      </mat-card>
+
+      <mat-card class="alert alert-warning mt-3" *ngIf="!preciseLocationGranted">
+        📍 We estimated your location based on your IP, but it might not be exact.
+        <br />
+        For the **best experience**, allow precise location!
+      </mat-card>
+
+      <!-- Show loading while fetching precise location -->
+      <app-loading *ngIf="geoLoading$ | async"></app-loading>
+
+      <!-- Show error if precise location fails -->
+      <mat-card class="alert alert-danger mt-3" *ngIf="geoError$ | async">
+        ❌ {{ geoError$ | async }}
+      </mat-card>
+
+      <br />
+
+      <button mat-raised-button color="accent" (click)="onSubmit()" class="btn-submit" [disabled]="loading$ | async">
+        Continue & Meet People Near You!
+      </button>
+    </mat-card-content>
+  </mat-card>
+</main>
