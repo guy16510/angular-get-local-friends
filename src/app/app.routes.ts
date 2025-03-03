@@ -8,11 +8,17 @@ import { LoginComponent } from './components/login/login.component';
 import { SignUpComponent } from './components/sign-up/sign-up.component';
 import { SearchComponent } from './components/search/search.component';
 import { SurveyComponent } from './components/survey/survey.component';
+import { AccountSetupComponent } from './components/account-setup/account-setup.component';
+import { DashboardComponent } from './components/dashboard/dashboard.component';
 
 export const routes: Routes = [
     {
         path: '',
         component: HomeComponent
+    },
+    {
+        path: 'account-setup',
+        component: AccountSetupComponent
     },
     {
         path: 'survey',
@@ -21,6 +27,11 @@ export const routes: Routes = [
     {
         path: 'contact-us',
         component: ContactUsComponent
+    },
+    {
+        path: 'dashboard',
+        component: DashboardComponent,
+        canActivate: [authGuard]
     },
     {
         path: 'profile',

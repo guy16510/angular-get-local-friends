@@ -1,21 +1,21 @@
-// survey.state.ts
-import { State } from '@ngxs/store';
+import { State, Selector } from '@ngxs/store';
 import { Injectable } from '@angular/core';
 
 export interface SurveyStateModel {
-  surveyForm: {
-    model: { [key: string]: any };
+  form: {
+    model: any;
     dirty: boolean;
     status: string;
-    errors: any;
+    errors: Record<string, any>;
   };
 }
+
 
 @State<SurveyStateModel>({
   name: 'survey',
   defaults: {
-    surveyForm: {
-      model: {}, // Initially, no answers
+    form: {
+      model: {},
       dirty: false,
       status: '',
       errors: {}
@@ -23,4 +23,5 @@ export interface SurveyStateModel {
   }
 })
 @Injectable()
-export class SurveyState {}
+export class SurveyState {
+}
