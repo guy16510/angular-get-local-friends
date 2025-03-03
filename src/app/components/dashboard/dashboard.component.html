@@ -1,3 +1,21 @@
-<p>dashboard works!</p>
-
-<h1>HOFIJSDLFIDSJ</h1>
+<main class="dashboard-container">
+    <!-- <mat-card>
+      <mat-card-title>Dashboard</mat-card-title>
+      <mat-card-content>
+        <p>
+            Now that you have completed the survey. Here is some data about your matches:
+        </p>
+  
+        <br />
+        </mat-card-content>
+    </mat-card>  -->
+    <div class="flex items-center">
+        <mat-form-field class="mr-4" appearance="fill">
+          <mat-label>Item name</mat-label>
+          <input matInput autocomplete="off" [(ngModel)]="newItemName" />
+        </mat-form-field>
+        <div>
+          <button type="button" mat-raised-button color="primary" (click)="addItem()">Add</button>
+        </div>
+      </div>
+</main>

@@ -4,13 +4,13 @@ import { Store, Select } from '@ngxs/store';
 import { SubmitUserProfile } from '../../store/actions/user-profile.actions';
 import { FetchIdentityId } from '../../store/actions/auth.actions';
 import { AuthState } from '../../store/states/auth.state';
-import { UserProfileState } from '../../store/states/user-profile.state';
-import { SurveyState } from '../../store/states/survey.state';
 import { GeolocationService } from '../../services/geolocation.service';
 import { firstValueFrom, Observable } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../shared/material.module';
 import { LoadingComponent } from '../loading/loading.component';
+import { UserProfileState } from '../../store/states/user-profile.state';
+
 
 @Component({
   selector: 'app-account-setup',
@@ -20,9 +20,8 @@ import { LoadingComponent } from '../loading/loading.component';
   standalone: true
 })
 export class AccountSetupComponent implements OnInit {
-  @Select(UserProfileState.loading) loading$!: Observable<boolean>;
-  @Select(UserProfileState.error) error$!: Observable<string | null>;
-  @Select(SurveyState.form) surveyFormData$!: Observable<any>;
+  loading$: Observable<boolean> = this.store.select(state => state.userProfile?.loading ?? false);
+  error$: Observable<string | null> = this.store.select(state => state.userProfile.error);
 
   identityId: string | null = null;
   lat: number | null = null;
@@ -47,15 +46,16 @@ export class AccountSetupComponent implements OnInit {
   }
 
   private async initializeUser(): Promise<void> {
-    this.identityId = this.store.selectSnapshot(AuthState.identityId);
-
-    if (!this.identityId) {
-      console.warn("🚨 No identityId found, redirecting to login");
+    // Check if a user is logged in.
+    const currentUser = this.store.selectSnapshot(AuthState.user);
+    if (!currentUser) {
+      console.warn("🚨 No logged-in user found, redirecting to login");
       this.router.navigate(['/login'], { queryParams: { returnUrl: '/account-setup' } });
       return;
     }
-
-    // Fetch identityId if missing
+  
+    // If user is logged in, get the identityId.
+    this.identityId = this.store.selectSnapshot(AuthState.identityId);
     if (!this.identityId) {
       await firstValueFrom(this.store.dispatch(new FetchIdentityId()));
       this.identityId = this.store.selectSnapshot(AuthState.identityId);
@@ -64,13 +64,13 @@ export class AccountSetupComponent implements OnInit {
 
   async fetchSurveyData(): Promise<void> {
     try {
-      this.surveyAnswers = await firstValueFrom(this.store.select(SurveyState.form));
-
-      if (!this.surveyAnswers || Object.keys(this.surveyAnswers).length === 0) {
+      const surveyFormState = this.store.selectSnapshot(state => state.survey.form); 
+      if(surveyFormState?.status === "VALID") {
+        this.surveyAnswers = surveyFormState.model;
+        console.log("✅ Survey data retrieved:", this.surveyAnswers);
+      } else {
         console.warn("🚨 No survey data found, redirecting...");
         this.router.navigate(['/survey']);
-      } else {
-        console.log("✅ Retrieved Survey Data:", this.surveyAnswers);
       }
     } catch (error) {
       console.error("❌ Error retrieving survey data:", error);
@@ -116,7 +116,6 @@ export class AccountSetupComponent implements OnInit {
       this.router.navigate(['/survey']);
       return;
     }
-
     const payload = {
       identityId: this.identityId!,
       locationLat: this.lat,
@@ -124,8 +123,11 @@ export class AccountSetupComponent implements OnInit {
       surveyQuestions: this.surveyAnswers,
     };
 
-    this.store.dispatch(new SubmitUserProfile(payload)).subscribe(() => {
-      setTimeout(() => this.router.navigate(['/dashboard']), 2000);
+    this.store.dispatch(new SubmitUserProfile(payload)).subscribe((val) => {
+      const userProfile = this.store.selectSnapshot(UserProfileState.profile);
+      console.log("✅ Profile submitted:", userProfile);
+      debugger;
+      // setTimeout(() => this.router.navigate(['/dashboard']), 2000);
     });
   }
 }
