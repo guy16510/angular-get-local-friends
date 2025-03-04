@@ -10,17 +10,16 @@ import { FooterComponent } from './components/shared/footer/footer.component';
 Amplify.configure(outputs);
 
 @Component({
-  selector: 'app-root',
-  standalone: true,
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.css',
-  imports: [
-    RouterOutlet, 
-    AmplifyAuthenticatorModule, 
-    HeaderComponent, 
-    FooterComponent, 
-    ProgressBarComponent
-  ],
+    selector: 'app-root',
+    templateUrl: './app.component.html',
+    styleUrl: './app.component.css',
+    imports: [
+        RouterOutlet,
+        AmplifyAuthenticatorModule,
+        HeaderComponent,
+        FooterComponent,
+        ProgressBarComponent
+    ]
 })
 export class AppComponent {
 

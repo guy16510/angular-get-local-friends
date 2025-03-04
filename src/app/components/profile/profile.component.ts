@@ -20,20 +20,19 @@ import { LoadingComponent } from '../loading/loading.component';
 const client = generateClient<Schema>();
 
 @Component({
-  selector: 'app-profile',
-  standalone: true,
-  imports: [
-    CommonModule,
-    RouterModule,
-    UploadComponent,
-    LoadingComponent,
-    MatCardModule,
-    MatButtonModule,
-    MatListModule,
-    MatIconModule
-  ],
-  templateUrl: './profile.component.html',
-  styleUrls: ['./profile.component.css']
+    selector: 'app-profile',
+    imports: [
+        CommonModule,
+        RouterModule,
+        UploadComponent,
+        LoadingComponent,
+        MatCardModule,
+        MatButtonModule,
+        MatListModule,
+        MatIconModule
+    ],
+    templateUrl: './profile.component.html',
+    styleUrls: ['./profile.component.css']
 })
 export class ProfileComponent implements OnInit {
   // Use the new inject(Store) method to set up selectors.

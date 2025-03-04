@@ -11,11 +11,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 
 @Component({
-  selector: 'app-contact-us',
-  standalone: true,
-  imports: [ReactiveFormsModule,MatIconModule, CommonModule, MatFormFieldModule, MatInputModule, MatError, MatCardModule, MatButtonModule],
-  templateUrl: './contact-us.component.html',
-  styleUrl: './contact-us.component.css'
+    selector: 'app-contact-us',
+    imports: [ReactiveFormsModule, MatIconModule, CommonModule, MatFormFieldModule, MatInputModule, MatError, MatCardModule, MatButtonModule],
+    templateUrl: './contact-us.component.html',
+    styleUrl: './contact-us.component.css'
 })
 export class ContactUsComponent {
   contactForm: FormGroup;

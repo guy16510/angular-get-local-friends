@@ -3,16 +3,15 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-loading',
-  standalone: true,
-  imports: [CommonModule],
-  template: `
+    selector: 'app-loading',
+    imports: [CommonModule],
+    template: `
     <div class="loading-overlay">
       <div class="spinner"></div>
       <div>Loading...</div>
     </div>
   `,
-  styles: [`
+    styles: [`
     .loading-overlay {
       position: fixed;
       top: 0;

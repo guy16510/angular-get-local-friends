@@ -10,19 +10,18 @@ import { Store } from '@ngxs/store';
 import { AuthState } from '../../store/states/auth.state';
 
 @Component({
-  standalone: true,
-  selector: 'app-upload-image',
-  templateUrl: './image-upload.component.html',
-  styleUrls: ['./image-upload.component.css'],
-  imports: [
-    CommonModule,
-    MatGridTile,
-    MatGridList,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatSnackBarModule
-  ]
+    selector: 'app-upload-image',
+    templateUrl: './image-upload.component.html',
+    styleUrls: ['./image-upload.component.css'],
+    imports: [
+        CommonModule,
+        MatGridTile,
+        MatGridList,
+        MatFormFieldModule,
+        MatInputModule,
+        MatButtonModule,
+        MatSnackBarModule
+    ]
 })
 export class UploadComponent {
   selectedFile?: File;

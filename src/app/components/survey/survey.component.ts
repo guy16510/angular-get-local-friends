@@ -24,11 +24,10 @@ export function minLengthArray(min: number): ValidatorFn {
 }
 
 @Component({
-  selector: 'app-survey',
-  templateUrl: './survey.component.html',
-  styleUrls: ['./survey.component.css'],
-  standalone: true,
-  imports: [MaterialModule, CommonModule, ReactiveFormsModule, ProgressBarComponent, NgxsFormDirective]
+    selector: 'app-survey',
+    templateUrl: './survey.component.html',
+    styleUrls: ['./survey.component.css'],
+    imports: [MaterialModule, CommonModule, ReactiveFormsModule, ProgressBarComponent, NgxsFormDirective]
 })
 export class SurveyComponent implements OnInit {
   surveyForm!: FormGroup;

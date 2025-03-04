@@ -5,11 +5,10 @@ import { MatCardModule, MatCardContent } from '@angular/material/card';
 import { FileService } from '../../services/file.service';
 
 @Component({
-  selector: 'app-image-display',
-  standalone: true,
-  imports: [MatGridTile, MatGridList, MatCardModule, MatCardContent, CommonModule],
-  templateUrl: './image-display.component.html',
-  styleUrl: './image-display.component.css'
+    selector: 'app-image-display',
+    imports: [MatGridTile, MatGridList, MatCardModule, MatCardContent, CommonModule],
+    templateUrl: './image-display.component.html',
+    styleUrl: './image-display.component.css'
 })
 export class ImageDisplayComponent implements OnInit {
   @Input() identityId: string = '';

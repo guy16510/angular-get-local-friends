@@ -13,11 +13,10 @@ import { UserProfileState } from '../../store/states/user-profile.state';
 
 
 @Component({
-  selector: 'app-account-setup',
-  templateUrl: './account-setup.component.html',
-  styleUrls: ['./account-setup.component.css'],
-  imports: [CommonModule, MaterialModule, LoadingComponent],
-  standalone: true
+    selector: 'app-account-setup',
+    templateUrl: './account-setup.component.html',
+    styleUrls: ['./account-setup.component.css'],
+    imports: [CommonModule, MaterialModule, LoadingComponent]
 })
 export class AccountSetupComponent implements OnInit {
   loading$: Observable<boolean> = this.store.select(state => state.userProfile?.loading ?? false);

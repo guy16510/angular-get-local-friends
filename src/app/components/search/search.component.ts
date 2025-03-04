@@ -14,11 +14,10 @@ import { ImageDisplayComponent } from '../image-display/image-display.component'
 const client = generateClient<Schema>();
 
 @Component({
-  selector: 'app-search',
-  standalone: true,
-  imports: [CommonModule, FormsModule, LoadingComponent, MatGridListModule, MatCardModule, ImageDisplayComponent],
-  templateUrl: './search.component.html',
-  styleUrls: ['./search.component.css']
+    selector: 'app-search',
+    imports: [CommonModule, FormsModule, LoadingComponent, MatGridListModule, MatCardModule, ImageDisplayComponent],
+    templateUrl: './search.component.html',
+    styleUrls: ['./search.component.css']
 })
 export class SearchComponent implements OnInit {
   lat!: number;

@@ -9,11 +9,10 @@ import { AuthState } from '../../../store/states/auth.state';
 import { Logout } from '../../../store/actions/auth.actions';
 
 @Component({
-  selector: 'app-header',
-  standalone: true,
-  imports: [RouterModule, MatIconModule, CommonModule,],
-  templateUrl: './header.component.html',
-  styleUrl: './header.component.css'
+    selector: 'app-header',
+    imports: [RouterModule, MatIconModule, CommonModule,],
+    templateUrl: './header.component.html',
+    styleUrl: './header.component.css'
 })
 export class HeaderComponent{
   @Select(AuthState.isLoggedIn) isLoggedIn$!: Observable<boolean>;
