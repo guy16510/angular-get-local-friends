@@ -10,6 +10,8 @@ import { SearchComponent } from './components/search/search.component';
 import { SurveyComponent } from './components/survey/survey.component';
 import { AccountSetupComponent } from './components/account-setup/account-setup.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
+import { ChatComponent } from './components/chat/chat.component';
+import { ChatListComponent } from './components/chat-list/chat-list.component';
 
 export const routes: Routes = [
     {
@@ -19,6 +21,14 @@ export const routes: Routes = [
     {
         path: 'account-setup',
         component: AccountSetupComponent
+    },
+    {
+        path: 'chat',
+        component: ChatComponent
+    },
+    {
+        path: 'chatList',
+        component: ChatListComponent
     },
     {
         path: 'survey',

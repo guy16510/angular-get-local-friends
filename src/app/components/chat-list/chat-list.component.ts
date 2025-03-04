@@ -5,11 +5,16 @@ import { Observable } from 'rxjs';
 import {SetConversations, SetConversationsError, SetConversationsLoading} from '../../store/actions/chat.actions';
 import { ChatState } from '../../store/states/chat.state'; // Assume you have defined these actions
 import { Conversation } from '../../models/chat'; // Your Conversation interface
+import { MaterialModule } from '../../shared/material.module';
+import { CommonModule } from '@angular/common';
+import { LoadingComponent } from '../loading/loading.component';
 
 @Component({
   selector: 'app-chat-list',
   templateUrl: './chat-list.component.html',
-  styleUrls: ['./chat-list.component.scss']
+  styleUrls: ['./chat-list.component.scss'],
+  imports: [MaterialModule, CommonModule, LoadingComponent],
+  standalone: true
 })
 export class ChatListComponent implements OnInit {
   @Select(ChatState.getConversations) conversations$!: Observable<Conversation[]>;

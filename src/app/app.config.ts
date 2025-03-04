@@ -12,13 +12,20 @@ import { UserProfileState } from './store/states/user-profile.state';
 import { withNgxsLoggerPlugin } from '@ngxs/logger-plugin';
 import { TodoState } from './store/states/todo.state';
 import { withNgxsStoragePlugin } from '@ngxs/storage-plugin';
+import { ChatState } from './store/states/chat.state';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
     provideAnimationsAsync(),
-    provideStore(
-      [ProgressState, AuthState, SurveyState, UserProfileState, TodoState],
+    provideStore([
+        ProgressState, 
+        AuthState, 
+        SurveyState, 
+        UserProfileState, 
+        TodoState, 
+        ChatState
+      ],
       withNgxsReduxDevtoolsPlugin({ name: 'GetLocalFriends' }),
       withNgxsLoggerPlugin(),
       withNgxsFormPlugin(),

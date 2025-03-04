@@ -5,11 +5,17 @@ import { Select, Store } from '@ngxs/store';
 import { ChatState} from '../../store/states/chat.state';
 import { AddMessage, SetMessagesLoading, SetMessagesError } from '../../store/actions/chat.actions';
 import { ChatMessage } from '../../models/chat'; // Your ChatMessage model interface
+import { MaterialModule } from '../../shared/material.module';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { LoadingComponent } from '../loading/loading.component';
 
 @Component({
   selector: 'app-chat',
   templateUrl: './chat.component.html',
-  styleUrls: ['./chat.component.scss']
+  styleUrls: ['./chat.component.scss'],
+  imports: [MaterialModule, CommonModule, FormsModule, LoadingComponent],
+  standalone: true
 })
 export class ChatComponent implements OnInit, OnDestroy {
   // Example conversationId; in a real app, you’d determine this dynamically.
