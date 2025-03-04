@@ -148,3 +148,7 @@ This project is licensed under the MIT License.
     - add bio about user
     - add spirit animal that user is, and what they are looking for
 - add social share badge.
+
+- AMPLIFY
+    - update all chat to leverage permissions based on array of strings.
+        - I would add now, however, i'm working I will mess with it more then working on the overall functionality.

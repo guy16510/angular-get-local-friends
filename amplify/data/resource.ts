@@ -133,7 +133,13 @@ const schema = a.schema({
       senderId: a.string().required(),
       recipientId: a.string().required(),
       text: a.string().required(),
-    }),
+    })
+    .authorization(allow => [allow.authenticated()]),
+    /**
+     * TODO update both chats to leverage this sort of model.
+     *   owners: a.string().array().required()  // New: list of owners (Cognito IDs)
+    *      }).authorization(allow => [allow.owner({ ownerField: 'owners', identityClaim: 'sub' })]),
+     */
   
   // Conversation model for conversation summaries.
   Conversation: a.model({
