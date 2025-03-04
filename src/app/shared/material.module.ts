@@ -22,6 +22,7 @@ import { MatSliderModule } from '@angular/material/slider';
     MatSlideToggleModule,
     MatButtonToggleModule,
     MatSliderModule,
+    MatProgressBarModule
   ]
 })
 export class MaterialModule {}

@@ -8,11 +8,12 @@ import { MatInputModule } from '@angular/material/input';
 import { MatCardModule } from '@angular/material/card';
 import { MatError } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-contact-us',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, MatFormFieldModule, MatInputModule, MatError, MatCardModule, MatButtonModule],
+  imports: [ReactiveFormsModule,MatIconModule, CommonModule, MatFormFieldModule, MatInputModule, MatError, MatCardModule, MatButtonModule],
   templateUrl: './contact-us.component.html',
   styleUrl: './contact-us.component.css'
 })

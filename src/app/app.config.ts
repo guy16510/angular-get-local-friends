@@ -11,6 +11,7 @@ import { SurveyState } from './store/states/survey.state';
 import { UserProfileState } from './store/states/user-profile.state';
 import { withNgxsLoggerPlugin } from '@ngxs/logger-plugin';
 import { TodoState } from './store/states/todo.state';
+import { withNgxsStoragePlugin } from '@ngxs/storage-plugin';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -20,7 +21,8 @@ export const appConfig: ApplicationConfig = {
       [ProgressState, AuthState, SurveyState, UserProfileState, TodoState],
       withNgxsReduxDevtoolsPlugin({ name: 'GetLocalFriends' }),
       withNgxsLoggerPlugin(),
-      withNgxsFormPlugin()
+      withNgxsFormPlugin(),
+      // withNgxsStoragePlugin({ keys: ['auth', 'todos'] }),
     )
   ]
 };
