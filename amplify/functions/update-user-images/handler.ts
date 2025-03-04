@@ -11,16 +11,24 @@ if (!TABLE_NAME || TABLE_NAME.length === 0) {
 
 export const handler: Schema["updateUserImages"]["functionHandler"] = async (event) => {
   const { identityId, images } = event.arguments;
+  
   if (!identityId) {
     throw new Error("identityId is required");
   }
+
+  // Ensure primary key is correct
+  const key = { id: identityId };
+
+  // Check if the user profile exists before updating
+  const existingItem = await docClient.get({ TableName: TABLE_NAME, Key: key }).promise();
   
-  // The 'images' argument is expected to be an array of S3 keys/URLs.
-  // When files are uploaded with level "protected", Amplify automatically prefixes the key with the user's identity.
-  
+  if (!existingItem.Item) {
+    throw new Error(`UserProfile with id ${identityId} does not exist. Cannot update images.`);
+  }
+
   const params = {
     TableName: TABLE_NAME,
-    Key: { identityId },
+    Key: key,
     UpdateExpression: 'set images = :imgs, updatedAt = :upd, lastUpdated = :upd',
     ExpressionAttributeValues: {
       ':imgs': images,
@@ -28,7 +36,7 @@ export const handler: Schema["updateUserImages"]["functionHandler"] = async (eve
     },
     ReturnValues: 'UPDATED_NEW'
   };
-  
+
   await docClient.update(params).promise();
   
   return `UserProfile for ${identityId} updated with images successfully.`;

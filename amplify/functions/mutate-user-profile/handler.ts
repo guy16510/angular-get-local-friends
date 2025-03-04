@@ -4,7 +4,7 @@ import AWS from 'aws-sdk';
 import ngeohash from 'ngeohash';
 
 const docClient = new AWS.DynamoDB.DocumentClient();
-// Construct the table name dynamically using bracket notation
+// Construct the table name dynamically using an environment variable
 const TABLE_NAME = process.env['USER_PROFILE_TABLE_NAME'] || null;
 
 if (!TABLE_NAME || TABLE_NAME.length === 0) {
@@ -12,78 +12,78 @@ if (!TABLE_NAME || TABLE_NAME.length === 0) {
   throw new Error("Missing environment variable: USER_PROFILE_TABLE_NAME");
 }
 
-// Use a fixed precision for simplicity
+// Use a fixed precision for geospatial encoding
 const GEO_PRECISION = 7;
 
 export const handler: Schema["mutateUserProfile"]["functionHandler"] = async (event) => {
   // Expect a JSON-encoded payload along with an action
   const { action, payload: payloadStr } = event.arguments;
-  
+
   if (!action || !['create', 'update', 'delete'].includes(action)) {
     throw new Error("Invalid action. Must be 'create', 'update', or 'delete'");
   }
-  
+
   let payload: any;
   try {
     payload = JSON.parse(payloadStr);
   } catch (err) {
-    throw new Error("payload must be a valid JSON string");
+    throw new Error("Payload must be a valid JSON string");
   }
-  
+
   const { identityId, locationLat, locationLng, surveyAnswers } = payload;
-  
+
   if (!identityId || typeof identityId !== 'string') {
-    throw new Error("payload must include a identityId (string)");
+    throw new Error("Payload must include an identityId (string)");
   }
-  
+
   const now = new Date().toISOString();
-  
+
   if (action === 'create') {
-    // For create, we require locationLat and locationLng
+    // For create, require locationLat and locationLng
     if (typeof locationLat !== 'number' || typeof locationLng !== 'number') {
       throw new Error("For create, payload must include locationLat and locationLng as numbers");
     }
-    
+
     // Compute geospatial fields
     const geohash = ngeohash.encode(locationLat, locationLng, GEO_PRECISION);
     const rangeKey = `${geohash}#${identityId}`; // Example concatenation
     const geoPrecision = GEO_PRECISION;
-    
+
     const params: AWS.DynamoDB.DocumentClient.PutItemInput = {
       TableName: TABLE_NAME,
       Item: {
-        id: identityId,  // Use 'id' instead of 'identityId' if your table requires it
-        identityId,      // Keep identityId for tracking, but 'id' is the PK
+        id: identityId, // Ensure `id` is used as the primary key
+        identityId,
         locationLat,
         locationLng,
         geohash,
         rangeKey,
         geoPrecision,
-        surveyAnswers, // ✅ Stores survey answers as an array (No processing)
-        createdAt: now,  // Add createdAt timestamp
-        updatedAt: now,  // Add updatedAt timestamp
-        lastUpdated: now, // Keep for consistency
+        surveyAnswers, // ✅ Store survey answers as an array
+        createdAt: now,  // Track creation time
+        updatedAt: now,  // Track last update time
+        lastUpdated: now,
       },
-      ConditionExpression: 'attribute_not_exists(id)', // fail if already exists
+      ReturnValues: "ALL_OLD", // ✅ Allows overwriting without condition failure
     };
-    
+
     await docClient.put(params).promise();
     return `UserProfile for ${identityId} created successfully.`;
-    
+
   } else if (action === 'update') {
-    // For update, we also require locationLat and locationLng
+    // Ensure required fields exist
     if (typeof locationLat !== 'number' || typeof locationLng !== 'number') {
       throw new Error("For update, payload must include locationLat and locationLng as numbers");
     }
-    
-    // Recompute geospatial fields
+
+    // Compute geospatial fields
     const geohash = ngeohash.encode(locationLat, locationLng, GEO_PRECISION);
     const rangeKey = `${geohash}#${identityId}`;
     const geoPrecision = GEO_PRECISION;
-    
+
     const params: AWS.DynamoDB.DocumentClient.UpdateItemInput = {
       TableName: TABLE_NAME,
-      Key: { identityId },
+      Key: { id: identityId }, // ✅ Use the correct key
       UpdateExpression: 'set locationLat = :lat, locationLng = :lng, geohash = :gh, rangeKey = :rk, geoPrecision = :gp, lastUpdated = :lu',
       ExpressionAttributeValues: {
         ':lat': locationLat,
@@ -93,23 +93,22 @@ export const handler: Schema["mutateUserProfile"]["functionHandler"] = async (ev
         ':gp': geoPrecision,
         ':lu': now,
       },
-      ConditionExpression: 'attribute_exists(identityId)', // update only if exists
+      ReturnValues: "ALL_NEW",
     };
-    
+
     await docClient.update(params).promise();
     return `UserProfile for ${identityId} updated successfully.`;
-    
+
   } else if (action === 'delete') {
     // For delete, only identityId is required.
     const params: AWS.DynamoDB.DocumentClient.DeleteItemInput = {
       TableName: TABLE_NAME,
-      Key: { identityId },
-      ConditionExpression: 'attribute_exists(identityId)', // delete only if exists
+      Key: { id: identityId }, // ✅ Use correct key
     };
-    
+
     await docClient.delete(params).promise();
     return `UserProfile for ${identityId} deleted successfully.`;
   }
-  
+
   throw new Error("Unhandled action");
 };
