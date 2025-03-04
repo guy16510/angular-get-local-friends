@@ -1,0 +1,13 @@
+<div class="chat-container" fxLayout="column" fxLayoutGap="16px">
+    <div class="messages" style="overflow-y: auto; flex: 1;">
+      <div *ngFor="let msg of (messages$ | async)" class="message" style="padding: 8px; border-bottom: 1px solid #eee;">
+        <span class="user" style="font-weight: bold;">{{ msg.userId }}:</span>
+        <span class="text">{{ msg.text }}</span>
+        <span class="timestamp" style="font-size: 0.8em; color: gray; margin-left: 8px;">{{ msg.timestamp | date:'shortTime' }}</span>
+      </div>
+    </div>
+    <div class="input" fxLayout="row" fxLayoutAlign="start center" style="padding: 8px;">
+      <input [(ngModel)]="newMessage" placeholder="Type your message..." style="flex: 1; padding: 8px;"/>
+      <button mat-raised-button color="primary" (click)="sendMessage()">Send</button>
+    </div>
+  </div>

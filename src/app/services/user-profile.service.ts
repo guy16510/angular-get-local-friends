@@ -16,9 +16,8 @@ export class UserProfileService {
    * @param payload The user profile data to submit.
    * @returns An Observable emitting the UserProfile returned by the API.
    */
-  submitUserProfile(payload: UserProfile): Observable<UserProfile> {
+  submitUserProfile(payload: UserProfile): Observable<any> {
     console.log("Sumbitting user profile via api")
-    debugger;
     return from(
       client.mutations.mutateUserProfile({
         action: 'create',
@@ -33,8 +32,8 @@ export class UserProfileService {
         // If result.data exists, try to parse it into a UserProfile
         if (result.data) {
           try {
-            const profile = JSON.parse(result.data) as UserProfile;
-            return profile;
+            // const profile = JSON.parse(result.data) as UserProfile;
+            return result.data;
           } catch (error) {
             console.error('Error parsing API response:', error);
             // Fallback: return the original payload if parsing fails

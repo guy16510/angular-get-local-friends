@@ -5,6 +5,20 @@ import { mutateUserProfile } from '../functions/mutate-user-profile/resource';
 import { updateUserImages } from '../functions/update-user-images/resource';
 import { getUserProfile } from '../functions/get-user-profile/resource';
 import { findPremiumMatches } from '../functions/find-premium-matches/resource';
+import { createMessage } from '../functions/create-message/resource';
+import { listConversations } from '../functions/list-conversations/resource';
+
+/*== DATA MODEL ===============================================================
+This schema defines several models. In addition to existing models, we add:
+  • Chat operations:
+       - createMessage mutation (and onCreateMessage subscription)
+       - listConversations query
+  • ChatMessage model for one-to-one messaging.
+      Fields: conversationId (composite key), timestamp, senderId, recipientId, text.
+      (Key generation is handled in the function handler.)
+  • Conversation model for conversation summaries.
+      Fields: conversationId, participantA, participantB, lastMessage, lastTimestamp.
+=============================================================================*/
 
 /*== DATA MODEL ===============================================================
 This schema defines several models. In addition to existing models, we add a
@@ -87,6 +101,50 @@ const schema = a.schema({
     .handler(a.handler.function(updateUserImages))
     .authorization(allow => [allow.authenticated()]),
 
+  // --- Chat Operations ---
+  createMessage: a
+    .mutation()
+    .arguments({ 
+      senderId: a.string().required(), 
+      recipientId: a.string().required(), 
+      text: a.string().required() 
+    })
+    .returns(a.string())
+    .handler(a.handler.function(createMessage))
+    .authorization(allow => [allow.authenticated()]),
+  
+  onCreateMessage: a
+    .subscription()
+    .handler(a.handler.function(createMessage))
+    .authorization(allow => [allow.authenticated()]),
+
+  listConversations: a
+    .query()
+    .arguments({ userId: a.string().required() })
+    .returns(a.string())
+    .handler(a.handler.function(listConversations))
+    .authorization(allow => [allow.authenticated()]),
+  
+  ChatMessage: a
+    .model({
+      conversationId: a.string().required(),  // composite key computed in the handler
+      timestamp: a.datetime().required(),
+      senderId: a.string().required(),
+      recipientId: a.string().required(),
+      text: a.string().required(),
+    }),
+  
+  // Conversation model for conversation summaries.
+  Conversation: a.model({
+    conversationId: a.string().required(),
+    participantA: a.string().required(),
+    participantB: a.string().required(),
+    lastMessage: a.string().required(),
+    lastTimestamp: a.datetime().required(),
+  })
+    .secondaryIndexes(index => [ index('participantA').sortKeys(['lastTimestamp']) ])
+    .authorization(allow => [allow.owner()]),
+  
   UserProfile: a
     .model({
       identityId: a.string().required(),        // Unique user ID
@@ -118,6 +176,8 @@ const schema = a.schema({
       allow.authenticated().to(['create']),
     ]),
 });
+
+
 
 export type Schema = ClientSchema<typeof schema>;
 

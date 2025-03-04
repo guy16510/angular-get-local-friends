@@ -139,3 +139,12 @@ Please follow best practices for serverless development and GraphQL schema desig
 
 ## License
 This project is licensed under the MIT License.
+
+
+
+## TODOs
+- User Profile:
+    - add users Name to list of things
+    - add bio about user
+    - add spirit animal that user is, and what they are looking for
+- add social share badge.

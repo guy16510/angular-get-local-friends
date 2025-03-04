@@ -1,21 +1,33 @@
-<main class="dashboard-container">
-    <!-- <mat-card>
-      <mat-card-title>Dashboard</mat-card-title>
-      <mat-card-content>
-        <p>
-            Now that you have completed the survey. Here is some data about your matches:
-        </p>
-  
-        <br />
-        </mat-card-content>
-    </mat-card>  -->
-    <div class="flex items-center">
-        <mat-form-field class="mr-4" appearance="fill">
-          <mat-label>Item name</mat-label>
-          <input matInput autocomplete="off" [(ngModel)]="newItemName" />
-        </mat-form-field>
-        <div>
-          <button type="button" mat-raised-button color="primary" (click)="addItem()">Add</button>
-        </div>
-      </div>
-</main>
+<div class="dashboard-container" fxLayout="row wrap" fxLayoutGap="16px">
+  <!-- Composite Overall Profile Chart -->
+  <app-chart-d3
+    [title]="'Overall Profile Composite'"
+    chartType="bar"
+    [data]="compositeChartData"
+    [labels]="compositeChartLabels"
+    [width]="500"
+    [height]="300">
+  </app-chart-d3>
+
+  <div *ngFor="let insight of questionInsights" 
+  class="question-insight" 
+  fxLayout="row" 
+  fxLayoutAlign="start center"
+  style="padding: 8px; border-bottom: 1px solid #ccc;">
+<!-- Left: Question icon based on the question text -->
+<mat-icon style="margin-right: 8px;">{{ insight.questionIcon }}</mat-icon>
+<div style="flex: 1;">
+ <div style="font-weight: bold;">{{ insight.question }}</div>
+ <!-- Show answer if available -->
+ <div *ngIf="insight.answer">
+   Answer: {{ insight.answer }}
+ </div>
+ <!-- If an ordered response, show a progress bar -->
+ <div *ngIf="insight.progress !== undefined">
+   <mat-progress-bar mode="determinate" [value]="insight.progress"></mat-progress-bar>
+ </div>
+</div>
+<!-- Right: Type icon -->
+<mat-icon style="margin-left: 8px;">{{ insight.typeIcon }}</mat-icon>
+</div>
+</div>

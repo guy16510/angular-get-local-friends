@@ -15,10 +15,9 @@
     </label>
 
     <nav class="nav-links">
-      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
-      <a routerLink="/survey" routerLinkActive="active">Survey</a>
-      <a routerLink="/contact-us" routerLinkActive="active">Contact Us</a>
+    
       <ng-container *ngIf="(isLoggedIn$ | async); else loggedOut">
+        <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
         <a routerLink="/search" routerLinkActive="active">Search</a>
 
         <!-- Profile dropdown (desktop hover, mobile integrated) -->
@@ -26,7 +25,7 @@
           <mat-icon>person</mat-icon>
           <div class="profile-dropdown">
             <div>
-              <a routerLink="/profile">Profile</a>
+              <a routerLink="/profile">My Profile</a>
             </div>
             <div>
               <a class="signOut" (click)="signOut()">Logout</a>
@@ -35,6 +34,9 @@
         </div>
       </ng-container>
       <ng-template #loggedOut>
+        <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
+        <a routerLink="/survey" routerLinkActive="active">Survey</a>
+        <a routerLink="/contact-us" routerLinkActive="active">Contact Us</a>
         <a routerLink="/sign-up" routerLinkActive="active">Sign Up</a>
         <!-- <a routerLink="/login" routerLinkActive="active">Login</a> -->
       </ng-template>
