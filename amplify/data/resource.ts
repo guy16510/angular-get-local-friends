@@ -18,9 +18,7 @@ This schema defines several models. In addition to existing models, we add:
       (Key generation is handled in the function handler.)
   • Conversation model for conversation summaries.
       Fields: conversationId, participantA, participantB, lastMessage, lastTimestamp.
-=============================================================================*/
 
-/*== DATA MODEL ===============================================================
 This schema defines several models. In addition to existing models, we add a
 UserProfile model with geospatial fields and an images field to store S3 keys:
   - identityId: Unique user ID
@@ -119,7 +117,8 @@ const schema = a.schema({
     .handler(a.handler.function(createMessage))
     .authorization(allow => [allow.authenticated()]),
 
-  listConversations: a
+  // Add your custom listConversations query under a new name to avoid conflict.
+  customListConversations: a
     .query()
     .arguments({ userId: a.string().required() })
     .returns(a.string())

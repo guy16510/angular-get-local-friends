@@ -2,7 +2,7 @@ import { DynamoDB } from 'aws-sdk';
 import type { Schema } from '../../data/resource';
 const docClient = new DynamoDB.DocumentClient();
 
-export const handler: Schema["listConversations"]["functionHandler"] = async (event) => {
+export const handler: Schema["customListConversations"]["functionHandler"] = async (event) => {
   // Expect a userId argument to filter conversations.
   const { userId } = event.arguments;
   
