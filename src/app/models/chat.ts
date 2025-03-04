@@ -1,6 +1,15 @@
 export interface ChatMessage {
-    id: string;
-    userId: string;
-    text: string;
-    timestamp: string;
-  }
+  conversationId: string;
+  timestamp: string;
+  senderId: string;
+  recipientId: string;
+  text: string;
+}
+
+export interface Conversation {
+  conversationId: string;
+  participantA: string;
+  participantB: string;
+  lastMessage: string;
+  lastTimestamp: string;
+}

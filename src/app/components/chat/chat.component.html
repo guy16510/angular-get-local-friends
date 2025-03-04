@@ -1,13 +1,27 @@
-<div class="chat-container" fxLayout="column" fxLayoutGap="16px">
-    <div class="messages" style="overflow-y: auto; flex: 1;">
-      <div *ngFor="let msg of (messages$ | async)" class="message" style="padding: 8px; border-bottom: 1px solid #eee;">
-        <span class="user" style="font-weight: bold;">{{ msg.userId }}:</span>
-        <span class="text">{{ msg.text }}</span>
-        <span class="timestamp" style="font-size: 0.8em; color: gray; margin-left: 8px;">{{ msg.timestamp | date:'shortTime' }}</span>
-      </div>
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>Conversation</mat-card-title>
+  </mat-card-header>
+  <mat-card-content style="max-height: 400px; overflow-y: auto;">
+    <div *ngIf="(loading$ | async)">
+      <mat-spinner diameter="30"></mat-spinner>
     </div>
-    <div class="input" fxLayout="row" fxLayoutAlign="start center" style="padding: 8px;">
-      <input [(ngModel)]="newMessage" placeholder="Type your message..." style="flex: 1; padding: 8px;"/>
-      <button mat-raised-button color="primary" (click)="sendMessage()">Send</button>
+    <div *ngIf="(error$ | async) as err">
+      <p style="color: red;">Error: {{ err }}</p>
     </div>
-  </div>
+    <div *ngFor="let msg of (messages$ | async)">
+      <p>
+        <strong>{{ msg.senderId }}</strong>: {{ msg.text }}
+        <span style="font-size: 0.8em; color: gray;">
+          {{ msg.timestamp | date:'shortTime' }}
+        </span>
+      </p>
+    </div>
+  </mat-card-content>
+  <mat-card-actions fxLayout="row" fxLayoutAlign="start center">
+    <mat-form-field style="flex: 1;">
+      <input matInput placeholder="Type your message" [(ngModel)]="newMessage">
+    </mat-form-field>
+    <button mat-raised-button color="primary" (click)="sendMessage()">Send</button>
+  </mat-card-actions>
+</mat-card>

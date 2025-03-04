@@ -113,9 +113,10 @@ const schema = a.schema({
     .handler(a.handler.function(createMessage))
     .authorization(allow => [allow.authenticated()]),
   
-    onCreateMessage: a
+  onCreateMessage: a
     .subscription()
     .for(a.ref('createMessage'))
+    .handler(a.handler.function(createMessage))
     .authorization(allow => [allow.authenticated()]),
 
   listConversations: a
