@@ -4,6 +4,7 @@ import { findNearbyUsers } from '../functions/find-nearby-users/resource';
 import { mutateUserProfile } from '../functions/mutate-user-profile/resource';
 import { updateUserImages } from '../functions/update-user-images/resource';
 import { getUserProfile } from '../functions/get-user-profile/resource';
+import { findPremiumMatches } from '../functions/find-premium-matches/resource';
 
 /*== DATA MODEL ===============================================================
 This schema defines several models. In addition to existing models, we add a
@@ -15,6 +16,7 @@ UserProfile model with geospatial fields and an images field to store S3 keys:
   - geoPrecision: (Optional) The precision/length of the geohash
   - lastUpdated: Timestamp for the last update
   - images: Array of S3 keys or URLs for the user’s images
+  - surveyAnswers: Array of survey answers
 =============================================================================*/
 const schema = a.schema({
   sayHello: a
@@ -37,6 +39,22 @@ const schema = a.schema({
     .authorization(allow => [
       allow.guest(),
       allow.authenticated(),
+    ]),
+
+
+  findPremiumMatches: a
+    .query()
+    .arguments({
+      lat: a.float().required(),
+      lng: a.float().required(),
+      radius: a.float().required(),
+      surveyFilter: a.json().required(), // ✅ Using JSON to store the array structure
+      nextToken: a.string(), // Optional pagination token
+    })
+    .returns(a.string()) // Returns JSON string with { premiumMatches, nextToken }
+    .handler(a.handler.function(findPremiumMatches))
+    .authorization(allow => [
+      allow.authenticated(), // Premium users only
     ]),
 
   fetchUserProfile: a
@@ -80,7 +98,8 @@ const schema = a.schema({
       lastUpdated: a.datetime().required(),   // Last update timestamp
       createdAt: a.datetime(),                // Add createdAt timestamp
       updatedAt: a.datetime(),                // Add updatedAt timestamp
-      images: a.string().array()              // Array of S3 keys/URLs for images
+      images: a.string().array(),              // Array of S3 keys/URLs for images
+      surveyAnswers: a.json().required(),      // ✅ Using JSON to store the array structure
     })
     .authorization(allow => [allow.owner()])
     .secondaryIndexes(index => [index('geohash').sortKeys(['rangeKey'])]),

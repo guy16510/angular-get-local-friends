@@ -65,7 +65,8 @@ export class AccountSetupComponent implements OnInit {
     try {
       const surveyFormState = this.store.selectSnapshot(state => state.survey.form); 
       if(surveyFormState?.status === "VALID") {
-        this.surveyAnswers = surveyFormState.model;
+        this.surveyAnswers = this.formatSurveyAnswers(surveyFormState.model);
+        // this.surveyAnswers = surveyFormState.model;
         console.log("✅ Survey data retrieved:", this.surveyAnswers);
       } else {
         console.warn("🚨 No survey data found, redirecting...");
@@ -75,6 +76,15 @@ export class AccountSetupComponent implements OnInit {
       console.error("❌ Error retrieving survey data:", error);
       this.router.navigate(['/survey']);
     }
+  }
+
+  formatSurveyAnswers(obj: any) {
+    return Object.entries(obj).flatMap(([key, value]) => {
+      if (Array.isArray(value)) {
+        return value.map(answer => ({ questionId: Number(key), answer }));
+      } 
+      return { questionId: Number(key), answer: value };
+    });
   }
 
   private async fetchLocation(): Promise<void> {
@@ -119,7 +129,7 @@ export class AccountSetupComponent implements OnInit {
       identityId: this.identityId!,
       locationLat: this.lat,
       locationLng: this.lng,
-      surveyQuestions: this.surveyAnswers,
+      surveyAnswers: this.surveyAnswers,
     };
 
     this.store.dispatch(new SubmitUserProfile(payload)).subscribe((val) => {

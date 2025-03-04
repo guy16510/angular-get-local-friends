@@ -3,18 +3,15 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { CommonModule } from '@angular/common';
 import { generateClient } from 'aws-amplify/api';
 import type { Schema } from '../../../../amplify/data/resource';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatCardModule } from '@angular/material/card';
+import { MaterialModule } from '../../shared/material.module';
 import { MatError } from '@angular/material/form-field';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 
 @Component({
     selector: 'app-contact-us',
-    imports: [ReactiveFormsModule, MatIconModule, CommonModule, MatFormFieldModule, MatInputModule, MatError, MatCardModule, MatButtonModule],
+    imports: [ReactiveFormsModule, CommonModule, MaterialModule, MatError],
     templateUrl: './contact-us.component.html',
-    styleUrl: './contact-us.component.css'
+    styleUrl: './contact-us.component.css',
+    standalone: true
 })
 export class ContactUsComponent {
   contactForm: FormGroup;

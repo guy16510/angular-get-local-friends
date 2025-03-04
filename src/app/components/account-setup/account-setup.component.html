@@ -41,7 +41,7 @@
       <app-loading *ngIf="geoLoading$ | async"></app-loading>
 
       <!-- Show error if precise location fails -->
-      <mat-card class="alert alert-danger mt-3" *ngIf="geoError$ | async">
+      <mat-card class="alert alert-danger mt-3" *ngIf="(geoError$ || error$ )| async">
         ❌ {{ geoError$ | async }}
       </mat-card>
 

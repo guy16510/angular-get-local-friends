@@ -10,9 +10,11 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatSliderModule } from '@angular/material/slider';
+import { MatIconModule } from '@angular/material/icon';
 
 @NgModule({
   exports: [
+    MatIconModule,
     MatCheckboxModule,
     MatRadioModule,
     MatButtonModule,

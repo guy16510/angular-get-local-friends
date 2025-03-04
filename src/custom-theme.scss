@@ -1,60 +1,62 @@
 //======================================================
-// Global CSS Variables for MDC Components
-// (These ensure that Angular Material's new MDC components pick up your brand colors)
+// Custom Theme Variables
 //======================================================
 
-:root {
-  /* Theme Colors */
-  --mdc-theme-primary: #ff0055;
-  --mdc-theme-on-primary: #ffffff;
-  --mdc-theme-secondary: #ff5722;
-  --mdc-theme-on-secondary: #ffffff;
-  --mdc-theme-error: #f44336;
-  --mdc-theme-on-error: #ffffff;
-  
-  /* Card Defaults */
-  --mdc-elevated-card-container-color: #ffffff;
-  --mdc-elevated-card-container-shape: 4px;
-  --mdc-elevated-card-container-elevation: 0 2px 4px rgba(0,0,0,0.1);
-  
-  /* You can add more variables here as needed */
-}
-
-/* Dark Theme Overrides for Global Variables */
-.dark-theme {
-  --mdc-theme-primary: #ff4d6e;
-  --mdc-theme-secondary: #ff3d00;
-  --mdc-theme-error: #e53935;
-  
-  --mdc-elevated-card-container-color: #121212;
-  /* Adjust other variables as needed for dark mode */
-}
-
-//======================================================
-// Custom Theme Variables (SCSS)
-//======================================================
-
-/* Primary, Accent, and Warn Colors */
 $primary:         #ff0055;
-$primary-contrast:#ffffff;
+$primary-contrast: #ffffff;
 
-$accent:          #ff5722;
+$accent:          #ff0055;
 $accent-contrast: #ffffff;
 
 $warn:            #f44336;
 $warn-contrast:   #ffffff;
 
-/* Dark Theme Variants */
 $primary-dark:    #ff4d6e;
-$accent-dark:     #ff3d00;
+$accent-dark:     #ff0055;
 $warn-dark:       #e53935;
 
-/* Typography */
 $font-family: 'Roboto', sans-serif;
 $font-size: 16px;
 
 //======================================================
-// Base Theme Styles
+// Global CSS Variables for MDC Components
+//======================================================
+
+:root {
+  /* Brand Colors */
+  --theme-primary: #{$primary};
+  --theme-primary-contrast: #{$primary-contrast};
+  --theme-accent: #{$accent};
+  --theme-accent-contrast: #{$accent-contrast};
+  --theme-warn: #{$warn};
+  --theme-warn-contrast: #{$warn-contrast};
+
+  /* Typography */
+  --font-family: #{$font-family};
+  --font-size: #{$font-size};
+
+  /* Card Defaults (example values) */
+  --mdc-elevated-card-container-color: #ffffff;
+  --mdc-elevated-card-container-shape: 4px;
+  --mdc-elevated-card-container-elevation: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Dark Theme Overrides */
+.dark-theme {
+  --theme-primary: #{$primary-dark};
+  --theme-accent: #{$accent-dark};
+  --theme-warn: #{$warn-dark};
+  
+  /* Dark card background */
+  --mdc-elevated-card-container-color: #424242;
+  
+  /* Global dark background/text */
+  background-color: #121212;
+  color: #ffffff;
+}
+
+//======================================================
+// Base Global Styles
 //======================================================
 
 .light-theme {
@@ -62,74 +64,86 @@ $font-size: 16px;
   color: #212121;
 }
 
-.dark-theme {
-  background-color: #121212;
-  color: #ffffff;
-}
-
 //======================================================
-// Angular Material Component Overrides
-// (Using your custom variables to override component styles)
+// Component Overrides
 //======================================================
 
-/* Buttons (Text, Raised, FAB) */
-.mat-mdc-button,
-.mat-mdc-raised-button,
-.mat-mdc-fab {
-  background-color: $primary;
-  color: $primary-contrast;
+/* 
+  Buttons – Only override buttons that do not have a [color] attribute.
+  This lets Angular Material apply its built-in styling when you specify color="accent", etc.
+*/
+button.mat-mdc-button:not([color]),
+button.mat-mdc-raised-button:not([color]),
+button.mat-mdc-fab:not([color]) {
+  background-color: var(--theme-primary) !important;
+  color: var(--theme-primary-contrast) !important;
+  border-radius: 5px !important;
 }
 
-.dark-theme .mat-mdc-button,
-.dark-theme .mat-mdc-raised-button,
-.dark-theme .mat-mdc-fab {
-  background-color: $primary-dark;
-  color: $primary-contrast;
+.dark-theme button.mat-mdc-button:not([color]),
+.dark-theme button.mat-mdc-raised-button:not([color]),
+.dark-theme button.mat-mdc-fab:not([color]) {
+  background-color: var(--theme-primary) !important;
+  color: var(--theme-primary-contrast) !important;
+  border-radius: 5px !important;
 }
 
-/* Progress Bar */
+/* Progress Bar (Custom for survey) */
 .survey-progress-bar.mat-mdc-progress-bar {
-  --mdc-linear-progress-active-indicator-color: $accent;
+  --mdc-linear-progress-active-indicator-color: var(--theme-accent) !important;
   --mdc-linear-progress-track-color: rgba(0, 0, 0, 0.1);
   --mdc-linear-progress-track-height: 8px;
   --mdc-linear-progress-active-indicator-height: 8px;
 }
 
 .dark-theme .survey-progress-bar.mat-mdc-progress-bar {
-  --mdc-linear-progress-active-indicator-color: $accent-dark;
+  --mdc-linear-progress-active-indicator-color: var(--theme-accent) !important;
   --mdc-linear-progress-track-color: rgba(255, 255, 255, 0.2);
 }
 
-/* Radio Buttons */
+/* Header Container */
+.light-theme .header-container {
+  background-color: rgba(217, 217, 217, 0.8);
+  color: #000000;
+}
+
+.dark-theme .header-container {
+  background-color: rgba(0, 0, 0, 0.4);
+  color: #ffffff;
+}
+
+/* Radio Button Custom Styling */
 .mat-mdc-radio-button {
-  --mdc-radio-selected-icon-color: $primary;
+  --mdc-radio-selected-icon-color: var(--theme-primary);
   --mdc-radio-unselected-icon-color: #bdbdbd;
   --mdc-radio-disabled-icon-color: #e0e0e0;
-  --mdc-radio-selected-hover-icon-color: darken($primary, 10%);
-  --mdc-radio-selected-focus-icon-color: darken($primary, 15%);
-  --mdc-radio-selected-pressed-icon-color: darken($primary, 20%);
-
+  --mdc-radio-selected-hover-icon-color: #d30046;
+  --mdc-radio-selected-focus-icon-color: #b7003c;
+  --mdc-radio-selected-pressed-icon-color: #8a0029;
+  
+  /* In your legacy theme you computed contrast via mat.get-color-from-palette.
+     Here, we assume the contrast should be the primary contrast defined above. */
   .mdc-radio__background {
-    border-color: $primary-contrast;
+    border-color: var(--theme-primary-contrast);
   }
   .mdc-radio__inner-circle {
-    background-color: $primary-contrast;
+    background-color: var(--theme-primary-contrast);
   }
 }
 
 .dark-theme .mat-mdc-radio-button {
-  --mdc-radio-selected-icon-color: $primary-dark;
+  --mdc-radio-selected-icon-color: #ff4d6e;
   --mdc-radio-unselected-icon-color: #757575;
-
+  
   .mdc-radio__background {
-    border-color: $primary-contrast;
+    border-color: var(--theme-primary-contrast);
   }
   .mdc-radio__inner-circle {
-    background-color: $primary-contrast;
+    background-color: var(--theme-primary-contrast);
   }
 }
 
-/* Radio Button Size */
+/* Adjust Radio Button Size */
 .mat-mdc-radio-button .mdc-radio {
   width: 20px;
   height: 20px;
@@ -140,84 +154,122 @@ $font-size: 16px;
   height: 24px;
 }
 
+/* Typography (Global) */
+html, body {
+  font-family: var(--font-family);
+  font-size: var(--font-size);
+}
+
+/* General Button Styles for components that don’t specify a color */
+.mat-mdc-button,
+.mat-mdc-raised-button,
+.mat-mdc-fab {
+  --mdc-text-button-label-text-color: var(--theme-primary);
+  --mdc-filled-button-container-color: var(--theme-primary);
+  --mdc-filled-button-label-text-color: var(--theme-primary-contrast);
+}
+
+/* Dark mode overrides for buttons */
+.dark-theme .mat-mdc-button,
+.dark-theme .mat-mdc-raised-button,
+.dark-theme .mat-mdc-fab {
+  --mdc-text-button-label-text-color: #ff4d6e;
+  --mdc-filled-button-container-color: #ff4d6e;
+  --mdc-filled-button-label-text-color: var(--theme-primary-contrast);
+}
+
 /* Form Fields */
 .mat-mdc-form-field {
-  --mdc-filled-text-field-label-text-color: $primary;
+  --mdc-filled-text-field-label-text-color: var(--theme-primary);
   --mdc-filled-text-field-input-text-color: #212121;
-  --mdc-filled-text-field-container-color: rgba($primary, 0.05);
+  --mdc-filled-text-field-container-color: rgba(255, 0, 85, 0.05);
 }
 
 .dark-theme .mat-mdc-form-field {
-  --mdc-filled-text-field-label-text-color: $primary-dark;
+  --mdc-filled-text-field-label-text-color: var(--theme-primary);
   --mdc-filled-text-field-input-text-color: #ffffff;
-  --mdc-filled-text-field-container-color: rgba($primary-dark, 0.1);
+  --mdc-filled-text-field-container-color: rgba(255, 77, 110, 0.1);
 }
 
 /* Checkboxes */
 .mat-mdc-checkbox {
-  --mdc-checkbox-selected-checkmark-color: $primary-contrast;
-  --mdc-checkbox-selected-container-color: $primary;
+  --mdc-checkbox-selected-checkmark-color: var(--theme-primary-contrast);
+  --mdc-checkbox-selected-container-color: var(--theme-primary);
   --mdc-checkbox-unselected-container-color: transparent;
-  --mdc-checkbox-selected-hover-container-color: darken($primary, 10%);
-  --mdc-checkbox-selected-focus-container-color: darken($primary, 15%);
-  --mdc-checkbox-selected-pressed-container-color: darken($primary, 20%);
-  --mdc-checkbox-ripple-color: rgba($primary, 0.3);
-  --mdc-checkbox-checked-ripple-color: rgba($primary, 0.5);
 }
 
-.dark-theme .mat-mdc-checkbox {
-  --mdc-checkbox-selected-container-color: $primary-dark;
-  --mdc-checkbox-selected-hover-container-color: darken($primary-dark, 10%);
-  --mdc-checkbox-selected-focus-container-color: darken($primary-dark, 15%);
-  --mdc-checkbox-selected-pressed-container-color: darken($primary-dark, 20%);
-  --mdc-checkbox-ripple-color: rgba($primary-dark, 0.3);
-  --mdc-checkbox-checked-ripple-color: rgba($primary-dark, 0.5);
-}
-
-/* Selected Checkbox */
 .mat-mdc-checkbox.mat-mdc-checkbox-checked .mdc-checkbox__background {
-  background-color: $primary;
-  border-color: $primary;
-}
-.mat-mdc-checkbox.mat-mdc-checkbox-checked .mdc-checkbox__checkmark-path {
-  stroke: $primary-contrast;
+  background-color: var(--theme-primary) !important;
+  border-color: var(--theme-primary) !important;
 }
 
-/* Selected Radio Button */
-.mat-mdc-radio-button.mat-mdc-radio-checked .mdc-radio__background {
-  border-color: $primary;
-}
-.mat-mdc-radio-button.mat-mdc-radio-checked .mdc-radio__inner-circle {
-  background-color: $primary-contrast;
-  border-color: $primary;
-}
-.mat-mdc-radio-button.mat-mdc-radio-checked .mdc-radio__outer-circle {
-  border-color: $primary;
+.mat-mdc-checkbox.mat-mdc-checkbox-checked .mdc-checkbox__checkmark-path {
+  stroke: var(--theme-primary-contrast) !important;
 }
 
 /* Login and Tabs */
 .amplify-button--primary {
-  background-color: $primary !important;
+  background-color: var(--theme-primary) !important;
 }
+
 .amplify-tabs__item--active {
-  color: $accent !important;
-  border-color: $accent !important;
+  color: var(--theme-accent) !important;
+  border-color: var(--theme-accent) !important;
   transition-property: none;
 }
+
 .dark-theme .amplify-tabs__panel.amplify-tabs__panel--active,
 .dark-theme .amplify-tabs__item,
 .dark-theme {
   color: #fff;
   background-color: #181818;
 }
+
 .dark-theme .amplify-label,
 .dark-theme .amplify-input {
   color: #fff !important;
   background-color: #000;
 }
 
-/* Global Typography */
-html, body {
-  font-family: $font-family;
-  font-size: $font-size;
+.mat-mdc-card.alert {
+  // Reset any global card overrides that you don't want here
+  background-color: #fff3cd;  // A light yellow background for warning alerts
+  border: 1px solid #ffeeba;  // A soft yellow border
+  color: #856404;             // Dark yellow/brown text for readability
+  box-shadow: none;           // Remove any card elevation if desired
+  border-radius: 4px;         // Optional: adjust border radius
+  padding: 16px;              // Add some padding for content
+}
+
+// Example: Alert Warning
+.mat-mdc-card.alert.alert-warning {
+  background-color: #fff3cd;
+  border-color: #ffeeba;
+  color: #856404;
+}
+
+// Example: Alert Danger
+.mat-mdc-card.alert.alert-danger {
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+  color: #721c24;
+}
+
+// Example: Alert Success
+.mat-mdc-card.alert.alert-success {
+  background-color: #d4edda;
+  border-color: #c3e6cb;
+  color: #155724;
+}
+
+button[mat-raised-button][color="primary"] {
+  border-radius: 5px;
+  background-color: var(--theme-accent) !important; 
+  color: var(--theme-accent-contrast) !important; 
+}
+
+button[mat-raised-button][color="accent"] { 
+  border-radius: 5px;
+  background-color: orange !important; 
+  color: var(--theme-accent-contrast) !important; 
 }

@@ -30,7 +30,7 @@ export const handler: Schema["mutateUserProfile"]["functionHandler"] = async (ev
     throw new Error("payload must be a valid JSON string");
   }
   
-  const { identityId, locationLat, locationLng } = payload;
+  const { identityId, locationLat, locationLng, surveyAnswers } = payload;
   
   if (!identityId || typeof identityId !== 'string') {
     throw new Error("payload must include a identityId (string)");
@@ -59,6 +59,7 @@ export const handler: Schema["mutateUserProfile"]["functionHandler"] = async (ev
         geohash,
         rangeKey,
         geoPrecision,
+        surveyAnswers, // ✅ Stores survey answers as an array (No processing)
         createdAt: now,  // Add createdAt timestamp
         updatedAt: now,  // Add updatedAt timestamp
         lastUpdated: now, // Keep for consistency

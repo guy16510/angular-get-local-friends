@@ -1,7 +1,7 @@
 import { State, Action, StateContext, Selector } from '@ngxs/store';
 import { Injectable } from '@angular/core';
 import { SubmitUserProfile } from '../actions/user-profile.actions';
-import { UserProfile, UserProfileStateModel } from '../models/user-profile.model';
+import { UserProfile, UserProfileStateModel } from '../../models/user-profile.model';
 import { UserProfileService } from '../../services/user-profile.service';
 import { tap, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
@@ -38,11 +38,21 @@ export class UserProfileState {
   submitUserProfile(ctx: StateContext<UserProfileStateModel>, action: SubmitUserProfile) {
     // Set loading true and clear any previous error
     ctx.patchState({ loading: true, error: null });
+
     return this.userProfileService.submitUserProfile(action.payload).pipe(
       tap((result: UserProfile) => {
+        // Ensure surveyAnswers is correctly structured
+        const formattedProfile: UserProfile = {
+          ...result,
+          surveyAnswers: result.surveyAnswers.map(answer => ({
+            questionId: Number(answer.questionId),
+            answer: answer.answer
+          }))
+        };
+
         // On success, update the profile state with the API response
         ctx.patchState({
-          profile: result,
+          profile: formattedProfile,
           loading: false,
           error: null
         });

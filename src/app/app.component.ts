@@ -17,8 +17,7 @@ Amplify.configure(outputs);
         RouterOutlet,
         AmplifyAuthenticatorModule,
         HeaderComponent,
-        FooterComponent,
-        ProgressBarComponent
+        FooterComponent
     ]
 })
 export class AppComponent {

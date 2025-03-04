@@ -24,13 +24,13 @@ export const SURVEY_QUESTIONS: SurveyQuestion[] = [
     type: 'multiple-select',
     options: ['18-24', '25-34', '35-44', '45-54', '55-64', '65+'],
   },
-//   {
-//     id: 3,
-//     category: 'Friendship Preferences',
-//     question: 'What is your gender?',
-//     type: 'multiple-choice',
-//     options: ['Male', 'Female', 'Non-binary', 'Prefer not to say'],
-//   },
+  {
+    id: 3,
+    category: 'Friendship Preferences',
+    question: 'What is your gender?',
+    type: 'multiple-choice',
+    options: ['Male', 'Female', 'Non-binary', 'Prefer not to say'],
+  },
 //   {
 //     id: 4,
 //     category: 'Friendship Preferences',

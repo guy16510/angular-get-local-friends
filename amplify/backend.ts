@@ -4,6 +4,7 @@ import { data } from './data/resource';
 import { sayHello } from './functions/say-hello/resource';
 import { findNearbyUsers } from './functions/find-nearby-users/resource';
 import { mutateUserProfile } from './functions/mutate-user-profile/resource';
+import { findPremiumMatches } from './functions/find-premium-matches/resource'
 import { storage } from './storage/resource';
 
 defineBackend({
@@ -13,5 +14,6 @@ defineBackend({
   sayHello,
   findNearbyUsers,
   mutateUserProfile,
+  findPremiumMatches
 });
 
