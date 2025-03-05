@@ -8,7 +8,6 @@ import { CommonModule } from '@angular/common';
 import { ProgressBarComponent } from '../shared/progress-bar/progress-bar.component';
 import { NgxsFormDirective } from '@ngxs/form-plugin';
 import { Store } from '@ngxs/store';
-import { ToastMessageComponent } from '../shared/toast-message/toast-message.component';
 // import {SaveSurveyAnswers} from '../../store/actions/survey.actions';
 
 /**
@@ -28,7 +27,7 @@ export function minLengthArray(min: number): ValidatorFn {
     selector: 'app-survey',
     templateUrl: './survey.component.html',
     styleUrls: ['./survey.component.css'],
-    imports: [MaterialModule, ToastMessageComponent, CommonModule, ReactiveFormsModule, ProgressBarComponent, NgxsFormDirective]
+    imports: [MaterialModule, CommonModule, ReactiveFormsModule, ProgressBarComponent, NgxsFormDirective]
 })
 export class SurveyComponent implements OnInit {
   surveyForm!: FormGroup;

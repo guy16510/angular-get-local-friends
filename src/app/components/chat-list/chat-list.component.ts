@@ -7,7 +7,7 @@ import { ChatState } from '../../store/states/chat.state'; // Assume you have de
 import { Conversation } from '../../models/chat'; // Your Conversation interface
 import { MaterialModule } from '../../shared/material.module';
 import { CommonModule } from '@angular/common';
-import { LoadingComponent } from '../loading/loading.component';
+import { LoadingComponent } from '../shared/loading/loading.component';
 
 @Component({
   selector: 'app-chat-list',

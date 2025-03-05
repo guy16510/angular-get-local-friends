@@ -18,6 +18,7 @@ export class UserProfileService {
    */
   submitUserProfile(payload: UserProfile): Observable<any> {
     console.log("Sumbitting user profile via api")
+    //TODO Add userName to this payload.
     return from(
       client.mutations.mutateUserProfile({
         action: 'create',

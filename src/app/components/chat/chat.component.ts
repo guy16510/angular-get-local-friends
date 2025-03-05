@@ -8,7 +8,7 @@ import { ChatMessage } from '../../models/chat'; // Your ChatMessage model inter
 import { MaterialModule } from '../../shared/material.module';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LoadingComponent } from '../loading/loading.component';
+import { LoadingComponent } from '../shared/loading/loading.component';
 
 @Component({
   selector: 'app-chat',

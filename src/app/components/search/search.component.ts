@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../../../../amplify/data/resource';
 import { GeolocationService } from '../../services/geolocation.service';
-import { LoadingComponent } from '../loading/loading.component';
+import { LoadingComponent } from '../shared/loading/loading.component';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { MatCardModule } from '@angular/material/card';
 import { SearchCacheService } from '../../services/search-cache.service';

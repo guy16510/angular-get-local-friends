@@ -8,7 +8,7 @@ import { GeolocationService } from '../../services/geolocation.service';
 import { firstValueFrom, Observable } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../shared/material.module';
-import { LoadingComponent } from '../loading/loading.component';
+import { LoadingComponent } from '../shared/loading/loading.component';
 import { UserProfileState } from '../../store/states/user-profile.state';
 
 

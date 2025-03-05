@@ -8,14 +8,14 @@ import { CheckAuth, FetchIdentityId } from '../../store/actions/auth.actions';
 import { FileService } from '../../services/file.service';
 import { generateClient } from 'aws-amplify/api';
 import type { Schema } from '../../../../amplify/data/resource';
-import { UploadComponent } from '../image-upload/image-upload.component';
+// import { UploadComponent } from '../image-upload/image-upload.component';
 
 // Angular Material Imports
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
-import { LoadingComponent } from '../loading/loading.component';
+// import { LoadingComponent } from '../shared/loading/loading.component';
 
 const client = generateClient<Schema>();
 
@@ -24,8 +24,8 @@ const client = generateClient<Schema>();
     imports: [
         CommonModule,
         RouterModule,
-        UploadComponent,
-        LoadingComponent,
+        // UploadComponent,
+        // LoadingComponent,
         MatCardModule,
         MatButtonModule,
         MatListModule,
@@ -78,6 +78,7 @@ export class ProfileComponent implements OnInit {
 
   async getUserProfile(identityId: string) {
     try {
+      //TODO use NGXS state.
       const result: any = await client.queries.fetchUserProfile({ identityId });
       this.userProfile = JSON.parse(result.data);
     } catch (error) {

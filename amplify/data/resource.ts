@@ -163,6 +163,7 @@ const schema = a.schema({
       createdAt: a.datetime(),                // Add createdAt timestamp
       updatedAt: a.datetime(),                // Add updatedAt timestamp
       images: a.string().array(),              // Array of S3 keys/URLs for images
+      userName: a.string().required(),
       surveyAnswers: a.json().required(),      // ✅ Using JSON to store the array structure
     })
     .authorization(allow => [allow.owner()])

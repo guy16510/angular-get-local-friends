@@ -697,4 +697,10 @@ export const SURVEY_QUESTIONS: SurveyQuestion[] = [
     type: 'multiple-choice',
     options: ['Important', 'Somewhat Important', 'Not Important']
   },
+  {
+    id: 90, //TODO add this to signup page?
+    category: 'Personal Info',
+    question: 'What is your name?',
+    type: 'fill-in',
+  },
 ];
