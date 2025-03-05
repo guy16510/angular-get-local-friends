@@ -3,10 +3,9 @@ import { RouterOutlet } from '@angular/router';
 import { Amplify } from 'aws-amplify';
 import outputs from '../../amplify_outputs.json';
 import { HeaderComponent } from './components/shared/header/header.component';
-import { ProgressBarComponent } from './components/shared/progress-bar/progress-bar.component';
 import { AmplifyAuthenticatorModule, AuthenticatorService } from '@aws-amplify/ui-angular';
 import { FooterComponent } from './components/shared/footer/footer.component';
-import { ChartD3Component } from './components/shared/chart/chart-d3.component';
+import { ToastMessageComponent } from './components/shared/toast-message/toast-message.component';
 
 Amplify.configure(outputs);
 

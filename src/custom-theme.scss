@@ -273,3 +273,23 @@ button[mat-raised-button][color="accent"] {
   background-color: orange !important;
   color: var(--theme-accent-contrast) !important; 
 }
+
+.toast-success {
+  background-color: #4caf50;
+  color: #fff;
+}
+
+.toast-error {
+  background-color: var(--theme-primary);
+  color: #fff;
+}
+
+.toast-warning {
+  background-color: orange !important;
+  color: #fff;
+}
+
+.toast-info {
+  background-color: #2196f3;
+  color: #fff;
+}
