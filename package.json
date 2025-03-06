@@ -28,6 +28,7 @@
     "@angular/platform-browser-dynamic": "^19.2.0",
     "@angular/router": "^19.2.0",
     "@aws-amplify/ui-angular": "^5.0.37",
+    "@aws-sdk/client-cognito-identity-provider": "^3.760.0",
     "@ngxs/devtools-plugin": "19.0.0",
     "@ngxs/form-plugin": "19.0.0",
     "@ngxs/hmr-plugin": "19.0.0",

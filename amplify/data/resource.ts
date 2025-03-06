@@ -178,9 +178,9 @@ const schema = a.schema({
       ipAddress: a.ipAddress().required(),
     })
     .authorization(allow => [
-      allow.guest().to(['create']),
-      allow.owner().to(['create']),
-      allow.authenticated().to(['create']),
+      allow.guest().to(['create']), // ✅ Unauthenticated users can submit
+      allow.authenticated().to(['create']), // ✅ Authenticated users can submit
+      allow.owner().to(['read', 'update', 'delete']), // ✅
     ]),
 });
 
@@ -188,23 +188,13 @@ const schema = a.schema({
 
 export type Schema = ClientSchema<typeof schema>;
 
-// export const data = defineData({
-//   schema,
-//   authorizationModes: {
-//     defaultAuthorizationMode: 'userPool',
-//     // API Key is used for a.allow.public() rules
-//     apiKeyAuthorizationMode: {
-//       expiresInDays: 30,
-//     },
-//   },
-// });
-
 export const data = defineData({
   schema,
   authorizationModes: {
     defaultAuthorizationMode: 'userPool',
+    // API Key is used for a.allow.public() rules
     apiKeyAuthorizationMode: {
-      expiresInDays: 30, // ✅ Valid property
+      expiresInDays: 30,
     },
   },
 });
