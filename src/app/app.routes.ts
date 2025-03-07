@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { ContactUsComponent } from './components/contact-us/contact-us.component';
-import { ProfileComponent } from './components/my-profile/my-profile.component';
+import { MyProfileComponent } from './components/my-profile/my-profile.component';
 import { authGuard } from './guards/auth.guard';
 import { HomeComponent } from './components/home/home.component';
 import { ErrorComponent } from './components/error/error.component';
@@ -44,7 +44,7 @@ export const routes: Routes = [
     },
     {
         path: 'myProfile',
-        component: ProfileComponent,
+        component: MyProfileComponent,
         canActivate: [authGuard]
     },
     {

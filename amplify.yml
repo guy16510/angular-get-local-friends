@@ -10,13 +10,17 @@ backend:
         - |
           if [[ "$AWS_BRANCH" == "develop" ]]; then
             export USER_PROFILE_TABLE_NAME="UserProfile-slzhpdj7ifgljk54sxgaj62qeu-NONE"
+            export AMPLIFY_STORAGE_BUCKET_NAME="amplify-dkrmsanbniimt-dev-userimagesdevelopbucket4-wpaceuhzu52d"
           elif [[ "$AWS_BRANCH" == "main" ]]; then
             export USER_PROFILE_TABLE_NAME="UserProfile-x334imiw7fh4hlc6cfem5zw2vy-NONE"
+            export AMPLIFY_STORAGE_BUCKET_NAME="amplify-dkrmsanbniimt-main-userimagesmainbucket4-xyz123abc"
           else
             export USER_PROFILE_TABLE_NAME="UserProfile-default-NONE"
+            export AMPLIFY_STORAGE_BUCKET_NAME="amplify-dkrmsanbniimt-default-userimagesdefaultbucket4-xyz999"
           fi
 
         - 'echo "Using DynamoDB Table: $USER_PROFILE_TABLE_NAME"'
+        - 'echo "Using S3 Bucket: $AMPLIFY_STORAGE_BUCKET_NAME"'
         - 'export AMPLIFY_USER_PROFILE_TABLE_NAME=$USER_PROFILE_TABLE_NAME'
 
         # Deploy backend resources

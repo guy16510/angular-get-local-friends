@@ -1,4 +1,7 @@
 <mat-card class="profile-container mat-elevation-z4">
+  
+  
+  
   <ng-container *ngIf="loading$ | async">
     <app-loading></app-loading>
   </ng-container>
@@ -20,15 +23,22 @@
 
       <app-upload-image></app-upload-image>
 
-      <div class="profile-details">
+      <div class="profile-details" *ngIf="userProfile">
         <h2>Profile Information</h2>
-        <mat-list *ngIf="userProfile">
+        <mat-list>
           <mat-list-item *ngFor="let key of userProfile | keyvalue">
             <mat-icon>account_circle</mat-icon>
             <strong>{{ key.key | titlecase }}</strong>: {{ key.value }}
           </mat-list-item>
         </mat-list>
       </div>
+      <mat-card class="location-card" *ngIf="userProfile == null">
+        <mat-card-title>You Are So Close!!</mat-card-title>
+        <mat-card-content>
+          <p>Please complete the survey to be matched with other people locally in your area.</p>
+          <p><a routerLink="/survey">Survey</a>
+        </mat-card-content>
+      </mat-card>
     </mat-card-content>
   </ng-container>
 

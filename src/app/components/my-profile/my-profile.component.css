@@ -1,72 +1,42 @@
 
-/* Container */
 .profile-container {
-  background: var(--primary-bg);
-  color: var(--text-color);
   padding: 20px;
   padding-top:80px;
   border-radius: 10px;
   max-width: 80%;
   margin: auto;
-  transition: background 0.3s ease-in-out, color 0.3s ease-in-out;
+  /* transition: background 0.3s ease-in-out, color 0.3s ease-in-out; */
 }
 
-/* Profile Header */
 .profile-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-/* Profile Image */
 .profile-image {
   width: 100px;
   height: 100px;
   object-fit: cover;
   border-radius: 50%;
   border: 2px solid var(--text-color);
-  transition: border 0.3s ease-in-out;
-}
-
-/* Material UI Components */
-mat-card {
-  background: var(--card-bg) !important;
-  color: var(--text-color) !important;
-  transition: background 0.3s ease-in-out, color 0.3s ease-in-out;
+  /* transition: border 0.3s ease-in-out; */
 }
 
 mat-card-content {
   padding: 20px;
 }
 
-mat-list {
-  background: var(--list-bg) !important;
+.location-card {
+  width: 100%;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  text-align: center;
 }
 
-mat-list-item {
-  padding: 10px;
-  display: flex;
-  align-items: center;
-  transition: background 0.3s ease-in-out;
-}
-
-mat-icon {
-  margin-right: 10px;
-  color: var(--text-color);
-}
-
-/* Buttons */
-button {
-  background: var(--button-bg);
-  color: var(--button-text);
-  border: none;
-  padding: 8px 16px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background 0.3s ease-in-out, color 0.3s ease-in-out;
-}
-
-button:hover {
-  background: var(--text-color);
-  color: var(--primary-bg);
+.location-text {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #333;
 }

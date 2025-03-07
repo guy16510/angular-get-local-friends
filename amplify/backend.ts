@@ -36,3 +36,19 @@ userProfileLambda.addToRolePolicy(new iam.PolicyStatement({
     `arn:aws:dynamodb:us-east-1:*:table/${process.env['AMPLIFY_USER_PROFILE_TABLE_NAME']}`
   ]
 }));
+
+// ✅ Get the IAM role for authenticated users (Cognito Identity Pool)
+const authenticatedRole = backend.auth.resources.authenticatedUserIamRole;
+
+// ✅ Attach IAM Policy to allow S3 uploads for authenticated users
+authenticatedRole.addToPrincipalPolicy(new iam.PolicyStatement({
+  actions: ["s3:PutObject", "s3:GetObject"],
+  resources: [
+    `arn:aws:s3:::${process.env['AMPLIFY_STORAGE_BUCKET_NAME']}/protected/*`
+  ],
+  conditions: {
+    StringLike: {
+      "s3:prefix": ["protected/${cognito-identity.amazonaws.com:sub}/*"]
+    }
+  }
+}));

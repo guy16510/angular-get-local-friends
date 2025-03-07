@@ -8,33 +8,33 @@ import { CheckAuth, FetchIdentityId } from '../../store/actions/auth.actions';
 import { FileService } from '../../services/file.service';
 import { generateClient } from 'aws-amplify/api';
 import type { Schema } from '../../../../amplify/data/resource';
-// import { UploadComponent } from '../image-upload/image-upload.component';
+import { UploadComponent } from '../image-upload/image-upload.component';
 
 // Angular Material Imports
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
-// import { LoadingComponent } from '../shared/loading/loading.component';
+import { LoadingComponent } from '../shared/loading/loading.component';
 
 const client = generateClient<Schema>();
 
 @Component({
-    selector: 'app-profile',
+    selector: 'app-my-profile',
     imports: [
         CommonModule,
         RouterModule,
-        // UploadComponent,
-        // LoadingComponent,
+        UploadComponent,
+        LoadingComponent,
         MatCardModule,
         MatButtonModule,
         MatListModule,
         MatIconModule
     ],
-    templateUrl: './profile.component.html',
-    styleUrls: ['./profile.component.css']
+    templateUrl: './my-profile.component.html',
+    styleUrls: ['./my-profile.component.css']
 })
-export class ProfileComponent implements OnInit {
+export class MyProfileComponent implements OnInit {
   // Use the new inject(Store) method to set up selectors.
   private store = inject(Store);
   identityId$: Observable<string | null> = this.store.select(AuthState.identityId);
