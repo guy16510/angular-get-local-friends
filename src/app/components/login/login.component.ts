@@ -1,28 +1,31 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { AmplifyAuthenticatorModule } from '@aws-amplify/ui-angular';
 import { Amplify, Hub } from '@aws-amplify/core';
+import { AmplifyAuthenticatorModule } from '@aws-amplify/ui-angular';
 import outputs from '../../../../amplify_outputs.json';
 import { Store } from '@ngxs/store';
 import { SetAuthenticatedUser, Logout, FetchIdentityId } from '../../store/actions/auth.actions';
 
 @Component({
-    selector: 'app-login',
-    imports: [AmplifyAuthenticatorModule],
-    templateUrl: './login.component.html',
-    styleUrls: ['./login.component.scss']
+  selector: 'app-login',
+  imports: [AmplifyAuthenticatorModule],
+  templateUrl: './login.component.html',
+  styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent implements OnInit {
   private hubListener!: (data: any) => void;
   private hasDispatchedLogout = false;
 
   constructor(
-    private store: Store, 
-    private router: Router, 
+    private store: Store,
+    private router: Router,
     private route: ActivatedRoute
   ) {
     Amplify.configure(outputs);
   }
+
+  // ✅ Define sign-up attributes (nickname added)
+  signUpAttributes:any = ['nickname', 'email'];
 
   ngOnInit() {
     this.hubListener = (data: any) => {
@@ -49,7 +52,6 @@ export class LoginComponent implements OnInit {
     Hub.listen('auth', this.hubListener);
   }
 
-  // Optionally, if you need to manually trigger sign out, you can do so.
   handleSignOut(signOutFn: Function) {
     signOutFn();
   }
