@@ -26,48 +26,49 @@ const backend = defineBackend({
   getUserProfile
 });
 
+const dynamoTableArn = `arn:aws:dynamodb:us-east-1:${process.env['AWS_ACCOUNT_ID']}:table/${process.env['AMPLIFY_USER_PROFILE_TABLE_NAME']}`;
+const dynamoIndexArn = `${dynamoTableArn}/index/userProfilesByGeohashAndRangeKey`;
+
 /**
- * Gets detail on the specific userProfile
+ * ✅ Grant read access to `getUserProfile` Lambda
  */
 const userProfileLambda = backend.getUserProfile.resources.lambda;
 userProfileLambda.addToRolePolicy(new iam.PolicyStatement({
   actions: ["dynamodb:GetItem", "dynamodb:Query"],
-  resources: [
-    `arn:aws:dynamodb:us-east-1:${process.env['AWS_ACCOUNT_ID']}:table/${process.env['AMPLIFY_USER_PROFILE_TABLE_NAME']}`
-  ]
+  resources: [dynamoTableArn]
 }));
 
 /**
- * GeoSpatial look up for users in Dynamo
+ * ✅ Grant read access to `findNearbyUsers` Lambda
  */
 const findNearbyUsersLambda = backend.findNearbyUsers.resources.lambda;
 findNearbyUsersLambda.addToRolePolicy(new iam.PolicyStatement({
   actions: ["dynamodb:Query"],
-  resources: [
-    `arn:aws:dynamodb:us-east-1:${process.env['AWS_ACCOUNT_ID']}:table/${process.env['AMPLIFY_USER_PROFILE_TABLE_NAME']}`,
-    `arn:aws:dynamodb:us-east-1:${process.env['AWS_ACCOUNT_ID']}:table/${process.env['AMPLIFY_USER_PROFILE_TABLE_NAME']}/index/userProfilesByGeohashAndRangeKey`
-  ]
+  resources: [dynamoTableArn, dynamoIndexArn]
 }));
 
 /**
- * For users to add their survey results to Dynamo
+ * ✅ Grant write access to `mutateUserProfile` Lambda
  */
 const mutateUserProfileLambda = backend.mutateUserProfile.resources.lambda;
 mutateUserProfileLambda.addToRolePolicy(new iam.PolicyStatement({
   actions: ["dynamodb:PutItem"],
-  resources: [
-    `arn:aws:dynamodb:us-east-1:${process.env['AWS_ACCOUNT_ID']}:table/${process.env['AMPLIFY_USER_PROFILE_TABLE_NAME']}`
-  ]
+  resources: [dynamoTableArn]
 }));
 
-
 /**
- * For adding users impages to S3 bucket.
+ * ✅ Allow `EVERYONE` Cognito role to access S3
  */
-const authResources = backend.auth.resources;
-const everyoneRole = authResources.authenticatedUserIamRole;
+const everyoneRoleName = `amplifyAuthEVERYONE-${process.env['AWS_BRANCH']}GroupRole`;
+const iamStack = backend.createStack("IAMStack");
+// ✅ Get IAM Roles from Cognito Groups
+const everyoneRole = iam.Role.fromRoleArn(
+  iamStack,  
+  'EVERYONERole',
+  `arn:aws:iam::${process.env['AWS_ACCOUNT_ID']}:role/${everyoneRoleName}`
+);
 
-// ✅ Add IAM Policy to allow `EVERYONE` users to access S3
+// ✅ Attach S3 Policies to EVERYONE Group
 everyoneRole.addToPrincipalPolicy(new iam.PolicyStatement({
   actions: ["s3:GetObject"],
   resources: [`arn:aws:s3:::${process.env['AMPLIFY_STORAGE_BUCKET_NAME']}/protected/*`],
