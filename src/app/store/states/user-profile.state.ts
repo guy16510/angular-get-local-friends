@@ -38,6 +38,7 @@ export class UserProfileState {
   submitUserProfile(ctx: StateContext<UserProfileStateModel>, action: SubmitUserProfile) {
     // Set loading true and clear any previous error
     ctx.patchState({ loading: true, error: null });
+    debugger;
 
     return this.userProfileService.submitUserProfile(action.payload).pipe(
       tap((result: UserProfile) => {

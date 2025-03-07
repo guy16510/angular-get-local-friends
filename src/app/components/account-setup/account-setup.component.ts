@@ -23,6 +23,7 @@ export class AccountSetupComponent implements OnInit {
   error$: Observable<string | null> = this.store.select(state => state.userProfile.error);
 
   identityId: string | null = null;
+  userName: string = '';
   lat: number | null = null;
   lng: number | null = null;
   locationMessage: string = "Fetching approximate location...";
@@ -55,9 +56,11 @@ export class AccountSetupComponent implements OnInit {
   
     // If user is logged in, get the identityId.
     this.identityId = this.store.selectSnapshot(AuthState.identityId);
+    this.userName = this.store.selectSnapshot(AuthState.userName);
     if (!this.identityId) {
       await firstValueFrom(this.store.dispatch(new FetchIdentityId()));
       this.identityId = this.store.selectSnapshot(AuthState.identityId);
+      this.userName = this.store.selectSnapshot(AuthState.userName);
     }
   }
 
@@ -130,6 +133,7 @@ export class AccountSetupComponent implements OnInit {
       locationLat: this.lat,
       locationLng: this.lng,
       surveyAnswers: this.surveyAnswers,
+      userName: this.userName
     };
 
     this.store.dispatch(new SubmitUserProfile(payload)).subscribe((val) => {

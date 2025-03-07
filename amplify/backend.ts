@@ -26,12 +26,23 @@ const backend = defineBackend({
   getUserProfile
 });
 
-// ✅ Get the Lambda execution role
+// ✅ Get the Lambda execution role for `getUserProfile`
 const userProfileLambda = backend.getUserProfile.resources.lambda;
 
-// ✅ Attach IAM Policy to allow DynamoDB read access
+// ✅ Allow `getUserProfile` Lambda to read from DynamoDB
 userProfileLambda.addToRolePolicy(new iam.PolicyStatement({
   actions: ["dynamodb:GetItem", "dynamodb:Query"],
+  resources: [
+    `arn:aws:dynamodb:us-east-1:*:table/${process.env['AMPLIFY_USER_PROFILE_TABLE_NAME']}`
+  ]
+}));
+
+// ✅ Get the Lambda execution role for `mutateUserProfile`
+const mutateUserProfileLambda = backend.mutateUserProfile.resources.lambda;
+
+// ✅ Allow `mutateUserProfile` Lambda to write to DynamoDB
+mutateUserProfileLambda.addToRolePolicy(new iam.PolicyStatement({
+  actions: ["dynamodb:PutItem"],
   resources: [
     `arn:aws:dynamodb:us-east-1:*:table/${process.env['AMPLIFY_USER_PROFILE_TABLE_NAME']}`
   ]
@@ -40,15 +51,10 @@ userProfileLambda.addToRolePolicy(new iam.PolicyStatement({
 // ✅ Get the IAM role for authenticated users (Cognito Identity Pool)
 const authenticatedRole = backend.auth.resources.authenticatedUserIamRole;
 
-// ✅ Attach IAM Policy to allow S3 uploads for authenticated users
+// ✅ Allow authenticated users to upload and read from S3
 authenticatedRole.addToPrincipalPolicy(new iam.PolicyStatement({
   actions: ["s3:PutObject", "s3:GetObject"],
   resources: [
-    `arn:aws:s3:::${process.env['AMPLIFY_STORAGE_BUCKET_NAME']}/protected/*`
-  ],
-  conditions: {
-    StringLike: {
-      "s3:prefix": ["protected/${cognito-identity.amazonaws.com:sub}/*"]
-    }
-  }
+    `arn:aws:s3:::${process.env['AMPLIFY_STORAGE_BUCKET_NAME']}/*`
+  ]
 }));

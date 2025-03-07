@@ -1,7 +1,7 @@
 // auth.state.ts
 import { State, Action, StateContext, Selector } from '@ngxs/store';
 import { Injectable } from '@angular/core';
-import { signIn, signOut, getCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
+import { signIn, signOut, getCurrentUser, fetchAuthSession, fetchUserAttributes } from 'aws-amplify/auth';
 import { CheckAuth, Login, Logout, FetchIdentityId, SetAuthenticatedUser } from '../actions/auth.actions';
 
 export interface AuthStateModel {
@@ -9,6 +9,7 @@ export interface AuthStateModel {
   identityId: string | null;
   loading: boolean;
   error: string | null;
+  userName: string | null;
 }
 
 @State<AuthStateModel>({
@@ -17,7 +18,8 @@ export interface AuthStateModel {
     user: null,
     identityId: null,
     loading: false,
-    error: null
+    error: null,
+    userName: null
   }
 })
 @Injectable()
@@ -31,6 +33,11 @@ export class AuthState {
   @Selector()
   static user(state: AuthStateModel): any {
     return state.user;
+  }
+
+  @Selector()
+  static userName(state: AuthStateModel): any {
+    return state.userName;
   }
   
   @Selector()
@@ -51,9 +58,20 @@ export class AuthState {
   @Action(CheckAuth)
   async checkAuth({ patchState }: StateContext<AuthStateModel>) {
     patchState({ loading: true, error: null });
+  
     try {
       const currentUser = await getCurrentUser();
-      patchState({ user: currentUser, loading: false });
+      
+      // ✅ Fetch user attributes
+      const userAttributes = await fetchUserAttributes();
+      const nickname = userAttributes?.nickname || null;
+  
+      // ✅ Store user details including nickname in the state
+      patchState({ 
+        user: { ...currentUser, nickname, attributes: userAttributes },
+        userName: nickname,
+        loading: false 
+      });
     } catch (error: any) {
       patchState({ user: null, loading: false, error: error.message || 'Error checking auth' });
     }
