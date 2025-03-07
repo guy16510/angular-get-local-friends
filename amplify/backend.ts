@@ -48,15 +48,25 @@ mutateUserProfileLambda.addToRolePolicy(new iam.PolicyStatement({
   ]
 }));
 
-// ✅ Get the IAM role for `EVERYONE` Cognito Identity Pool users
-const everyoneRoleName = `amplifyAuthEVERYONE-${process.env['AWS_BRANCH']}GroupRole`;
-const everyoneRole = backend.auth.resources.authenticatedUserIamRole;
 
-// ✅ Attach IAM Policy to allow Cognito users to upload and read from S3
+const iamStack = backend.createStack("IAMStack");
+
+const everyoneRole = iam.Role.fromRoleArn(
+  iamStack,  
+  'EVERYONERole',
+  `arn:aws:iam::${process.env['AWS_ACCOUNT_ID']}:role/amplifyAuthEVERYONE-${process.env['AWS_BRANCH']}GroupRole`
+);
+
+// ✅ Allow `EVERYONE` users to upload & read files in S3
 everyoneRole.addToPrincipalPolicy(new iam.PolicyStatement({
   actions: ["s3:PutObject", "s3:GetObject"],
   resources: [
     `arn:aws:s3:::${process.env['AMPLIFY_STORAGE_BUCKET_NAME']}/*`
   ],
-  effect: iam.Effect.ALLOW
+  effect: iam.Effect.ALLOW,
+  conditions: {
+    StringLike: {
+      "s3:prefix": ["protected/${aws:userid}/*"]
+    }
+  }
 }));

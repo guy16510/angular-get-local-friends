@@ -38,11 +38,12 @@ export class UserProfileState {
   submitUserProfile(ctx: StateContext<UserProfileStateModel>, action: SubmitUserProfile) {
     // Set loading true and clear any previous error
     ctx.patchState({ loading: true, error: null });
-    debugger;
 
     return this.userProfileService.submitUserProfile(action.payload).pipe(
       tap((result: UserProfile) => {
+        debugger;
         // Ensure surveyAnswers is correctly structured
+        //TODO this is the response: "UserProfile for us-east-1:660f914c-c773-ca1c-3919-26f3b4f97eb2 created successfully."
         const formattedProfile: UserProfile = {
           ...result,
           surveyAnswers: result.surveyAnswers.map(answer => ({

@@ -55,7 +55,7 @@ export class UploadComponent {
         this.snackBar.open('User identity not found. Please sign in.', 'Close', { duration: 3000 });
         return;
       }
-
+      debugger;
       // Fetch the newly uploaded file URL.
       const uploadedImageUrl = await this.fileService.getUserImage(identityId);
       if (uploadedImageUrl) {
