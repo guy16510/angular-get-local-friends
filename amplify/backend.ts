@@ -33,6 +33,6 @@ const userProfileLambda = backend.getUserProfile.resources.lambda;
 userProfileLambda.addToRolePolicy(new iam.PolicyStatement({
   actions: ["dynamodb:GetItem", "dynamodb:Query"],
   resources: [
-    `arn:aws:dynamodb:us-east-1:${process.env['AWS_ACCOUNT_ID']}:table/${process.env['AMPLIFY_USER_PROFILE_TABLE_NAME']}`
+    `arn:aws:dynamodb:us-east-1:*:table/${process.env['AMPLIFY_USER_PROFILE_TABLE_NAME']}`
   ]
 }));
