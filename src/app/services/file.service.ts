@@ -106,7 +106,6 @@ export class FileService {
   
     try {
       // ✅ Try to get the signed URL directly
-      debugger;
       const result = await getUrl({ path: filePath });
       return result.url.toString() || null;
     } catch (error: any) {

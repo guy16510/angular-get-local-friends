@@ -26,10 +26,10 @@ const backend = defineBackend({
   getUserProfile
 });
 
-// ✅ Get the Lambda execution role for `getUserProfile`
+/**
+ * Gets detail on the specific userProfile
+ */
 const userProfileLambda = backend.getUserProfile.resources.lambda;
-
-// ✅ Allow `getUserProfile` Lambda to read from DynamoDB
 userProfileLambda.addToRolePolicy(new iam.PolicyStatement({
   actions: ["dynamodb:GetItem", "dynamodb:Query"],
   resources: [
@@ -37,10 +37,22 @@ userProfileLambda.addToRolePolicy(new iam.PolicyStatement({
   ]
 }));
 
-// ✅ Get the Lambda execution role for `mutateUserProfile`
-const mutateUserProfileLambda = backend.mutateUserProfile.resources.lambda;
+/**
+ * GeoSpatial look up for users in Dynamo
+ */
+const findNearbyUsersLambda = backend.findNearbyUsers.resources.lambda;
+findNearbyUsersLambda.addToRolePolicy(new iam.PolicyStatement({
+  actions: ["dynamodb:Query"],
+  resources: [
+    `arn:aws:dynamodb:us-east-1:${process.env['AWS_ACCOUNT_ID']}:table/${process.env['AMPLIFY_USER_PROFILE_TABLE_NAME']}`,
+    `arn:aws:dynamodb:us-east-1:${process.env['AWS_ACCOUNT_ID']}:table/${process.env['AMPLIFY_USER_PROFILE_TABLE_NAME']}/index/userProfilesByGeohashAndRangeKey`
+  ]
+}));
 
-// ✅ Allow `mutateUserProfile` Lambda to write to DynamoDB
+/**
+ * For users to add their survey results to Dynamo
+ */
+const mutateUserProfileLambda = backend.mutateUserProfile.resources.lambda;
 mutateUserProfileLambda.addToRolePolicy(new iam.PolicyStatement({
   actions: ["dynamodb:PutItem"],
   resources: [
@@ -48,34 +60,27 @@ mutateUserProfileLambda.addToRolePolicy(new iam.PolicyStatement({
   ]
 }));
 
-const iamStack = backend.createStack("IAMStack");
 
-// ✅ Use `fromRoleName()` instead of `fromRoleArn()` to avoid missing-role errors
-const everyoneRole = iam.Role.fromRoleName(
-  iamStack,  
-  'EVERYONERole',
-  `amplifyAuthEVERYONE-${process.env['AWS_BRANCH']}GroupRole`
-);
+/**
+ * For adding users impages to S3 bucket.
+ */
+const authResources = backend.auth.resources;
+const everyoneRole = authResources.authenticatedUserIamRole;
 
-// ✅ Allow `EVERYONE` users to READ files from S3
+// ✅ Add IAM Policy to allow `EVERYONE` users to access S3
 everyoneRole.addToPrincipalPolicy(new iam.PolicyStatement({
   actions: ["s3:GetObject"],
-  resources: [
-    `arn:aws:s3:::${process.env['AMPLIFY_STORAGE_BUCKET_NAME']}/protected/*` // ✅ Any authenticated user can READ
-  ],
+  resources: [`arn:aws:s3:::${process.env['AMPLIFY_STORAGE_BUCKET_NAME']}/protected/*`],
   effect: iam.Effect.ALLOW,
 }));
 
-// ✅ Allow `EVERYONE` users to modify ONLY their own files
 everyoneRole.addToPrincipalPolicy(new iam.PolicyStatement({
   actions: ["s3:PutObject", "s3:DeleteObject"],
-  resources: [
-    `arn:aws:s3:::${process.env['AMPLIFY_STORAGE_BUCKET_NAME']}/protected/*`
-  ],
+  resources: [`arn:aws:s3:::${process.env['AMPLIFY_STORAGE_BUCKET_NAME']}/protected/*`],
   effect: iam.Effect.ALLOW,
   conditions: {
     StringLike: {
-      "s3:prefix": ["protected/${cognito-identity.amazonaws.com:sub}/*"] // ✅ Ensures only the owner can modify their files
+      "s3:prefix": ["protected/${cognito-identity.amazonaws.com:sub}/*"]
     }
   }
 }));
