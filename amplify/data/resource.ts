@@ -76,7 +76,9 @@ const schema = a.schema({
     })
     .returns(a.string()) // or define a custom type if you prefer an object response
     .handler(a.handler.function(getUserProfile))
-    .authorization(allow => [allow.guest(), allow.authenticated()]),
+    .authorization(allow => [
+      allow.guest(), allow.authenticated()
+    ]),
     
   mutateUserProfile: a
     .mutation()
