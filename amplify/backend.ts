@@ -33,7 +33,7 @@ const userProfileLambda = backend.getUserProfile.resources.lambda;
 userProfileLambda.addToRolePolicy(new iam.PolicyStatement({
   actions: ["dynamodb:GetItem", "dynamodb:Query"],
   resources: [
-    `arn:aws:dynamodb:us-east-1:*:table/${process.env['AMPLIFY_USER_PROFILE_TABLE_NAME']}`
+    `arn:aws:dynamodb:us-east-1:${process.env['AWS_ACCOUNT_ID']}:table/${process.env['AMPLIFY_USER_PROFILE_TABLE_NAME']}`
   ]
 }));
 
@@ -44,17 +44,19 @@ const mutateUserProfileLambda = backend.mutateUserProfile.resources.lambda;
 mutateUserProfileLambda.addToRolePolicy(new iam.PolicyStatement({
   actions: ["dynamodb:PutItem"],
   resources: [
-    `arn:aws:dynamodb:us-east-1:*:table/${process.env['AMPLIFY_USER_PROFILE_TABLE_NAME']}`
+    `arn:aws:dynamodb:us-east-1:${process.env['AWS_ACCOUNT_ID']}:table/${process.env['AMPLIFY_USER_PROFILE_TABLE_NAME']}`
   ]
 }));
 
-// ✅ Get the IAM role for authenticated users (Cognito Identity Pool)
-const authenticatedRole = backend.auth.resources.authenticatedUserIamRole;
+// ✅ Get the IAM role for `EVERYONE` Cognito Identity Pool users
+const everyoneRoleName = `amplifyAuthEVERYONE-${process.env['AWS_BRANCH']}GroupRole`;
+const everyoneRole = backend.auth.resources.authenticatedUserIamRole;
 
-// ✅ Allow authenticated users to upload and read from S3
-authenticatedRole.addToPrincipalPolicy(new iam.PolicyStatement({
+// ✅ Attach IAM Policy to allow Cognito users to upload and read from S3
+everyoneRole.addToPrincipalPolicy(new iam.PolicyStatement({
   actions: ["s3:PutObject", "s3:GetObject"],
   resources: [
     `arn:aws:s3:::${process.env['AMPLIFY_STORAGE_BUCKET_NAME']}/*`
-  ]
+  ],
+  effect: iam.Effect.ALLOW
 }));
