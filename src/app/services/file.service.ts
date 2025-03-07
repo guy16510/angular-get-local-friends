@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { uploadData, getUrl } from 'aws-amplify/storage';
+import { uploadData, getUrl, UploadDataWithPathOutput } from 'aws-amplify/storage';
 
 @Injectable({
   providedIn: 'root'
@@ -56,24 +56,40 @@ export class FileService {
    * @param file The original file to upload.
    * @returns A Promise that resolves with the upload result.
    */
-  async uploadFile(file: File): Promise<any> {
+  async uploadFile(file: File): Promise<string> {
     try {
       const webpBlob = await this.convertToWebP(file);
-
-      const result = await uploadData({
+      
+      const identityId = (await import('aws-amplify/auth')).getCurrentUser().then(user => user.userId);
+  
+      // ✅ Upload File
+      const result: UploadDataWithPathOutput = await uploadData({
         data: webpBlob,
-        path: ({ identityId }) => `protected/${identityId}/profile.webp`,
-        options: {
-          contentType: 'image/webp'
-        }
+        path: () => `protected/${identityId}/profile.webp`,
+        options: { contentType: 'image/webp' }
       });
-      debugger;
-      return result;
-    } catch (error) {
-      console.error("Error uploading WebP file:", error);
+  
+      console.log("Upload successful:", result);
+  
+      // ✅ Fetch URL using getUrl()
+      const fileUrl = await getUrl({ path: `protected/${identityId}/profile.webp` });
+      return fileUrl.url.toString(); // ✅ Return the file URL
+    } catch (error: any) {
+      console.error("❌ Error uploading WebP file:", error);
+  
+      if (error.name === "AccessDenied" || error.message.includes("not authorized to perform: s3:PutObject")) {
+        throw new Error("You do not have permission to upload files. Please contact support.");
+      }
+  
+      if (error.message.includes("NetworkError") || error.message.includes("403")) {
+        throw new Error("Network issue or invalid credentials. Please try again.");
+      }
+  
       throw error;
     }
   }
+
+
 
   /**
    * Fetch the signed URL for the user's profile image.

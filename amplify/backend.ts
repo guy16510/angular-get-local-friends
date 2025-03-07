@@ -48,25 +48,34 @@ mutateUserProfileLambda.addToRolePolicy(new iam.PolicyStatement({
   ]
 }));
 
-
 const iamStack = backend.createStack("IAMStack");
 
-const everyoneRole = iam.Role.fromRoleArn(
+// ✅ Use `fromRoleName()` instead of `fromRoleArn()` to avoid missing-role errors
+const everyoneRole = iam.Role.fromRoleName(
   iamStack,  
   'EVERYONERole',
-  `arn:aws:iam::${process.env['AWS_ACCOUNT_ID']}:role/amplifyAuthEVERYONE-${process.env['AWS_BRANCH']}GroupRole`
+  `amplifyAuthEVERYONE-${process.env['AWS_BRANCH']}GroupRole`
 );
 
-// ✅ Allow `EVERYONE` users to upload & read files in S3
+// ✅ Allow `EVERYONE` users to READ files from S3
 everyoneRole.addToPrincipalPolicy(new iam.PolicyStatement({
-  actions: ["s3:PutObject", "s3:GetObject"],
+  actions: ["s3:GetObject"],
   resources: [
-    `arn:aws:s3:::${process.env['AMPLIFY_STORAGE_BUCKET_NAME']}/*`
+    `arn:aws:s3:::${process.env['AMPLIFY_STORAGE_BUCKET_NAME']}/protected/*` // ✅ Any authenticated user can READ
+  ],
+  effect: iam.Effect.ALLOW,
+}));
+
+// ✅ Allow `EVERYONE` users to modify ONLY their own files
+everyoneRole.addToPrincipalPolicy(new iam.PolicyStatement({
+  actions: ["s3:PutObject", "s3:DeleteObject"],
+  resources: [
+    `arn:aws:s3:::${process.env['AMPLIFY_STORAGE_BUCKET_NAME']}/protected/*`
   ],
   effect: iam.Effect.ALLOW,
   conditions: {
     StringLike: {
-      "s3:prefix": ["protected/${aws:userid}/*"]
+      "s3:prefix": ["protected/${cognito-identity.amazonaws.com:sub}/*"] // ✅ Ensures only the owner can modify their files
     }
   }
 }));

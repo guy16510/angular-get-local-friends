@@ -45,27 +45,26 @@ export class UploadComponent {
       this.snackBar.open('No file selected!', 'Close', { duration: 3000 });
       return;
     }
+  
     try {
-      await this.fileService.uploadFile(this.selectedFile);
-
-      // Retrieve the identityId from the NGXS store synchronously.
-      //TODO make a fucntion to get this value if null
-      const identityId: string | null = this.store.selectSnapshot(AuthState.identityId);
-      if (!identityId) {
-        this.snackBar.open('User identity not found. Please sign in.', 'Close', { duration: 3000 });
-        return;
-      }
-      debugger;
-      // Fetch the newly uploaded file URL.
-      const uploadedImageUrl = await this.fileService.getUserImage(identityId);
-      if (uploadedImageUrl) {
-        this.uploadedUrls.push(uploadedImageUrl); // Add URL to the array
-      }
-
+      console.log("Uploading file...", this.selectedFile);
+      const uploadedImageUrl = await this.fileService.uploadFile(this.selectedFile);
+      
+      console.log("✅ Upload completed successfully. File URL:", uploadedImageUrl);
+  
+      this.uploadedUrls.push(uploadedImageUrl); // ✅ Store uploaded file URL
+  
       this.snackBar.open('File uploaded successfully!', 'Close', { duration: 3000 });
-    } catch (error) {
-      console.error('Error uploading file:', error);
-      this.snackBar.open('Error uploading file!', 'Close', { duration: 3000 });
+    } catch (error: any) {
+      console.error('❌ Error uploading file:', error);
+  
+      if (error.message.includes("You do not have permission to upload files")) {
+        this.snackBar.open("You don't have permission to upload files. Contact support.", 'Close', { duration: 5000 });
+      } else if (error.message.includes("Network issue or invalid credentials")) {
+        this.snackBar.open('Network issue detected. Please check your connection.', 'Close', { duration: 5000 });
+      } else {
+        this.snackBar.open('Error uploading file. Please try again.', 'Close', { duration: 3000 });
+      }
     }
   }
 }
