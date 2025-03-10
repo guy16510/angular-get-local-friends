@@ -69,19 +69,16 @@ const everyoneRole = iam.Role.fromRoleArn(
 );
 
 // ✅ Attach S3 Policies to EVERYONE Group
+const bucketArn = `arn:aws:s3:::${process.env['AMPLIFY_STORAGE_BUCKET_NAME']}`;
+
 everyoneRole.addToPrincipalPolicy(new iam.PolicyStatement({
   actions: ["s3:GetObject"],
-  resources: [`arn:aws:s3:::${process.env['AMPLIFY_STORAGE_BUCKET_NAME']}/protected/*`],
+  resources: [`${bucketArn}/protected/*`],
   effect: iam.Effect.ALLOW,
 }));
 
 everyoneRole.addToPrincipalPolicy(new iam.PolicyStatement({
   actions: ["s3:PutObject", "s3:DeleteObject"],
-  resources: [`arn:aws:s3:::${process.env['AMPLIFY_STORAGE_BUCKET_NAME']}/protected/*`],
-  effect: iam.Effect.ALLOW,
-  conditions: {
-    StringLike: {
-      "s3:prefix": ["protected/${cognito-identity.amazonaws.com:sub}/*"]
-    }
-  }
+  resources: [`${bucketArn}/protected/\${cognito-identity.amazonaws.com:sub}/*`], // <-- correct way
+  effect: iam.Effect.ALLOW
 }));
