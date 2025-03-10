@@ -9,12 +9,13 @@ import { ImageDisplayComponent } from '../image-display/image-display.component'
 import { LoadingComponent } from '../shared/loading/loading.component';
 import { FormsModule } from '@angular/forms';
 import { Observable } from 'rxjs/internal/Observable';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-search',
   templateUrl: './search.component.html',
   styleUrls: ['./search.component.css'],
-  imports: [CommonModule, MaterialModule, ImageDisplayComponent, LoadingComponent, FormsModule],
+  imports: [CommonModule, MaterialModule, ImageDisplayComponent, LoadingComponent, FormsModule, RouterModule],
   standalone: true
 })
 export class SearchComponent implements OnInit {
@@ -25,6 +26,7 @@ export class SearchComponent implements OnInit {
 
   lat!: number;
   lng!: number;
+  city: string | null = null;
   radius = 10;
   radiusOptions = [5, 10, 15, 25, 50];
 
@@ -40,6 +42,7 @@ export class SearchComponent implements OnInit {
     const ipLocation = await this.geoService.getIPLocation();
     this.lat = ipLocation.lat;
     this.lng = ipLocation.lng;
+    this.city = ipLocation.city || null;
   }
 
   async usePreciseLocation() {

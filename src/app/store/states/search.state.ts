@@ -34,6 +34,11 @@ export class SearchState {
   @Selector() static nextToken(state: SearchStateModel) {
     return state.nextToken;
   }
+  
+  @Selector()
+  static getUserById(state: SearchStateModel): (identityId: string) => any | undefined {
+    return (identityId: string) => state.nearbyUsers.find(user => user.identityId === identityId);
+  }
 
   @Action(SearchNearbyUsers)
   async search(ctx: StateContext<SearchStateModel>, action: SearchNearbyUsers) {

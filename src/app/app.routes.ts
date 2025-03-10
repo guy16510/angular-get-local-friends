@@ -11,6 +11,7 @@ import { AccountSetupComponent } from './components/account-setup/account-setup.
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { ChatComponent } from './components/chat/chat.component';
 import { ChatListComponent } from './components/chat-list/chat-list.component';
+import { UserBioComponent } from './components/user-bio/user-bio.component';
 
 export const routes: Routes = [
     {
@@ -59,6 +60,10 @@ export const routes: Routes = [
         path: 'search',
         component: SearchComponent,
         canActivate: [authGuard]
+    },
+    {
+        path: 'user-bio/:id',
+        component: UserBioComponent
     },
     {
         path: '**',

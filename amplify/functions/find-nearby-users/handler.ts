@@ -94,7 +94,7 @@ export const handler: Schema["findNearbyUsers"]["functionHandler"] = async (even
         const distance = haversine(lat, lng, user.locationLat, user.locationLng);
         return {
           ...user,
-          distance: distance >= 5 ? `${distance.toFixed(1)} miles` : 'Less than 5 miles away',
+          distance: distance >= 5 ? `${distance.toFixed(1)} miles` : '< 5 miles',
           actualDistance: distance // ✅ store privately for internal sorting only
         };
       })

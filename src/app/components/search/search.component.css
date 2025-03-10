@@ -1,28 +1,26 @@
-.search-container {
-  max-width: 900px;
-  margin: auto;
-  padding-top: 80px;
+main.search-container {
+  padding: 20px;
 }
 
-.location-info {
-  font-size: 0.9rem;
-  margin-bottom: 12px;
-}
-
-.buttons {
+.search-controls {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 12px;
-  margin-top: 16px;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
-mat-card {
-  margin-bottom: 20px;
+.radius-field {
+  width: 120px;
 }
 
-.pagination-controls {
+.user-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.navigation-buttons {
   margin-top: 20px;
   display: flex;
-  justify-content: center;
-  gap: 10px;
+  justify-content: space-between;
 }

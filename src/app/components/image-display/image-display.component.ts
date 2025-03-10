@@ -10,28 +10,17 @@ import { FileService } from '../../services/file.service';
 })
 export class ImageDisplayComponent implements OnInit {
   @Input() identityId: string = '';
-  imgSrc: string = ''; // Start as empty
-  defaultImg = '/assets/images/noImageUploaded.jpg'; // Fallback image
+  imgSrc: string | null = null;
+  defaultImg = '/assets/images/noImageUploaded.jpg';
 
   constructor(private fileService: FileService) {}
 
   async ngOnInit() {
-    if (!this.identityId) {
-      console.warn('Identity ID is missing.');
-      this.imgSrc = this.defaultImg;
-      return;
-    }
-
     try {
-      const imgSource = await this.fileService.getUserImage(this.identityId);
-      if (imgSource) {
-        this.imgSrc = imgSource; // ✅ Assign directly, no cache logic
-      } else {
-        this.imgSrc = this.defaultImg; // ✅ Fallback if image not found
-      }
+      this.imgSrc = await this.fileService.getUserImage(this.identityId);
     } catch (error) {
-      console.error('Error fetching image:', error);
-      this.imgSrc = this.defaultImg; // ✅ Fallback on error
+      console.error('❌ Error loading user image:', error);
+      this.imgSrc = this.defaultImg;
     }
   }
 }

@@ -2,57 +2,48 @@
   <mat-card class="search-card">
     <mat-card-title>Find Friends Nearby</mat-card-title>
     <mat-card-content>
-      <div class="form-row">
-        <mat-form-field class="form-field" appearance="outline">
-          <mat-label>Latitude</mat-label>
-          <input matInput [(ngModel)]="lat" name="lat">
-        </mat-form-field>
-
-        <mat-form-field class="form-field" appearance="outline">
-          <mat-label>Longitude</mat-label>
-          <input matInput [(ngModel)]="lng" name="lng">
-        </mat-form-field>
-
-        <mat-form-field class="form-field" appearance="outline">
+      <div class="search-controls">
+        <span class="location-info">Search near: <strong>{{city}}</strong></span>
+        <mat-form-field class="radius-field" appearance="outline">
           <mat-label>Radius</mat-label>
           <mat-select [(ngModel)]="radius" name="radius">
-            <mat-option *ngFor="let r of radiusOptions" [value]="r">{{ r }} miles</mat-option>
+            <mat-option *ngFor="let option of radiusOptions" [value]="option">{{ option }} mi</mat-option>
           </mat-select>
         </mat-form-field>
+
+        <button mat-raised-button color="accent" (click)="usePreciseLocation()">Precise Location</button>
+        <button mat-raised-button color="primary" (click)="searchUsers()" [disabled]="loading$ | async">Search</button>
       </div>
 
-      <div class="buttons-row">
-        <button mat-stroked-button type="button" (click)="usePreciseLocation()">Use Precise Location</button>
-        <button mat-raised-button color="primary" (click)="searchUsers()" [disabled]="loading$ | async">
-          Search
-        </button>
+      <app-loading *ngIf="loading$ | async"></app-loading>
+
+      <mat-grid-list cols="3" rowHeight="1:1.2" gutterSize="12px" *ngIf="(nearbyUsers$ | async)?.length">
+        <mat-grid-tile *ngFor="let user of nearbyUsers$ | async">
+          <mat-card class="user-card" [routerLink]="['/user-bio', user.identityId]">
+            <app-image-display [identityId]="user.identityId"></app-image-display>
+            <mat-card-content>
+              <p>{{ user.userName }}</p>
+              <p>{{user.distance}}</p>
+              <!-- <p>{{ user.distance < 5 ? 'Less than 5 mi' : (user.distance | number:'1.1-1') + ' mi' }}</p> -->
+            </mat-card-content>
+          </mat-card>
+        </mat-grid-tile>
+        <!-- <mat-grid-tile *ngFor="let user of nearbyUsers$ | async">
+          <mat-card class="user-card">
+            <app-image-display [identityId]="user.identityId"></app-image-display>
+            <mat-card-content>
+              <p class="user-id">{{ user.identityId }}</p>
+               {{user.distance}}
+              <p>Updated: {{ user.lastUpdated | date:'short' }}</p>
+            </mat-card-content>
+          </mat-card>
+        </mat-grid-tile> -->
+      </mat-grid-list>
+
+      <div class="pagination-controls">
+        <button mat-stroked-button (click)="previousPage()">Previous</button>
+        <button mat-stroked-button (click)="nextPage()">Next</button>
       </div>
-
-      <app-loading *ngIf="loading$ | async" mode="indeterminate"></app-loading>
-
-      <div class="error" *ngIf="error$ | async as error">{{ error }}</div>
     </mat-card-content>
   </mat-card>
-
-  <mat-grid-list cols="3" gutterSize="12px" rowHeight="350px" *ngIf="(nearbyUsers$ | async)?.length">
-    <mat-grid-tile *ngFor="let user of nearbyUsers$ | async">
-      <mat-card class="user-card">
-        <app-image-display [identityId]="user.identityId"></app-image-display>
-        <mat-card-content>
-          <p>{{ user.userName || 'User' }}</p>
-          <p>{{ user.distance | number:'1.2-2' }} miles away</p>
-          <small>{{ user.lastUpdated | date:'short' }}</small>
-        </mat-card-content>
-      </mat-card>
-    </mat-grid-tile>
-  </mat-grid-list>
-
-  <div class="pagination-controls">
-    <button mat-stroked-button (click)="previousPage()" [disabled]="currentPage === 0">
-      Previous
-    </button>
-    <button mat-stroked-button (click)="nextPage()" [disabled]="!(paginationTokens[currentPage + 1])">
-      Next
-    </button>
-  </div>
 </main>

@@ -1,1 +1,19 @@
-<p>user-bio works!</p>
+<main class="user-profile-container" *ngIf="profile$ | async as profile">
+  <mat-card class="user-profile-card">
+    <mat-card-header>
+      <app-image-display [identityId]="identityId"></app-image-display>
+    </mat-card-header>
+    <mat-card-content>
+      <h2>{{ profile.userName }}</h2>
+      <p><strong>Distance:</strong> {{ profile.distance < 5 ? 'Less than 5 miles' : profile.distance + ' miles' }}</p>
+          <p><strong>Last Updated:</strong> {{ profile.lastUpdated | date:'short' }}</p>
+
+          <h3>Survey Answers</h3>
+          <ul>
+            <li *ngFor="let answer of profile.surveyAnswers">
+              <strong>Question {{answer.questionId}}:</strong> {{ answer.answer }}
+            </li>
+          </ul>
+    </mat-card-content>
+    </mat-card>
+</main>
