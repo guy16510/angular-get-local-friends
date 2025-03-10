@@ -58,7 +58,6 @@ export class MyProfileComponent implements OnInit {
         if (!id) {
           console.log('[ProfileComponent] identityId is null; dispatching CheckAuth and FetchIdentityId');
           this.store.dispatch(new CheckAuth());
-          this.store.dispatch(new FetchIdentityId());
         }
       });
 

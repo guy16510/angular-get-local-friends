@@ -10,152 +10,105 @@ if (!TABLE_NAME || TABLE_NAME.length === 0) {
   throw new Error("Missing environment variable: USER_PROFILE_TABLE_NAME");
 }
 
-/**
- * Converts degrees to radians.
- */
 function toRadians(degrees: number): number {
   return degrees * (Math.PI / 180);
 }
 
-/**
- * Haversine formula to calculate the great-circle distance between two points.
- */
 function haversine(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 3958.8; // Earth radius in miles
+  const R = 3958.8;
   const dLat = toRadians(lat2 - lat1);
   const dLon = toRadians(lon2 - lon1);
   const a = Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
-    Math.sin(dLon / 2) ** 2;
+    Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) * Math.sin(dLon / 2) ** 2;
   return 2 * R * Math.asin(Math.sqrt(a));
 }
 
-/**
- * Determines appropriate geohash precision based on the search radius.
- */
 function getGeohashPrecision(radius: number): number {
-  if (typeof radius !== 'number' || radius <= 0) return 5; // Default precision
-  if (radius <= 5) return 7;   // 150m precision
-  if (radius <= 10) return 6;  // 1.2km precision
-  if (radius <= 20) return 5;  // 4.8km precision
-  return 4;                    // 39km precision (for 20-50 miles)
+  if (radius <= 5) return 7;
+  if (radius <= 10) return 6;
+  if (radius <= 20) return 5;
+  return 4;
 }
 
-/**
- * Queries DynamoDB for users within a specific geohash.
- */
-/**
- * Queries DynamoDB for users within a specific geohash.
- */
-async function queryGeohash(geohash: string, nextToken?: string): Promise<AWS.DynamoDB.DocumentClient.QueryOutput | { error: string }> {
-  const safeNextToken = nextToken ?? undefined; // ✅ Fix TypeScript issue
-
+async function queryGeohash(geohash: string, nextToken?: string) {
   const params: AWS.DynamoDB.DocumentClient.QueryInput = {
     TableName: TABLE_NAME,
     IndexName: 'userProfilesByGeohashAndRangeKey',
     KeyConditionExpression: 'geohash = :hash',
     ExpressionAttributeValues: { ':hash': geohash },
-    Limit: 20, // Only fetch what we need
-    ExclusiveStartKey: safeNextToken ? JSON.parse(safeNextToken) : undefined,
+    Limit: 10,
+    ExclusiveStartKey: nextToken ? JSON.parse(nextToken) : undefined,
   };
 
-  console.log(`Querying DynamoDB for geohash: ${geohash}`);
-  console.log("Query Params:", JSON.stringify(params, null, 2));
+  console.log(`📌 Querying DynamoDB with params:`, JSON.stringify(params));
 
   try {
     return await docClient.query(params).promise();
   } catch (error: any) {
     console.error(`❌ DynamoDB Query Error for geohash ${geohash}:`, error);
-    
-    // ✅ Explicitly return an error object matching the defined union type
-    return { error: error.message || "Unknown error occurred while querying DynamoDB" };
+    throw new Error(error.message);
   }
 }
 
 export const handler: Schema["findNearbyUsers"]["functionHandler"] = async (event) => {
+  const { lat, lng, radius, nextToken } = event.arguments;
+
+  console.log("📌 Input parameters:", { lat, lng, radius, nextToken });
+
+  if (typeof lat !== 'number' || typeof lng !== 'number' || typeof radius !== 'number') {
+    throw new Error("lat, lng, and radius must be numbers");
+  }
+
+  if (radius < 1 || radius > 50) {
+    throw new Error("Radius must be between 1 and 50 miles");
+  }
+
+  const precision = getGeohashPrecision(radius);
+  console.log(`📌 Determined geohash precision: ${precision}`);
+
+  const centerHash = ngeohash.encode(lat, lng, precision);
+  console.log(`📌 Computed center geohash: ${centerHash}`);
+
+  let allUsers: any[] = [];
+
   try {
-    const { lat, lng, radius, nextToken } = event.arguments;
-
-    console.log("📌 Input Parameters:", { lat, lng, radius, nextToken });
-
-    if (typeof lat !== 'number' || typeof lng !== 'number' || typeof radius !== 'number') {
-      throw new Error("lat, lng, and radius must be numbers");
-    }
-    if (radius < 1 || radius > 50) {
-      throw new Error("Radius must be between 1 and 50 miles");
-    }
-
-    const precision = getGeohashPrecision(radius);
-    console.log(`📌 Determined geohash precision: ${precision}`);
-
-    const centerHash = ngeohash.encode(lat, lng, precision);
-    console.log(`📌 Computed center geohash: ${centerHash}`);
-
-    let allUsers: any[] = [];
-
-    // ✅ Step 1: Query the center geohash first
-    let result = await queryGeohash(centerHash, nextToken ?? undefined);
-
-    // ✅ Check if there's an error in the result and return immediately
-    if ("error" in result) {
-      console.error(`❌ Error while querying geohash ${centerHash}:`, result.error);
-      return JSON.stringify({
-        success: false,
-        error: `DynamoDB error: ${result.error}`
-      });
-    }
-
+    let result = await queryGeohash(centerHash, nextToken || undefined);
     allUsers = result.Items || [];
+
     console.log(`✅ Users found in center geohash ${centerHash}:`, allUsers.length);
 
-    // ✅ Step 2: If < 10 results, expand to neighboring geohashes
     if (allUsers.length < 10) {
       const neighborHashes = ngeohash.neighbors(centerHash);
-      console.log("📌 Expanding search to neighboring geohashes:", neighborHashes);
+      console.log("📌 Neighboring geohashes:", neighborHashes);
 
       for (const geohash of neighborHashes) {
-        if (allUsers.length >= 10) break; // Stop if we have enough users
+        if (allUsers.length >= 10) break;
 
         let neighborResult = await queryGeohash(geohash);
-        
-        // ✅ If an error occurs in a neighbor query, return the error
-        if ("error" in neighborResult) {
-          console.error(`❌ Error while querying geohash ${geohash}:`, neighborResult.error);
-          return JSON.stringify({
-            success: false,
-            error: `DynamoDB error: ${neighborResult.error}`
-          });
-        }
-
         allUsers = allUsers.concat(neighborResult.Items || []);
-        console.log(`✅ Users found in geohash ${geohash}:`, neighborResult.Items?.length || 0);
+        console.log(`✅ Users found in neighbor geohash ${geohash}:`, neighborResult.Items?.length || 0);
       }
     }
 
-    console.log(`📌 Total users before filtering: ${allUsers.length}`);
-
-    // ✅ Step 3: Apply Haversine Distance Filtering
     const filteredUsers = allUsers.map(user => {
       const distance = haversine(lat, lng, user.locationLat, user.locationLng);
       console.log(`📌 User ${user.identityId} is ${distance.toFixed(2)} miles away`);
       return { ...user, distance };
     }).filter(user => user.distance <= radius);
 
-    console.log(`✅ Filtered Users (within ${radius} miles):`, filteredUsers.length);
+    console.log(`✅ Filtered users within ${radius} miles:`, filteredUsers.length);
 
-    // ✅ Return as a JSON string
+    // Explicitly stringify return
     return JSON.stringify({
       success: true,
-      nearbyUsers: filteredUsers.slice(0, 20), // ✅ Return only 20 users max
+      nearbyUsers: filteredUsers.slice(0, 10),
       nextToken: result.LastEvaluatedKey ? JSON.stringify(result.LastEvaluatedKey) : null,
     });
-
   } catch (error: any) {
-    console.error("❌ Unexpected Error in `findNearbyUsers`:", error);
-
+    console.error("❌ Unexpected Error in handler:", error);
     return JSON.stringify({
       success: false,
-      error: error.message || "An unexpected error occurred while processing your request."
+      error: error.message,
     });
   }
 };

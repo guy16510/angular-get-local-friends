@@ -20,3 +20,8 @@ export class SetAuthenticatedUser {
   static readonly type = '[Auth] Set Authenticated User';
   constructor(public user: any) {}
 }
+
+export class SetUserProfileImage {
+  static readonly type = '[Auth] Set User Profile Image';
+  constructor(public url: string) {}  // ✅ "public url"
+}

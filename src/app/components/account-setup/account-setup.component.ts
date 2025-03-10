@@ -56,11 +56,12 @@ export class AccountSetupComponent implements OnInit {
   
     // If user is logged in, get the identityId.
     this.identityId = this.store.selectSnapshot(AuthState.identityId);
-    this.userName = this.store.selectSnapshot(AuthState.userName);
+    debugger; //add userName
+    this.userName = this.store.selectSnapshot(AuthState.user);
     if (!this.identityId) {
       await firstValueFrom(this.store.dispatch(new FetchIdentityId()));
       this.identityId = this.store.selectSnapshot(AuthState.identityId);
-      this.userName = this.store.selectSnapshot(AuthState.userName);
+      this.userName = this.store.selectSnapshot(AuthState.user);
     }
   }
 

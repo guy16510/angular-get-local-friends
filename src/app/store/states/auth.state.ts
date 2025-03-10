@@ -2,7 +2,7 @@
 import { State, Action, StateContext, Selector } from '@ngxs/store';
 import { Injectable } from '@angular/core';
 import { signIn, signOut, getCurrentUser, fetchAuthSession, fetchUserAttributes } from 'aws-amplify/auth';
-import { CheckAuth, Login, Logout, FetchIdentityId, SetAuthenticatedUser } from '../actions/auth.actions';
+import { CheckAuth, Login, Logout, FetchIdentityId, SetAuthenticatedUser, SetUserProfileImage } from '../actions/auth.actions';
 
 export interface AuthStateModel {
   user: any;
@@ -10,6 +10,8 @@ export interface AuthStateModel {
   loading: boolean;
   error: string | null;
   userName: string | null;
+  profileImageUrl: string | null;
+
 }
 
 @State<AuthStateModel>({
@@ -19,7 +21,8 @@ export interface AuthStateModel {
     identityId: null,
     loading: false,
     error: null,
-    userName: null
+    userName: null,
+    profileImageUrl: null
   }
 })
 @Injectable()
@@ -36,8 +39,8 @@ export class AuthState {
   }
 
   @Selector()
-  static userName(state: AuthStateModel): any {
-    return state.userName;
+  static profileImageUrl(state: AuthStateModel): string | null {
+    return state.profileImageUrl;
   }
   
   @Selector()
@@ -55,25 +58,40 @@ export class AuthState {
     return state.error;
   }
   
+  /**
+   * Users Profile Image.
+   */
+  @Action(SetUserProfileImage)
+  setUserProfileImage({ patchState }: StateContext<AuthStateModel>, action: SetUserProfileImage) {
+    patchState({ profileImageUrl: action.url });
+  }
+
   @Action(CheckAuth)
   async checkAuth({ patchState }: StateContext<AuthStateModel>) {
     patchState({ loading: true, error: null });
-  
+
     try {
-      const currentUser = await getCurrentUser();
-      
-      // ✅ Fetch user attributes
-      const userAttributes = await fetchUserAttributes();
-      const nickname = userAttributes?.nickname || null;
-  
-      // ✅ Store user details including nickname in the state
-      patchState({ 
-        user: { ...currentUser, nickname, attributes: userAttributes },
-        userName: nickname,
-        loading: false 
+      const [authSession, currentUser, attributes] = await Promise.all([
+        fetchAuthSession(),
+        getCurrentUser(),
+        fetchUserAttributes()
+      ]);
+
+      patchState({
+        user: { ...currentUser, attributes },
+        identityId: authSession.identityId,
+        userName: attributes.nickname || null,
+        loading: false,
+        error: null
       });
     } catch (error: any) {
-      patchState({ user: null, loading: false, error: error.message || 'Error checking auth' });
+      patchState({
+        user: null,
+        identityId: null,
+        userName: null,
+        loading: false,
+        error: error.message || 'Error checking authentication'
+      });
     }
   }
   
@@ -102,20 +120,21 @@ export class AuthState {
     }
   }
 
-  @Action(FetchIdentityId)
-  async fetchIdentityId({ patchState }: StateContext<AuthStateModel>) {
-    patchState({ loading: true, error: null });
-    try {
-      const session = await fetchAuthSession();
-      patchState({ identityId: session?.identityId || null, loading: false });
-    } catch (error: any) {
-      console.error('Error getting identity ID:', error);
-      patchState({ identityId: null, loading: false, error: error.message || 'Error fetching identity id' });
-    }
-  }
+  //TODO might not need anymore, being done above.
+  // @Action(FetchIdentityId)
+  // async fetchIdentityId({ patchState }: StateContext<AuthStateModel>) {
+  //   patchState({ loading: true, error: null });
+  //   try {
+  //     const session = await fetchAuthSession();
+  //     patchState({ identityId: session?.identityId || null, loading: false });
+  //   } catch (error: any) {
+  //     console.error('Error getting identity ID:', error);
+  //     patchState({ identityId: null, loading: false, error: error.message || 'Error fetching identity id' });
+  //   }
+  // }
 
-  @Action(SetAuthenticatedUser)
-  setAuthenticatedUser({ patchState }: StateContext<AuthStateModel>, action: SetAuthenticatedUser) {
-    patchState({ user: action.user });
-  }
+  // @Action(SetAuthenticatedUser)
+  // setAuthenticatedUser({ patchState }: StateContext<AuthStateModel>, action: SetAuthenticatedUser) {
+  //   patchState({ user: action.user });
+  // }
 }

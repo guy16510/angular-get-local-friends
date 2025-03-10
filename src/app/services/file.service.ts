@@ -1,121 +1,76 @@
 import { Injectable } from '@angular/core';
-import { uploadData, getUrl, UploadDataWithPathOutput } from 'aws-amplify/storage';
+import { uploadData, getUrl } from 'aws-amplify/storage';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FileService {
-
-  constructor() {}
+  private cacheTTL = 86400000; // 1 day (milliseconds)
 
   /**
-   * Converts an image file to WebP format before uploading.
-   * @param file The file to convert.
-   * @returns A Promise resolving to a Blob containing the WebP image.
+   * Converts a given file to WebP format.
    */
-  private async convertToWebP(file: File): Promise<Blob> {
+  async convertToWebP(file: File): Promise<Blob> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.readAsDataURL(file);
-
-      reader.onload = async (event: any) => {
+      reader.onload = (event: any) => {
         const img = new Image();
         img.src = event.target.result;
-
         img.onload = () => {
           const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-
-          if (!ctx) {
-            reject(new Error('Canvas context is not available.'));
-            return;
-          }
-
           canvas.width = img.width;
           canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return reject('Canvas context error');
           ctx.drawImage(img, 0, 0);
-
-          canvas.toBlob((blob) => {
-            if (blob) {
-              resolve(blob);
-            } else {
-              reject(new Error('Failed to convert image to WebP.'));
-            }
-          }, 'image/webp', 0.8); // Adjust quality if needed
+          canvas.toBlob(blob => {
+            if (blob) resolve(blob);
+            else reject(new Error('Conversion to WebP failed.'));
+          }, 'image/webp', 0.8);
         };
-
-        img.onerror = (error) => reject(error);
+        img.onerror = reject;
       };
-
-      reader.onerror = (error) => reject(error);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
     });
   }
 
-  /**
-   * Uploads a file as a WebP image named `profile.webp` to the user's protected storage.
-   * @param file The original file to upload.
-   * @returns A Promise that resolves with the upload result.
-   */
-  async uploadFile(file: File): Promise<string> {
+  async uploadFile(identityId: string, fileBlob: Blob): Promise<string> {
+    const uploadPath = `protected/${identityId}/profile.webp`;
     try {
-      const webpBlob = await this.convertToWebP(file);
-      
-      const identityId = (await import('aws-amplify/auth')).getCurrentUser().then(user => user.userId);
-  
-      // ✅ Upload File
-      const result: UploadDataWithPathOutput = await uploadData({
-        data: webpBlob,
-        path: () => `protected/${identityId}/profile.webp`,
+      await uploadData({
+        path: uploadPath,
+        data: fileBlob,
         options: { contentType: 'image/webp' }
       });
-  
-      console.log("Upload successful:", result);
-  
-      // ✅ Fetch URL using getUrl()
-      const fileUrl = await getUrl({ path: `protected/${identityId}/profile.webp` });
-      return fileUrl.url.toString(); // ✅ Return the file URL
+
+      const { url } = await getUrl({ path: uploadPath });
+      localStorage.setItem(`user-image-${identityId}`, JSON.stringify({
+        url: url.toString(),
+        timestamp: Date.now()
+      }));
+
+      return url.toString();
     } catch (error: any) {
-      console.error("❌ Error uploading WebP file:", error);
-  
-      if (error.name === "AccessDenied" || error.message.includes("not authorized to perform: s3:PutObject")) {
-        throw new Error("You do not have permission to upload files. Please contact support.");
-      }
-  
-      if (error.message.includes("NetworkError") || error.message.includes("403")) {
-        throw new Error("Network issue or invalid credentials. Please try again.");
-      }
-  
-      throw error;
+      throw new Error(`Failed to upload image: ${error.message || error}`);
     }
   }
 
-
-
-  /**
-   * Fetch the signed URL for the user's profile image.
-   * @param identityId - The Cognito Identity ID of the user.
-   * @returns A Promise resolving to the signed image URL.
-   */
-  async getUserImage(identityId: string | null): Promise<string | null> {
-    if (!identityId) {
-      console.warn('Identity ID is not available.');
-      return null;
+  async getUserImage(identityId: string): Promise<string | null> {
+    const cacheKey = `user-image-${identityId}`;
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      const { url, timestamp } = JSON.parse(cached);
+      if (Date.now() - timestamp < 86400000) return url;
     }
-  
-    const filePath = `protected/${identityId}/profile.webp`;
-  
+
     try {
-      // ✅ Try to get the signed URL directly
-      const result = await getUrl({ path: filePath });
-      return result.url.toString() || null;
+      const result = await getUrl({ path: `protected/${identityId}/profile.webp` });
+      const url = result.url.toString();
+      localStorage.setItem(`user-image-${identityId}`, JSON.stringify({ url, timestamp: Date.now() }));
+      return url;
     } catch (error: any) {
-      // ✅ If the file doesn't exist, return null (avoids unnecessary LIST request)
-      if (error.name === 'NoSuchKey' || error.message.includes('does not exist')) {
-        console.warn(`File not found: ${filePath}`);
-        return null;
-      }
-  
-      console.error('Error fetching image URL:', error);
+      console.warn('Image not found, returning null:', error);
       return null;
     }
   }
