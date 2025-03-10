@@ -1,44 +1,58 @@
 <main class="search-container">
-  <h1>Search Nearby Users</h1>
-  <form (ngSubmit)="searchUsers()">
-    <label>
-      Latitude:
-      <input type="number" [(ngModel)]="lat" name="lat" required />
-    </label>
-    <br />
-    <label>
-      Longitude:
-      <input type="number" [(ngModel)]="lng" name="lng" required />
-    </label>
-    <br />
-    <label>
-      Radius (1-25 miles):
-      <input type="number" [(ngModel)]="radius" name="radius" required min="1" max="25" />
-    </label>
-    <br />
-    <button type="button" (click)="useCurrentLocation()">Use Current Location</button>
-    <br />
-    <button type="submit">Search</button>
-  </form>
+  <mat-card class="search-card">
+    <mat-card-title>Find Friends Nearby</mat-card-title>
+    <mat-card-content>
+      <div class="form-row">
+        <mat-form-field class="form-field" appearance="outline">
+          <mat-label>Latitude</mat-label>
+          <input matInput [(ngModel)]="lat" name="lat">
+        </mat-form-field>
 
-  <!-- Show loading overlay if search is in progress -->
-  <ng-container *ngIf="loading">
-    <app-loading></app-loading>
-  </ng-container>
+        <mat-form-field class="form-field" appearance="outline">
+          <mat-label>Longitude</mat-label>
+          <input matInput [(ngModel)]="lng" name="lng">
+        </mat-form-field>
 
-  <div *ngIf="message">{{ message }}</div>
+        <mat-form-field class="form-field" appearance="outline">
+          <mat-label>Radius</mat-label>
+          <mat-select [(ngModel)]="radius" name="radius">
+            <mat-option *ngFor="let r of radiusOptions" [value]="r">{{ r }} miles</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
 
-  <!-- Grid display using Angular Material -->
-  <mat-grid-list cols="3" rowHeight="1:2" gutterSize="16px" *ngIf="!loading && nearbyUsers.length">
-    <mat-grid-tile *ngFor="let user of nearbyUsers">
+      <div class="buttons-row">
+        <button mat-stroked-button type="button" (click)="usePreciseLocation()">Use Precise Location</button>
+        <button mat-raised-button color="primary" (click)="searchUsers()" [disabled]="loading$ | async">
+          Search
+        </button>
+      </div>
+
+      <app-loading *ngIf="loading$ | async" mode="indeterminate"></app-loading>
+
+      <div class="error" *ngIf="error$ | async as error">{{ error }}</div>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-grid-list cols="3" gutterSize="12px" rowHeight="350px" *ngIf="(nearbyUsers$ | async)?.length">
+    <mat-grid-tile *ngFor="let user of nearbyUsers$ | async">
       <mat-card class="user-card">
         <app-image-display [identityId]="user.identityId"></app-image-display>
         <mat-card-content>
-          <p><strong>Identity ID:</strong> {{ user.identityId }}</p>
-          <p><strong>Distance:</strong> {{ user.distance | number:'1.2-2' }} miles</p>
-          <p><strong>Last Updated:</strong> {{ user.lastUpdated | date:'short' }}</p>
+          <p>{{ user.userName || 'User' }}</p>
+          <p>{{ user.distance | number:'1.2-2' }} miles away</p>
+          <small>{{ user.lastUpdated | date:'short' }}</small>
         </mat-card-content>
       </mat-card>
     </mat-grid-tile>
   </mat-grid-list>
+
+  <div class="pagination-controls">
+    <button mat-stroked-button (click)="previousPage()" [disabled]="currentPage === 0">
+      Previous
+    </button>
+    <button mat-stroked-button (click)="nextPage()" [disabled]="!(paginationTokens[currentPage + 1])">
+      Next
+    </button>
+  </div>
 </main>

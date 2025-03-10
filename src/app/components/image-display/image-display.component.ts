@@ -1,12 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
-import { MatGridTile, MatGridList } from '@angular/material/grid-list';
-import { MatCardModule, MatCardContent } from '@angular/material/card';
 import { FileService } from '../../services/file.service';
 
 @Component({
     selector: 'app-image-display',
-    imports: [MatGridTile, MatGridList, MatCardModule, MatCardContent, CommonModule],
+    imports: [CommonModule],
     templateUrl: './image-display.component.html',
     styleUrl: './image-display.component.css'
 })

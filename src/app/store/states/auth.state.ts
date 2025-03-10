@@ -39,6 +39,11 @@ export class AuthState {
   }
 
   @Selector()
+  static userName(state: AuthStateModel): any {
+    return state.userName;
+  }
+
+  @Selector()
   static profileImageUrl(state: AuthStateModel): string | null {
     return state.profileImageUrl;
   }
@@ -76,7 +81,6 @@ export class AuthState {
         getCurrentUser(),
         fetchUserAttributes()
       ]);
-
       patchState({
         user: { ...currentUser, attributes },
         identityId: authSession.identityId,

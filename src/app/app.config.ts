@@ -13,6 +13,7 @@ import { withNgxsLoggerPlugin } from '@ngxs/logger-plugin';
 import { TodoState } from './store/states/todo.state';
 import { withNgxsStoragePlugin } from '@ngxs/storage-plugin';
 import { ChatState } from './store/states/chat.state';
+import { SearchState } from './store/states/search.state';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -24,12 +25,13 @@ export const appConfig: ApplicationConfig = {
         SurveyState, 
         UserProfileState, 
         TodoState, 
-        ChatState
+        ChatState,
+        SearchState
       ],
       withNgxsReduxDevtoolsPlugin({ name: 'GetLocalFriends' }),
+      withNgxsStoragePlugin({ keys: ['search'] }),
       withNgxsLoggerPlugin(),
       withNgxsFormPlugin(),
-      // withNgxsStoragePlugin({ keys: ['auth', 'todos'] }),
     )
   ]
 };

@@ -12,6 +12,9 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatSliderModule } from '@angular/material/slider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MatSelectModule } from '@angular/material/select';
+
 
 
 @NgModule({
@@ -27,7 +30,9 @@ import { MatListModule } from '@angular/material/list';
     MatSlideToggleModule,
     MatButtonToggleModule,
     MatSliderModule,
-    MatProgressBarModule
+    MatProgressBarModule,
+    MatGridListModule,
+    MatSelectModule
   ]
 })
 export class MaterialModule {}

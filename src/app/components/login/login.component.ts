@@ -1,10 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Amplify, Hub } from '@aws-amplify/core';
 import { AmplifyAuthenticatorModule } from '@aws-amplify/ui-angular';
 import outputs from '../../../../amplify_outputs.json';
 import { Store } from '@ngxs/store';
-import { SetAuthenticatedUser, Logout, FetchIdentityId } from '../../store/actions/auth.actions';
+import { CheckAuth, Logout } from '../../store/actions/auth.actions';
 
 @Component({
   selector: 'app-login',
@@ -12,9 +12,12 @@ import { SetAuthenticatedUser, Logout, FetchIdentityId } from '../../store/actio
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })
-export class LoginComponent implements OnInit {
-  private hubListener!: (data: any) => void;
+export class LoginComponent implements OnInit, OnDestroy {
+  private unsubscribeHub?: () => void;
   private hasDispatchedLogout = false;
+
+  // ✅ Corrected with explicit type:
+  signUpAttributes: any = ['nickname', 'email'];
 
   constructor(
     private store: Store,
@@ -24,32 +27,29 @@ export class LoginComponent implements OnInit {
     Amplify.configure(outputs);
   }
 
-  // ✅ Define sign-up attributes (nickname added)
-  signUpAttributes:any = ['nickname', 'email'];
-
   ngOnInit() {
-    this.hubListener = (data: any) => {
-      const { payload } = data;
-      if (payload.event === 'signedIn' && payload.data) {
+    this.unsubscribeHub = Hub.listen('auth', ({ payload }) => {
+      if (payload.event === 'signedIn') {
         console.log('User signed in:', payload.data);
-        this.store.dispatch(new SetAuthenticatedUser(payload.data));
 
-        // Fetch identityId after login
-        this.store.dispatch(new FetchIdentityId()).subscribe(() => {
+        this.store.dispatch(new CheckAuth()).subscribe(() => {
           const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
-          debugger;
           this.router.navigate([returnUrl]);
         });
-      } else if (payload.event === 'signedOut') {
-        console.log('User signed out');
-        if (!this.hasDispatchedLogout) {
-          this.hasDispatchedLogout = true;
-          this.store.dispatch(new Logout());
-        }
       }
-    };
 
-    Hub.listen('auth', this.hubListener);
+      if (payload.event === 'signedOut' && !this.hasDispatchedLogout) {
+        console.log('User signed out');
+        this.hasDispatchedLogout = true;
+        this.store.dispatch(new Logout());
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.unsubscribeHub) {
+      this.unsubscribeHub();
+    }
   }
 
   handleSignOut(signOutFn: Function) {

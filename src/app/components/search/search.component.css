@@ -1,6 +1,28 @@
 .search-container {
-    max-width: 800px;
-    margin: 2rem auto;
-    padding: 1rem;
-    padding-top:80px;
-  }
+  max-width: 900px;
+  margin: auto;
+  padding-top: 80px;
+}
+
+.location-info {
+  font-size: 0.9rem;
+  margin-bottom: 12px;
+}
+
+.buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  margin-bottom: 12px;
+}
+
+mat-card {
+  margin-bottom: 20px;
+}
+
+.pagination-controls {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}

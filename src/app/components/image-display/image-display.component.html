@@ -1,14 +1,8 @@
-<mat-card class="image-card">
-    <mat-card-content>
-      <mat-grid-list cols="1" rowHeight="200px">
-        <mat-grid-tile>
-          <img
-            [src]="imgSrc"
-            alt="User Profile"
-            class="profile-image"
-            (error)="imgSrc = defaultImg"
-          />
-        </mat-grid-tile>
-      </mat-grid-list>
-    </mat-card-content>
-  </mat-card>
+<div class="image-card">
+  <img
+    [src]="imgSrc"
+    alt="User Profile"
+    class="profile-image"
+    (error)="imgSrc = defaultImg"
+  />
+</div>

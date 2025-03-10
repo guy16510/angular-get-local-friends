@@ -5,7 +5,7 @@ import ngeohash from 'ngeohash';
 const docClient = new AWS.DynamoDB.DocumentClient();
 const TABLE_NAME = process.env['USER_PROFILE_TABLE_NAME'] || '';
 
-if (!TABLE_NAME || TABLE_NAME.length === 0) {
+if (!TABLE_NAME) {
   console.error("ERROR: USER_PROFILE_TABLE_NAME is not set!");
   throw new Error("Missing environment variable: USER_PROFILE_TABLE_NAME");
 }
@@ -23,29 +23,30 @@ function haversine(lat1: number, lon1: number, lat2: number, lon2: number): numb
   return 2 * R * Math.asin(Math.sqrt(a));
 }
 
-function getGeohashPrecision(radius: number): number {
-  if (radius <= 5) return 7;
-  if (radius <= 10) return 6;
-  if (radius <= 20) return 5;
-  return 4;
-}
+/**
+ * Always use precision 7 (~150m) for best accuracy.
+ */
+const GEOHASH_PRECISION = 7;
 
-async function queryGeohash(geohash: string, nextToken?: string) {
+/**
+ * Query DynamoDB for a given geohash and nextToken for pagination
+ */
+async function queryGeohash(geohash: string, nextToken?: AWS.DynamoDB.DocumentClient.Key) {
   const params: AWS.DynamoDB.DocumentClient.QueryInput = {
     TableName: TABLE_NAME,
     IndexName: 'userProfilesByGeohashAndRangeKey',
     KeyConditionExpression: 'geohash = :hash',
     ExpressionAttributeValues: { ':hash': geohash },
-    Limit: 10,
-    ExclusiveStartKey: nextToken ? JSON.parse(nextToken) : undefined,
+    Limit: 25,
+    ExclusiveStartKey: nextToken,
   };
 
-  console.log(`📌 Querying DynamoDB with params:`, JSON.stringify(params));
+  console.log(`📌 Querying DynamoDB geohash: ${geohash}`, params);
 
   try {
     return await docClient.query(params).promise();
   } catch (error: any) {
-    console.error(`❌ DynamoDB Query Error for geohash ${geohash}:`, error);
+    console.error(`❌ DynamoDB Query Error (${geohash}):`, error);
     throw new Error(error.message);
   }
 }
@@ -55,7 +56,7 @@ export const handler: Schema["findNearbyUsers"]["functionHandler"] = async (even
 
   console.log("📌 Input parameters:", { lat, lng, radius, nextToken });
 
-  if (typeof lat !== 'number' || typeof lng !== 'number' || typeof radius !== 'number') {
+  if ([lat, lng, radius].some(param => typeof param !== 'number')) {
     throw new Error("lat, lng, and radius must be numbers");
   }
 
@@ -63,46 +64,57 @@ export const handler: Schema["findNearbyUsers"]["functionHandler"] = async (even
     throw new Error("Radius must be between 1 and 50 miles");
   }
 
-  const precision = getGeohashPrecision(radius);
-  console.log(`📌 Determined geohash precision: ${precision}`);
-
-  const centerHash = ngeohash.encode(lat, lng, precision);
-  console.log(`📌 Computed center geohash: ${centerHash}`);
+  const centerHash = ngeohash.encode(lat, lng, GEOHASH_PRECISION);
+  const hashesToQuery = [centerHash, ...ngeohash.neighbors(centerHash)];
 
   let allUsers: any[] = [];
+  let evaluatedKeys: { [hash: string]: AWS.DynamoDB.DocumentClient.Key | undefined } = {};
+
+  // Decode incoming pagination token if present
+  const paginationState = nextToken ? JSON.parse(nextToken) : {};
+  evaluatedKeys = paginationState.evaluatedKeys || {};
 
   try {
-    let result = await queryGeohash(centerHash, nextToken || undefined);
-    allUsers = result.Items || [];
+    for (const hash of hashesToQuery) {
+      const exclusiveStartKey = evaluatedKeys[hash];
 
-    console.log(`✅ Users found in center geohash ${centerHash}:`, allUsers.length);
+      const result = await queryGeohash(hash, exclusiveStartKey);
+      evaluatedKeys[hash] = result.LastEvaluatedKey;
 
-    if (allUsers.length < 10) {
-      const neighborHashes = ngeohash.neighbors(centerHash);
-      console.log("📌 Neighboring geohashes:", neighborHashes);
+      allUsers.push(...(result.Items || []));
 
-      for (const geohash of neighborHashes) {
-        if (allUsers.length >= 10) break;
+      console.log(`✅ Found ${result.Items?.length || 0} users in geohash ${hash}`);
 
-        let neighborResult = await queryGeohash(geohash);
-        allUsers = allUsers.concat(neighborResult.Items || []);
-        console.log(`✅ Users found in neighbor geohash ${geohash}:`, neighborResult.Items?.length || 0);
-      }
+      if (allUsers.length >= 20) break; // Fetch at most 20 results per page
     }
 
-    const filteredUsers = allUsers.map(user => {
-      const distance = haversine(lat, lng, user.locationLat, user.locationLng);
-      console.log(`📌 User ${user.identityId} is ${distance.toFixed(2)} miles away`);
-      return { ...user, distance };
-    }).filter(user => user.distance <= radius);
+    // Filter precisely by haversine distance
+    const filteredUsers = allUsers
+      .map(user => {
+        const distance = haversine(lat, lng, user.locationLat, user.locationLng);
+        return {
+          ...user,
+          distance: distance >= 5 ? `${distance.toFixed(1)} miles` : 'Less than 5 miles away',
+          actualDistance: distance // ✅ store privately for internal sorting only
+        };
+      })
+      .filter(user => user.actualDistance <= radius)
+      .sort((a, b) => a.actualDistance - b.actualDistance)
+      .slice(0, 25); // use previously recommended limit
 
-    console.log(`✅ Filtered users within ${radius} miles:`, filteredUsers.length);
+    // Prepare the nextToken for pagination (if there are more results)
+    const hasMoreResults = Object.values(evaluatedKeys).some(key => !!key);
+    const newNextToken = hasMoreResults
+      ? JSON.stringify({ evaluatedKeys })
+      : null;
 
-    // Explicitly stringify return
+    console.log(`✅ Users returned after filtering: ${filteredUsers.length}`);
+    console.log(`📌 Next token for pagination: ${newNextToken}`);
+
     return JSON.stringify({
       success: true,
-      nearbyUsers: filteredUsers.slice(0, 10),
-      nextToken: result.LastEvaluatedKey ? JSON.stringify(result.LastEvaluatedKey) : null,
+      nearbyUsers: filteredUsers,
+      nextToken: newNextToken,
     });
   } catch (error: any) {
     console.error("❌ Unexpected Error in handler:", error);
