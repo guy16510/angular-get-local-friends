@@ -4,29 +4,29 @@ backend:
     build:
       commands:
         - 'npm ci --cache .npm --prefer-offline'
-        - 'echo "Setting DynamoDB Table Name Based on Environment..."'
-
-        # Set DynamoDB table names and AWS account ID
-        - export AWS_ACCOUNT_ID=438347844807  # <-- ADD THIS for IAM
+        - export AWS_ACCOUNT_ID=438347844807
         - |
           if [[ "$AWS_BRANCH" == "develop" ]]; then
-            export USER_PROFILE_TABLE_NAME="UserProfile-slzhpdj7ifgljk54sxgaj62qeu-NONE"
+            export AMPLIFY_USER_PROFILE_TABLE_NAME="UserProfile-slzhpdj7ifgljk54sxgaj62qeu-NONE"
             export AMPLIFY_STORAGE_BUCKET_NAME="amplify-dkrmsanbniimt-dev-userimagesdevelopbucket4-wpaceuhzu52d"
+            export AMPLIFY_EVERYONE_ROLE_ARN="arn:aws:iam::438347844807:role/amplify-dkrmsanbniimt-dev-amplifyAuthEVERYONEdevelo-zsnlJdljcJae"
           elif [[ "$AWS_BRANCH" == "main" ]]; then
-            export USER_PROFILE_TABLE_NAME="UserProfile-x334imiw7fh4hlc6cfem5zw2vy-NONE"
+            export AMPLIFY_USER_PROFILE_TABLE_NAME="UserProfile-x334imiw7fh4hlc6cfem5zw2vy-NONE"
             export AMPLIFY_STORAGE_BUCKET_NAME="amplify-dkrmsanbniimt-main-userimagesmainbucket4-xyz123abc"
+            export AMPLIFY_EVERYONE_ROLE_ARN="arn:aws:iam::438347844807:role/amplify-<your-main-role-name>"
           else
-            export USER_PROFILE_TABLE_NAME="UserProfile-default-NONE"
+            export AMPLIFY_USER_PROFILE_TABLE_NAME="UserProfile-default-NONE"
             export AMPLIFY_STORAGE_BUCKET_NAME="amplify-dkrmsanbniimt-default-userimagesdefaultbucket4-xyz999"
+            export AMPLIFY_EVERYONE_ROLE_ARN="arn:aws:iam::438347844807:role/amplify-<your-default-role-name>"
           fi
 
-        - 'echo "Using DynamoDB Table: $USER_PROFILE_TABLE_NAME"'
+        - 'echo "Using DynamoDB Table: $AMPLIFY_USER_PROFILE_TABLE_NAME"'
         - 'echo "Using S3 Bucket: $AMPLIFY_STORAGE_BUCKET_NAME"'
-        - 'export AMPLIFY_USER_PROFILE_TABLE_NAME=$USER_PROFILE_TABLE_NAME'
+        - 'echo "Using Everyone Role ARN: $AMPLIFY_EVERYONE_ROLE_ARN"'
 
         # Deploy backend resources
         - 'npx ampx pipeline-deploy --branch "$AWS_BRANCH" --app-id "$AWS_APP_ID"'
-
+        
 frontend:
   phases:
     preBuild:

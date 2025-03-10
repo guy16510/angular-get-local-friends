@@ -59,26 +59,22 @@ mutateUserProfileLambda.addToRolePolicy(new iam.PolicyStatement({
 /**
  * ✅ Allow `EVERYONE` Cognito role to access S3
  */
-const everyoneRoleName = `amplifyAuthEVERYONE-${process.env['AWS_BRANCH']}GroupRole`;
 const iamStack = backend.createStack("IAMStack");
-// ✅ Get IAM Roles from Cognito Groups
+
 const everyoneRole = iam.Role.fromRoleArn(
-  iamStack,  
+  iamStack,
   'EVERYONERole',
-  `arn:aws:iam::${process.env['AWS_ACCOUNT_ID']}:role/${everyoneRoleName}`
+  process.env['AMPLIFY_EVERYONE_ROLE_ARN'] as string // from amplify.yml
 );
 
-// ✅ Attach S3 Policies to EVERYONE Group
 const bucketArn = `arn:aws:s3:::${process.env['AMPLIFY_STORAGE_BUCKET_NAME']}`;
 
 everyoneRole.addToPrincipalPolicy(new iam.PolicyStatement({
   actions: ["s3:GetObject"],
   resources: [`${bucketArn}/protected/*`],
-  effect: iam.Effect.ALLOW,
 }));
 
 everyoneRole.addToPrincipalPolicy(new iam.PolicyStatement({
   actions: ["s3:PutObject", "s3:DeleteObject"],
-  resources: [`${bucketArn}/protected/\${cognito-identity.amazonaws.com:sub}/*`], // <-- correct way
-  effect: iam.Effect.ALLOW
+  resources: [`${bucketArn}/protected/\${cognito-identity.amazonaws.com:sub}/*`],
 }));
