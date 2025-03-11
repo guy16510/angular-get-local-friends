@@ -63,6 +63,7 @@ export const handler: Schema["mutateUserProfile"]["functionHandler"] = async (ev
         surveyAnswers, // ✅ Store survey answers as an array
         createdAt: now,  // Track creation time
         updatedAt: now,  // Track last update time
+        lastOnlineAt: now,
         lastUpdated: now,
       },
       ReturnValues: "ALL_OLD", // ✅ Allows overwriting without condition failure
@@ -85,7 +86,7 @@ export const handler: Schema["mutateUserProfile"]["functionHandler"] = async (ev
     const params: AWS.DynamoDB.DocumentClient.UpdateItemInput = {
       TableName: TABLE_NAME,
       Key: { id: identityId }, // ✅ Use the correct key
-      UpdateExpression: 'set locationLat = :lat, locationLng = :lng, geohash = :gh, rangeKey = :rk, geoPrecision = :gp, lastUpdated = :lu',
+      UpdateExpression: 'set locationLat = :lat, locationLng = :lng, geohash = :gh, rangeKey = :rk, geoPrecision = :gp, lastUpdated = :lu, lastOnlineAt =: la',
       ExpressionAttributeValues: {
         ':lat': locationLat,
         ':lng': locationLng,
@@ -93,6 +94,7 @@ export const handler: Schema["mutateUserProfile"]["functionHandler"] = async (ev
         ':rk': rangeKey,
         ':gp': geoPrecision,
         ':lu': now,
+        ':la': now
       },
       ReturnValues: "ALL_NEW",
     };
