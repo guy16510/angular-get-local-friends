@@ -25,8 +25,8 @@ export const handler: Schema["createMessage"]["functionHandler"] = async (event)
   const chatTableName = process.env['CHAT_MESSAGE_TABLE_NAME'] || '';
   
   if (!chatTableName || chatTableName.length === 0) {
-    console.error("ERROR: USER_PROFILE_TABLE_NAME is not set!");
-    throw new Error("Missing environment variable: USER_PROFILE_TABLE_NAME");
+    console.error("ERROR: CHAT_MESSAGE_TABLE_NAME is not set!");
+    throw new Error("Missing environment variable: CHAT_MESSAGE_TABLE_NAME");
   }
 
   // Write the chat message into DynamoDB.

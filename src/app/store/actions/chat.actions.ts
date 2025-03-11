@@ -1,27 +1,14 @@
-import {ChatMessage, Conversation} from '../../models/chat';
+export class LoadConversations {
+  static readonly type = '[Chat] Load Conversations';
+  constructor(public userId: string) {}
+}
 
-// chat.actions.ts
-export class SetMessagesLoading {
-  static readonly type = '[Chat] Set Messages Loading';
-  constructor(public payload: boolean) {}
+export class LoadMessages {
+  static readonly type = '[Chat] Load Messages';
+  constructor(public conversationId: string) {}
 }
-export class SetMessagesError {
-  static readonly type = '[Chat] Set Messages Error';
-  constructor(public payload: string) {}
-}
-export class SetConversationsLoading {
-  static readonly type = '[Chat] Set Conversations Loading';
-  constructor(public payload: boolean) {}
-}
-export class SetConversationsError {
-  static readonly type = '[Chat] Set Conversations Error';
-  constructor(public payload: string) {}
-}
-export class AddMessage {
-  static readonly type = '[Chat] Add Message';
-  constructor(public payload: ChatMessage) {}
-}
-export class SetConversations {
-  static readonly type = '[Chat] Set Conversations';
-  constructor(public payload: Conversation[]) {}
+
+export class SendMessage {
+  static readonly type = '[Chat] Send Message';
+  constructor(public senderId: string, public recipientId: string, public text: string) {}
 }

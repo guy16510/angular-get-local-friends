@@ -7,6 +7,7 @@ export interface UserProfile {
       questionId: number;
       answer: string;
   }[];
+  lastOnlineAt?: string; 
 }
 
 export interface UserProfileStateModel {

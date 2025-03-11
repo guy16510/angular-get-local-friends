@@ -1,106 +1,87 @@
 import { State, Action, StateContext, Selector } from '@ngxs/store';
-import {
-  AddMessage,
-  SetMessagesLoading,
-  SetMessagesError,
-  SetConversations,
-  SetConversationsLoading,
-  SetConversationsError,
-} from '../actions/chat.actions';
-import {  ChatMessage, Conversation} from '../../models/chat';
+import { Injectable } from '@angular/core';
+import { ChatService } from '../../services/chat.service';
+import { LoadConversations, LoadMessages, SendMessage } from '../actions/chat.actions';
+
+export interface ChatMessage {
+  conversationId: string;
+  senderId: string;
+  recipientId: string;
+  text: string;
+  timestamp: string;
+}
+
+export interface Conversation {
+  conversationId: string;
+  participantA: string;
+  participantB: string;
+  lastMessage: string;
+  lastTimestamp: string;
+}
 
 export interface ChatStateModel {
-  messages: ChatMessage[];
   conversations: Conversation[];
-  messagesLoading: boolean;
-  messagesError: string | null;
-  conversationsLoading: boolean;
-  conversationsError: string | null;
+  messages: Record<string, ChatMessage[]>; // conversationId → array of messages
 }
 
 @State<ChatStateModel>({
   name: 'chat',
   defaults: {
-    messages: [],
     conversations: [],
-    messagesLoading: false,
-    messagesError: null,
-    conversationsLoading: false,
-    conversationsError: null,
-  },
+    messages: {}
+  }
 })
+@Injectable()
 export class ChatState {
-  // Selectors for messages and conversations
+  constructor(private chatService: ChatService) {}
+
   @Selector()
-  static getMessages(state: ChatStateModel): ChatMessage[] {
+  static messages(state: ChatStateModel) {
     return state.messages;
   }
 
   @Selector()
-  static isMessagesLoading(state: ChatStateModel): boolean {
-    return state.messagesLoading;
-  }
-
-  @Selector()
-  static getMessagesError(state: ChatStateModel): string | null {
-    return state.messagesError;
-  }
-
-  @Selector()
-  static getConversations(state: ChatStateModel): Conversation[] {
+  static conversations(state: ChatStateModel) {
     return state.conversations;
   }
 
   @Selector()
-  static isConversationsLoading(state: ChatStateModel): boolean {
-    return state.conversationsLoading;
+  static messagesForConversation(state: ChatStateModel) {
+    return (conversationId: string) => state.messages[conversationId] || [];
   }
 
-  @Selector()
-  static getConversationsError(state: ChatStateModel): string | null {
-    return state.conversationsError;
+  @Action(LoadConversations)
+  loadConversations(ctx: StateContext<ChatStateModel>, action: LoadConversations) {
+    return this.chatService.listConversations(action.userId).subscribe(convos => {
+      ctx.patchState({ conversations: convos || [] });
+    });
   }
 
-  // Action to add a single message
-  @Action(AddMessage)
-  addMessage(ctx: StateContext<ChatStateModel>, action: AddMessage) {
-    const state = ctx.getState();
-    ctx.setState({ ...state, messages: [...state.messages, action.payload] });
+  @Action(LoadMessages)
+  loadMessages(ctx: StateContext<ChatStateModel>, action: LoadMessages) {
+    return this.chatService.listMessagesByConversationId(action.conversationId).subscribe(msgs => {
+      const state = ctx.getState();
+      ctx.patchState({
+        messages: {
+          ...state.messages,
+          [action.conversationId]: msgs || []
+        }
+      });
+    });
   }
 
-  // Action to set the entire messages list
-  // @Action(SetMessages)
-  // setMessages(ctx: StateContext<ChatStateModel>, action: SetMessages) {
-  //   ctx.patchState({ messages: action.payload });
-  // }
-
-  // Set loading flag for messages
-  @Action(SetMessagesLoading)
-  setMessagesLoading(ctx: StateContext<ChatStateModel>, action: SetMessagesLoading) {
-    ctx.patchState({ messagesLoading: action.payload });
-  }
-
-  // Set error state for messages
-  @Action(SetMessagesError)
-  setMessagesError(ctx: StateContext<ChatStateModel>, action: SetMessagesError) {
-    ctx.patchState({ messagesError: action.payload });
-  }
-
-  // Set conversation summaries
-  @Action(SetConversations)
-  setConversations(ctx: StateContext<ChatStateModel>, action: SetConversations) {
-    ctx.patchState({ conversations: action.payload });
-  }
-
-  // Set loading flag for conversations
-  @Action(SetConversationsLoading)
-  setConversationsLoading(ctx: StateContext<ChatStateModel>, action: SetConversationsLoading) {
-    ctx.patchState({ conversationsLoading: action.payload });
-  }
-
-  // Set error state for conversations
-  @Action(SetConversationsError)
-  setConversationsError(ctx: StateContext<ChatStateModel>, action: SetConversationsError) {
-    ctx.patchState({ conversationsError: action.payload });
+  @Action(SendMessage)
+  sendMessage(ctx: StateContext<ChatStateModel>, action: SendMessage) {
+    return this.chatService.sendMessage(action.senderId, action.recipientId, action.text).subscribe(msg => {
+      const state = ctx.getState();
+      const conversationId = [action.senderId, action.recipientId].sort().join('#');
+      const updatedMsgs = [...(state.messages[conversationId] || []), msg];
+      ctx.patchState({
+        messages: {
+          ...state.messages,
+          [conversationId]: updatedMsgs
+        }
+      });
+    });
   }
 }

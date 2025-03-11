@@ -5,6 +5,7 @@ import { UserProfile, UserProfileStateModel } from '../../models/user-profile.mo
 import { UserProfileService } from '../../services/user-profile.service';
 import { tap, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { UpdateUserOnlineStatus } from '../actions/auth.actions';
 
 @State<UserProfileStateModel>({
   name: 'userProfile',
@@ -32,6 +33,11 @@ export class UserProfileState {
   @Selector()
   static error(state: UserProfileStateModel): string | null {
     return state.error;
+  }
+
+  @Selector()
+  static lastOnlineAt(state: UserProfileStateModel): string | null {
+    return state.profile?.lastOnlineAt || null;
   }
 
   @Action(SubmitUserProfile)
@@ -67,4 +73,24 @@ export class UserProfileState {
       })
     );
   }
+
+  @Action(UpdateUserOnlineStatus)
+  updateOnlineStatus(ctx: StateContext<UserProfileStateModel>, action: UpdateUserOnlineStatus) {
+    const now = new Date().toISOString();
+    const state = ctx.getState();
+
+    // Optimistically patch state immediately
+    if (state.profile && state.profile.identityId === action.identityId) {
+      ctx.patchState({
+        profile: {
+          ...state.profile,
+          lastOnlineAt: now
+        }
+      });
+    }
+
+    // Fire API call — non-blocking, background update
+    return this.userProfileService.updateUserOnlineStatus(action.identityId);
+  }
+
 }

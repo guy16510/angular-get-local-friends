@@ -151,6 +151,7 @@ This project is licensed under the MIT License.
     - to show last online?
 
 
+
 - AMPLIFY
     - update all chat to leverage permissions based on array of strings.
         - I would add now, however, i'm working I will mess with it more then working on the overall functionality.

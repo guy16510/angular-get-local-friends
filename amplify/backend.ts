@@ -10,6 +10,7 @@ import { updateUserImages } from './functions/update-user-images/resource';
 import { createMessage } from './functions/create-message/resource';
 import { listConversations } from './functions/list-conversations/resource';
 import { getUserProfile } from "./functions/get-user-profile/resource";
+import {listMessagesByConversationId} from './functions/list-messages-by-conversation-id/resource';
 import * as iam from "aws-cdk-lib/aws-iam";
 
 const backend = defineBackend({
@@ -23,7 +24,8 @@ const backend = defineBackend({
   updateUserImages,
   createMessage,
   listConversations,
-  getUserProfile
+  getUserProfile,
+  listMessagesByConversationId
 });
 
 const dynamoTableArn = `arn:aws:dynamodb:us-east-1:${process.env['AWS_ACCOUNT_ID']}:table/${process.env['AMPLIFY_USER_PROFILE_TABLE_NAME']}`;

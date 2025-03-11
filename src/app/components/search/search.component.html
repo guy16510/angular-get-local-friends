@@ -25,6 +25,8 @@
         <mat-grid-tile *ngFor="let user of nearbyUsers$ | async">
           <mat-card class="user-card" [routerLink]="['/user-bio', user.identityId]">
             <app-image-display [identityId]="user.identityId"></app-image-display>
+              <!-- <span class="online-dot" *ngIf="isOnline"></span>
+              <span *ngIf="!isOnline">Last seen {{ user.lastOnlineAt | date:'short' }}</span> -->
             <mat-card-content>
               <p>{{ user.userName }}</p>
               <p>{{user.distance}}</p>

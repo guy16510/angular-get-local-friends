@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { Amplify } from 'aws-amplify';
 import outputs from '../../amplify_outputs.json';
@@ -20,9 +20,19 @@ Amplify.configure(outputs);
         FooterComponent
     ]
 })
-export class AppComponent {
+export class AppComponent implements OnInit{
 
   constructor(public authenticator: AuthenticatorService) {
     Amplify.configure(outputs);
+  }
+
+  ngOnInit() {
+    // Hearbeat every minute?
+    // setInterval(() => {
+    //   const user = this.store.selectSnapshot(UserProfileState.profile);
+    //   if (user?.identityId) {
+    //     this.store.dispatch(new UpdateUserOnlineStatus(user.identityId));
+    //   }
+    // }, 60000); // every 60s
   }
 }

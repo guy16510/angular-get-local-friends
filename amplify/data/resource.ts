@@ -7,6 +7,7 @@ import { getUserProfile } from '../functions/get-user-profile/resource';
 import { findPremiumMatches } from '../functions/find-premium-matches/resource';
 import { createMessage } from '../functions/create-message/resource';
 import { listConversations } from '../functions/list-conversations/resource';
+import { listMessagesByConversationId } from '../functions/list-messages-by-conversation-id/resource';
 
 /*== DATA MODEL ===============================================================
 This schema defines several models. In addition to existing models, we add:
@@ -127,6 +128,13 @@ const schema = a.schema({
     .handler(a.handler.function(listConversations))
     .authorization(allow => [allow.authenticated()]),
   
+    customListMessagesByConversationId: a
+    .query()
+    .arguments({ conversationId: a.string().required() })
+    .returns(a.string())
+    .handler(a.handler.function(listMessagesByConversationId))
+    .authorization(allow => [allow.authenticated()]),
+
   ChatMessage: a
     .model({
       conversationId: a.string().required(),  // composite key computed in the handler
@@ -150,8 +158,11 @@ const schema = a.schema({
     lastMessage: a.string().required(),
     lastTimestamp: a.datetime().required(),
   })
-    .secondaryIndexes(index => [ index('participantA').sortKeys(['lastTimestamp']) ])
-    .authorization(allow => [allow.owner()]),
+  .secondaryIndexes(index => [
+    index('participantA').sortKeys(['lastTimestamp']),
+    index('participantB').sortKeys(['lastTimestamp']) // ✅ NEW INDEX
+  ])
+  .authorization(allow => [allow.owner()]),
   
   UserProfile: a
     .model({
@@ -162,6 +173,7 @@ const schema = a.schema({
       rangeKey: a.string().required(),        // Range key for spatial queries
       geoPrecision: a.float(),                // Optional: Precision of the geohash
       lastUpdated: a.datetime().required(),   // Last update timestamp
+      lastOnlineAt: a.datetime(),  // Optional: Last online timestamp
       createdAt: a.datetime(),                // Add createdAt timestamp
       updatedAt: a.datetime(),                // Add updatedAt timestamp
       images: a.string().array(),              // Array of S3 keys/URLs for images

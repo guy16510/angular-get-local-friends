@@ -109,6 +109,22 @@ export const handler: Schema["mutateUserProfile"]["functionHandler"] = async (ev
 
     await docClient.delete(params).promise();
     return `UserProfile for ${identityId} deleted successfully.`;
+  } else if (action === 'onlinePing') {
+    /**
+     * Facilitate last online, or online now.
+     */
+    const params: AWS.DynamoDB.DocumentClient.UpdateItemInput = {
+      TableName: TABLE_NAME,
+      Key: { id: identityId },
+      UpdateExpression: 'set lastOnlineAt = :lo',
+      ExpressionAttributeValues: {
+        ':lo': now,
+      },
+      ReturnValues: "ALL_NEW",
+    };
+  
+    await docClient.update(params).promise();
+    return `Online timestamp updated for ${identityId}.`;
   }
 
   throw new Error("Unhandled action");

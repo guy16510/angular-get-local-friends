@@ -1,31 +1,30 @@
-<main class="chat-container">
-  <mat-card>
-    <mat-card-title>Conversation</mat-card-title>
-    <mat-card-content>
-      <div class="chat-messages" #messageList>
-        <app-loading *ngIf="loading$ | async"></app-loading>
-
-        <div *ngIf="error$ | async as error" class="chat-error">
-          {{ error }}
-        </div>
-
-        <div *ngFor="let msg of messages$ | async" [ngClass]="{'my-message': msg.senderId === currentUserId, 'other-message': msg.senderId !== currentUserId}">
-          <div class="chat-bubble">
-            <strong *ngIf="msg.senderId !== currentUserId">{{ msg.senderId }}</strong>
-            <p>{{ msg.text }}</p>
-            <!-- <small>{{ msg?.createdAt | date:'shortTime' }}</small> -->
-          </div>
+<div class="chat-container">
+  <!-- Message List -->
+  <div class="chat-messages">
+    <!-- <ng-container *ngIf="messages$ | async as messages">
+      <div *ngIf="messages.length === 0" class="empty-message">No messages yet</div>
+    
+      <div *ngFor="let msg of messages" class="chat-message" [ngClass]="{'mine': msg.senderId === currentUserId, 'theirs': msg.senderId !== currentUserId}">
+        <div class="bubble">
+          <div class="text">{{ msg.text }}</div>
+          <div class="timestamp">{{ msg?.timestamp | date: 'shortTime' }}</div>
         </div>
       </div>
+    </ng-container> -->
 
-      <form class="chat-input-row" (ngSubmit)="sendMessage()">
-        <mat-form-field appearance="outline" class="chat-input-field">
-          <input matInput placeholder="Type a message..." [(ngModel)]="newMessage" name="newMessage">
-        </mat-form-field>
-        <button mat-icon-button type="submit" [disabled]="!newMessage.trim()">
-          <mat-icon>send</mat-icon>
-        </button>
-      </form>
-    </mat-card-content>
-  </mat-card>
-</main>
+    <ng-template #loading>
+      <div class="loading">Loading messages...</div>
+    </ng-template>
+  </div>
+
+  <!-- Message Input -->
+  <div class="chat-input">
+    <input
+      [(ngModel)]="newMessageText"
+      placeholder="Type a message..."
+      (keydown.enter)="sendMessage()"
+      class="message-field"
+    />
+    <button (click)="sendMessage()" [disabled]="!newMessageText.trim()">Send</button>
+  </div>
+</div>

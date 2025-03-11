@@ -17,8 +17,7 @@ export class UserProfileService {
    * @returns An Observable emitting the UserProfile returned by the API.
    */
   submitUserProfile(payload: UserProfile): Observable<any> {
-    console.log("Sumbitting user profile via api")
-    //TODO Add userName to this payload.
+    console.log("Submitting user profile via API");
     return from(
       client.mutations.mutateUserProfile({
         action: 'create',
@@ -26,23 +25,40 @@ export class UserProfileService {
       })
     ).pipe(
       map(result => {
-        // Check for GraphQL errors and throw if any
         if (result.errors && result.errors.length > 0) {
           throw new Error('GraphQL error: ' + result.errors[0].message);
         }
-        // If result.data exists, try to parse it into a UserProfile
         if (result.data) {
           try {
-            // const profile = JSON.parse(result.data) as UserProfile;
             return result.data;
           } catch (error) {
             console.error('Error parsing API response:', error);
-            // Fallback: return the original payload if parsing fails
             return payload;
           }
         }
-        // Fallback: return the original payload if no data was returned
         return payload;
+      })
+    );
+  }
+
+  /**
+   * Updates the user's last online timestamp.
+   * @param identityId The Cognito identity ID of the user.
+   * @returns Observable indicating completion or error.
+   */
+  updateUserOnlineStatus(identityId: string): Observable<any> {
+    const payload = { identityId };
+    return from(
+      client.mutations.mutateUserProfile({
+        action: 'onlinePing',
+        payload: JSON.stringify(payload),
+      })
+    ).pipe(
+      map(result => {
+        if (result.errors && result.errors.length > 0) {
+          throw new Error('GraphQL error: ' + result.errors[0].message);
+        }
+        return result.data || {};
       })
     );
   }

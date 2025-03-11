@@ -1,4 +1,4 @@
-<mat-card>
+<!-- <mat-card>
     <mat-card-header>
       <mat-card-title>Your Conversations</mat-card-title>
     </mat-card-header>
@@ -10,7 +10,6 @@
       <mat-list>
         <mat-list-item *ngFor="let conv of (conversations$ | async)" (click)="openConversation(conv)">
           <div mat-line>
-            <!-- Show the other participant's ID assuming currentUserId is known -->
             <strong>
               {{ conv.participantA === currentUserId ? conv.participantB : conv.participantA }}
             </strong>
@@ -24,4 +23,5 @@
         </mat-list-item>
       </mat-list>
     </mat-card-content>
-  </mat-card>
+  </mat-card> -->
+  <p>hi</p>
