@@ -19,3 +19,7 @@
   justify-content: space-between;
   margin-top: 20px;
 }
+
+.textArea{
+  width:100% !important;
+}

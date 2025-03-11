@@ -14,9 +14,13 @@
         <button mat-raised-button color="accent" (click)="usePreciseLocation()">Precise Location</button>
         <button mat-raised-button color="primary" (click)="searchUsers()" [disabled]="loading$ | async">Search</button>
       </div>
+    </mat-card-content>
+    </mat-card>
 
       <app-loading *ngIf="loading$ | async"></app-loading>
 
+    <mat-card>
+      <mat-card-content>
       <mat-grid-list cols="3" rowHeight="1:1.2" gutterSize="12px" *ngIf="(nearbyUsers$ | async)?.length">
         <mat-grid-tile *ngFor="let user of nearbyUsers$ | async">
           <mat-card class="user-card" [routerLink]="['/user-bio', user.identityId]">
@@ -40,7 +44,7 @@
         </mat-grid-tile> -->
       </mat-grid-list>
 
-      <div class="pagination-controls">
+      <div class="navigation-buttons">
         <button mat-stroked-button (click)="previousPage()">Previous</button>
         <button mat-stroked-button (click)="nextPage()">Next</button>
       </div>

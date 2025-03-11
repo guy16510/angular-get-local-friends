@@ -23,7 +23,7 @@ export const routes: Routes = [
         component: AccountSetupComponent
     },
     {
-        path: 'chat',
+        path: 'chat/:id',
         component: ChatComponent
     },
     {

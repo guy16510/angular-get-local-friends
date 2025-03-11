@@ -6,7 +6,7 @@ import { FileService } from '../../services/file.service';
     selector: 'app-image-display',
     imports: [CommonModule],
     templateUrl: './image-display.component.html',
-    styleUrl: './image-display.component.css'
+    styleUrl: './image-display.component.scss'
 })
 export class ImageDisplayComponent implements OnInit {
   @Input() identityId: string = '';

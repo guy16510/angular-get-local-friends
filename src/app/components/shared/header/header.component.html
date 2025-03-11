@@ -17,9 +17,10 @@
     <nav class="nav-links">
     
       <ng-container *ngIf="(isLoggedIn$ | async); else loggedOut">
-        <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
-        <a routerLink="/search" routerLinkActive="active">Search</a>
-
+        <a routerLink="/dashboard" routerLinkActive="active"><mat-icon>dashboard</mat-icon>Dashboard</a>
+        <a routerLink="/search" routerLinkActive="active"><mat-icon>search</mat-icon>Search</a>
+        <a routerLink="/chatList" routerLinkActive="active"><mat-icon>forum</mat-icon>Messages</a>
+        
         <!-- Profile dropdown (desktop hover, mobile integrated) -->
         <div class="profile-container">
           <mat-icon>person</mat-icon>

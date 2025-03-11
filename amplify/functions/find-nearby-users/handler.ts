@@ -82,7 +82,6 @@ export const handler: Schema["findNearbyUsers"]["functionHandler"] = async (even
       evaluatedKeys[hash] = result.LastEvaluatedKey;
 
       allUsers.push(...(result.Items || []));
-
       console.log(`✅ Found ${result.Items?.length || 0} users in geohash ${hash}`);
 
       if (allUsers.length >= 20) break; // Fetch at most 20 results per page

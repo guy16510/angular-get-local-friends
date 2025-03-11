@@ -1,25 +1,31 @@
-<mat-card>
-  <mat-card-header>
+<main class="chat-container">
+  <mat-card>
     <mat-card-title>Conversation</mat-card-title>
-  </mat-card-header>
-  <mat-card-content style="max-height: 400px; overflow-y: auto;">
-      <app-loading  *ngIf="(loading$ | async)"></app-loading>
-    <div *ngIf="(error$ | async) as err">
-      <p style="color: red;">Error: {{ err }}</p>
-    </div>
-    <div *ngFor="let msg of (messages$ | async)">
-      <p>
-        <strong>{{ msg.senderId }}</strong>: {{ msg.text }}
-        <span style="font-size: 0.8em; color: gray;">
-          {{ msg.timestamp | date:'shortTime' }}
-        </span>
-      </p>
-    </div>
-  </mat-card-content>
-  <mat-card-actions fxLayout="row" fxLayoutAlign="start center">
-    <mat-form-field style="flex: 1;">
-      <input matInput placeholder="Type your message" [(ngModel)]="newMessage">
-    </mat-form-field>
-    <button mat-raised-button color="primary" (click)="sendMessage()">Send</button>
-  </mat-card-actions>
-</mat-card>
+    <mat-card-content>
+      <div class="chat-messages" #messageList>
+        <app-loading *ngIf="loading$ | async"></app-loading>
+
+        <div *ngIf="error$ | async as error" class="chat-error">
+          {{ error }}
+        </div>
+
+        <div *ngFor="let msg of messages$ | async" [ngClass]="{'my-message': msg.senderId === currentUserId, 'other-message': msg.senderId !== currentUserId}">
+          <div class="chat-bubble">
+            <strong *ngIf="msg.senderId !== currentUserId">{{ msg.senderId }}</strong>
+            <p>{{ msg.text }}</p>
+            <!-- <small>{{ msg?.createdAt | date:'shortTime' }}</small> -->
+          </div>
+        </div>
+      </div>
+
+      <form class="chat-input-row" (ngSubmit)="sendMessage()">
+        <mat-form-field appearance="outline" class="chat-input-field">
+          <input matInput placeholder="Type a message..." [(ngModel)]="newMessage" name="newMessage">
+        </mat-form-field>
+        <button mat-icon-button type="submit" [disabled]="!newMessage.trim()">
+          <mat-icon>send</mat-icon>
+        </button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</main>

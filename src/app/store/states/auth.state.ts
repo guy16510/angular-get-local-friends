@@ -123,22 +123,4 @@ export class AuthState {
       throw error;
     }
   }
-
-  //TODO might not need anymore, being done above.
-  // @Action(FetchIdentityId)
-  // async fetchIdentityId({ patchState }: StateContext<AuthStateModel>) {
-  //   patchState({ loading: true, error: null });
-  //   try {
-  //     const session = await fetchAuthSession();
-  //     patchState({ identityId: session?.identityId || null, loading: false });
-  //   } catch (error: any) {
-  //     console.error('Error getting identity ID:', error);
-  //     patchState({ identityId: null, loading: false, error: error.message || 'Error fetching identity id' });
-  //   }
-  // }
-
-  // @Action(SetAuthenticatedUser)
-  // setAuthenticatedUser({ patchState }: StateContext<AuthStateModel>, action: SetAuthenticatedUser) {
-  //   patchState({ user: action.user });
-  // }
 }

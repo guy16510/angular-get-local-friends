@@ -6,6 +6,9 @@
     (error)="imgSrc = defaultImg"
   />
 </div> -->
-<div class="image-card">
+<!-- <div class="image-card">
   <img class="profile-image" [src]="imgSrc || defaultImg" alt="Profile image" />
-</div>
+</div> -->
+
+
+<img [src]="imgSrc || defaultImg"alt="User profile photo" class="profile-photo" loading="lazy" />

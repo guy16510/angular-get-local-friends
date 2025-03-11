@@ -38,9 +38,9 @@
 
             <!-- Fill-In -->
             <div *ngSwitchCase="'fill-in'">
-              <mat-form-field appearance="outline" class="form-group">
-                <mat-label>Your answer</mat-label>
-                <input matInput placeholder="Type your answer here" [formControlName]="question.id.toString()">
+              <mat-form-field class="textArea" hintLabel="Max 250 characters">
+                <textarea #txtarea matInput minlength="5" maxLength="250" [formControlName]="question.id.toString()"></textarea>
+                <mat-hint align="end">{{txtarea?.value?.length || 0}}/250</mat-hint>
               </mat-form-field>
             </div>
 

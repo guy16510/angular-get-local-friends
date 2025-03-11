@@ -697,4 +697,10 @@ export const SURVEY_QUESTIONS: SurveyQuestion[] = [
 //     type: 'multiple-choice',
 //     options: ['Important', 'Somewhat Important', 'Not Important']
 //   }
+  {
+    id: 91,
+    category: 'Personal Information',
+    question: 'Tell us a little bit about yourself:',
+    type: 'fill-in' ,
+  }
 ];

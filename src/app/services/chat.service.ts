@@ -31,7 +31,7 @@ export class ChatService {
   /**
    * Sends a new message via the createMessage mutation.
    */
-  sendMessage(payload: { senderId: string; recipientId: string; text: string }): Promise<any> {
+  sendMessage(payload: { senderId: string | null; recipientId: string; text: string }): Promise<any> {
     const mutation = /* GraphQL */ `
       mutation CreateMessage($senderId: String!, $recipientId: String!, $text: String!) {
         createMessage(senderId: $senderId, recipientId: $recipientId, text: $text)

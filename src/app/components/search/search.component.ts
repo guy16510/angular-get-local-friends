@@ -56,7 +56,7 @@ export class SearchComponent implements OnInit {
   }
 
   searchUsers(pageIndex = 0) {
-    const token = this.paginationTokens[pageIndex] ?? undefined; // ✅ ensure null converts to undefined
+    const token = this.paginationTokens[pageIndex] ?? undefined;
     this.store.dispatch(new SearchNearbyUsers(this.lat, this.lng, this.radius, token)).subscribe(() => {
       const nextToken = this.store.selectSnapshot(SearchState.nextToken);
       if (nextToken && !this.paginationTokens.includes(nextToken)) {
