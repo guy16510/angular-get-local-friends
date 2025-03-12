@@ -68,7 +68,7 @@ const Contact = a.model({
 
 const NearbyUsersResponse = a.model({
   success: a.boolean().required(),
-  error: a.string(), // Optional: remove .required() if not always present
+  error: a.string(),
   nearbyUsers: a.ref('UserProfile').array(),
   nextToken: a.string()
 });
@@ -167,7 +167,8 @@ const schema = a.schema({
   ChatMessage,
   Conversation,
   UserProfile,
-  Contact
+  Contact,
+  NearbyUsersResponse
 });
 
 export type Schema = ClientSchema<typeof schema>;
