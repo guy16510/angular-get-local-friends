@@ -67,6 +67,9 @@ const Contact = a.model({
 ]);
 
 const NearbyUsersResponse = a.model({
+  id: a.string(),
+  createdAt: a.datetime(),
+  updatedAt: a.datetime(),
   success: a.boolean().required(),
   error: a.string(),
   nearbyUsers: a.json().array(),
