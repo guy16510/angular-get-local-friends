@@ -69,7 +69,7 @@ const Contact = a.model({
 const NearbyUsersResponse = a.model({
   success: a.boolean().required(),
   error: a.string(),
-  nearbyUsers: a.ref('UserProfile').array(),
+  nearbyUsers: a.json().array(),
   nextToken: a.string()
 });
 /* --- Now Define Operations That Reference The Models --- */
@@ -85,9 +85,9 @@ const schema = a.schema({
   findNearbyUsers: a
     .query()
     .arguments({
-      lat: a.float().required(),  
-      lng: a.float().required(),  
-      radius: a.float().required(),  
+      lat: a.float().required(),
+      lng: a.float().required(),
+      radius: a.float().required(),
       nextToken: a.string()
     })
     .returns(a.ref('NearbyUsersResponse'))
