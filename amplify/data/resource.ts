@@ -71,7 +71,7 @@ const NearbyUsersResponse = a.model({
   createdAt: a.datetime(),
   updatedAt: a.datetime(),
   success: a.boolean().required(),
-  error: a.string(),
+  error: a.string().default(null),
   nearbyUsers: a.json().array(),
   nextToken: a.string()
 }).authorization(allow => [allow.authenticated()]);

@@ -2,7 +2,6 @@ import type { AppSyncResolverHandler } from 'aws-lambda';
 import AWS from 'aws-sdk';
 import ngeohash from 'ngeohash';
 
-
 const docClient = new AWS.DynamoDB.DocumentClient();
 const TABLE_NAME = process.env['USER_PROFILE_TABLE_NAME'] || '';
 
@@ -44,8 +43,6 @@ async function queryGeohash(geohash: string, nextToken?: AWS.DynamoDB.DocumentCl
   }
 }
 
-// Fix: Use AppSyncResolverHandler with the correct return type
-
 export const handler: AppSyncResolverHandler<any, any> = async (event) => {
   const { lat, lng, radius, nextToken } = event.arguments;
 
@@ -67,10 +64,8 @@ export const handler: AppSyncResolverHandler<any, any> = async (event) => {
   try {
     for (const hash of hashesToQuery) {
       const exclusiveStartKey = evaluatedKeys[hash];
-
       const result = await queryGeohash(hash, exclusiveStartKey);
       evaluatedKeys[hash] = result.LastEvaluatedKey;
-
       allUsers.push(...(result.Items || []));
       if (allUsers.length >= 20) break;
     }
@@ -89,19 +84,26 @@ export const handler: AppSyncResolverHandler<any, any> = async (event) => {
     const hasMoreResults = Object.values(evaluatedKeys).some(key => !!key);
     const newNextToken = hasMoreResults ? JSON.stringify({ evaluatedKeys }) : null;
 
-    // Return success with the appropriate format
+    // IMPORTANT: Return the required fields (id, createdAt, updatedAt) as the model auto-adds them.
     return {
+      id: "nearbyUsersResponse", // You could generate a unique ID if desired.
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
       success: true,
+      error: null, // Return an empty string or null as per your design
       nearbyUsers: filteredUsers,
       nextToken: newNextToken,
     };
   } catch (error: any) {
     console.error("❌ Unexpected Error in handler:", error);
     return {
+      id: "nearbyUsersResponse",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
       success: false,
       error: error.message,
-      nearbyUsers: [],   // empty array when there's an error
-      nextToken: null    // null or empty string, as defined by your schema
+      nearbyUsers: [],
+      nextToken: null,
     };
   }
 };
