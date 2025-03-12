@@ -60,6 +60,7 @@ export class SearchState {
       // Type-safe way to check if result and data exist
       const data = result?.data as NearbyUsersPayload | null;
 
+      debugger;
       // Handle invalid data or missing 'nearbyUsers'
       if (!data || !Array.isArray(data.nearbyUsers)) {
         throw new Error('Invalid nearbyUsers payload');

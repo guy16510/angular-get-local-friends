@@ -11,6 +11,7 @@ import { listMessagesByConversationId } from '../functions/list-messages-by-conv
 
 /* --- Define Models First --- */
 
+
 const ChatMessage = a.model({
   id: a.string().required(), // required primary field
   conversationId: a.string().required(),
@@ -65,6 +66,12 @@ const Contact = a.model({
   allow.owner().to(['read', 'update', 'delete'])
 ]);
 
+const NearbyUsersResponse = a.model({
+  success: a.boolean().required(),
+  error: a.string(), // Optional: remove .required() if not always present
+  nearbyUsers: a.ref('UserProfile').array(),
+  nextToken: a.string()
+});
 /* --- Now Define Operations That Reference The Models --- */
 
 const schema = a.schema({
@@ -78,18 +85,13 @@ const schema = a.schema({
   findNearbyUsers: a
     .query()
     .arguments({
-      lat: a.float().required(),  // latitude as a required float
-      lng: a.float().required(),  // longitude as a required float
-      radius: a.float().required(),  // radius as a required float
-      nextToken: a.string() // optional nextToken for pagination
+      lat: a.float().required(),  
+      lng: a.float().required(),  
+      radius: a.float().required(),  
+      nextToken: a.string()
     })
-    .returns({
-      success: a.boolean(),  // success is a boolean
-      error: a.string(),
-      nearbyUsers: a.ref('UserProfile').array(),  // Array of references to UserProfile
-      nextToken: a.string() // optional nextToken for pagination
-    })
-    .handler(a.handler.function(findNearbyUsers)) // Attach the function handler
+    .returns(a.ref('NearbyUsersResponse'))
+    .handler(a.handler.function(findNearbyUsers))
     .authorization(allow => [allow.guest(), allow.authenticated()]),
 
   mutateUserProfile: a
