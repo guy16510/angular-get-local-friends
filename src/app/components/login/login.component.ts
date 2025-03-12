@@ -4,7 +4,9 @@ import { Amplify, Hub } from '@aws-amplify/core';
 import { AmplifyAuthenticatorModule } from '@aws-amplify/ui-angular';
 import outputs from '../../../../amplify_outputs.json';
 import { Store } from '@ngxs/store';
-import { CheckAuth, Logout, UpdateUserOnlineStatus } from '../../store/actions/auth.actions';
+import { CheckAuth, Logout } from '../../store/actions/auth.actions';
+import { UpdateUserOnlineStatus } from '../../store/actions/user-profile.actions';
+
 
 @Component({
   selector: 'app-login',
@@ -30,11 +32,9 @@ export class LoginComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.unsubscribeHub = Hub.listen('auth', ({ payload }) => {
       if (payload.event === 'signedIn') {
-        console.log('User signed in:', payload.data);
-        debugger;
-        // this.store.dispatch(new UpdateUserOnlineStatus(user.identityId));
-
-        this.store.dispatch(new CheckAuth()).subscribe(() => {
+        this.store.dispatch(new CheckAuth()).subscribe((user: any) => {
+          // User ping
+          // this.store.dispatch(new UpdateUserOnlineStatus(user?.auth?.identityId));
           const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
           this.router.navigate([returnUrl]);
         });

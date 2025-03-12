@@ -1,11 +1,12 @@
-import { State, Action, StateContext, Selector } from '@ngxs/store';
+import { State, Action, StateContext, Selector, Store } from '@ngxs/store';
 import { Injectable } from '@angular/core';
 import { SubmitUserProfile } from '../actions/user-profile.actions';
 import { UserProfile, UserProfileStateModel } from '../../models/user-profile.model';
 import { UserProfileService } from '../../services/user-profile.service';
 import { tap, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
-import { UpdateUserOnlineStatus } from '../actions/auth.actions';
+import { UpdateUserOnlineStatus } from '../actions/user-profile.actions';
+import { AuthState } from './auth.state';
 
 @State<UserProfileStateModel>({
   name: 'userProfile',
@@ -18,7 +19,10 @@ import { UpdateUserOnlineStatus } from '../actions/auth.actions';
 @Injectable()
 export class UserProfileState {
 
-  constructor(private userProfileService: UserProfileService) {}
+  constructor(
+    private userProfileService: UserProfileService,
+    private store: Store
+  ) {}
 
   @Selector()
   static profile(state: UserProfileStateModel): UserProfile | null {
@@ -75,12 +79,18 @@ export class UserProfileState {
   }
 
   @Action(UpdateUserOnlineStatus)
-  updateOnlineStatus(ctx: StateContext<UserProfileStateModel>, action: UpdateUserOnlineStatus) {
+  updateOnlineStatus(ctx: StateContext<UserProfileStateModel>) {
+    const identityId = this.store.selectSnapshot(AuthState.identityId);
+    if (!identityId) {
+      console.warn('[UserProfileState] No identityId found — skipping online status update.');
+      return;
+    }
+  
     const now = new Date().toISOString();
     const state = ctx.getState();
-
-    // Optimistically patch state immediately
-    if (state.profile && state.profile.identityId === action.identityId) {
+  
+    // Optimistic update, only if profile is populated
+    if (state.profile) {
       ctx.patchState({
         profile: {
           ...state.profile,
@@ -88,9 +98,8 @@ export class UserProfileState {
         }
       });
     }
-
-    // Fire API call — non-blocking, background update
-    return this.userProfileService.updateUserOnlineStatus(action.identityId);
+  
+    return this.userProfileService.updateUserOnlineStatus(identityId);
   }
 
 }

@@ -5,7 +5,10 @@ import outputs from '../../amplify_outputs.json';
 import { HeaderComponent } from './components/shared/header/header.component';
 import { AmplifyAuthenticatorModule, AuthenticatorService } from '@aws-amplify/ui-angular';
 import { FooterComponent } from './components/shared/footer/footer.component';
-import { ToastMessageComponent } from './components/shared/toast-message/toast-message.component';
+// import { ToastMessageComponent } from './components/shared/toast-message/toast-message.component';
+import { Store } from '@ngxs/store';
+import { UpdateUserOnlineStatus } from './store/actions/user-profile.actions';
+import { AuthState } from './store/states/auth.state';
 
 Amplify.configure(outputs);
 
@@ -22,17 +25,17 @@ Amplify.configure(outputs);
 })
 export class AppComponent implements OnInit{
 
-  constructor(public authenticator: AuthenticatorService) {
+  constructor(public authenticator: AuthenticatorService, private store: Store) {
     Amplify.configure(outputs);
   }
 
   ngOnInit() {
     // Hearbeat every minute?
-    // setInterval(() => {
-    //   const user = this.store.selectSnapshot(UserProfileState.profile);
-    //   if (user?.identityId) {
-    //     this.store.dispatch(new UpdateUserOnlineStatus(user.identityId));
-    //   }
-    // }, 60000); // every 60s
+    setInterval(() => {
+      const identityId = this.store.selectSnapshot(AuthState.identityId);
+      if (identityId) {
+        // this.store.dispatch(new UpdateUserOnlineStatus());
+      }
+    }, 10000); // every 60s
   }
 }

@@ -10,19 +10,27 @@ backend:
             export AMPLIFY_USER_PROFILE_TABLE_NAME="UserProfile-slzhpdj7ifgljk54sxgaj62qeu-NONE"
             export AMPLIFY_STORAGE_BUCKET_NAME="amplify-dkrmsanbniimt-dev-userimagesdevelopbucket4-wpaceuhzu52d"
             export AMPLIFY_EVERYONE_ROLE_ARN="arn:aws:iam::438347844807:role/amplify-dkrmsanbniimt-dev-amplifyAuthEVERYONEdevelo-zsnlJdljcJae"
+            export AMPLIFY_CHAT_MESSAGE_TABLE_NAME="ChatMessage-slzhpdj7ifgljk54sxgaj62qeu-NONE"
+            export AMPLIFY_CONVERSATION_TABLE_NAME="Conversation-slzhpdj7ifgljk54sxgaj62qeu-NONE"
           elif [[ "$AWS_BRANCH" == "main" ]]; then
             export AMPLIFY_USER_PROFILE_TABLE_NAME="UserProfile-x334imiw7fh4hlc6cfem5zw2vy-NONE"
             export AMPLIFY_STORAGE_BUCKET_NAME="amplify-dkrmsanbniimt-main-userimagesmainbucket4-xyz123abc"
             export AMPLIFY_EVERYONE_ROLE_ARN="arn:aws:iam::438347844807:role/amplify-<your-main-role-name>"
+            export AMPLIFY_CHAT_MESSAGE_TABLE_NAME=""
+            export AMPLIFY_CONVERSATION_TABLE_NAME=""
           else
             export AMPLIFY_USER_PROFILE_TABLE_NAME="UserProfile-default-NONE"
             export AMPLIFY_STORAGE_BUCKET_NAME="amplify-dkrmsanbniimt-default-userimagesdefaultbucket4-xyz999"
             export AMPLIFY_EVERYONE_ROLE_ARN="arn:aws:iam::438347844807:role/amplify-<your-default-role-name>"
+            export AMPLIFY_CHAT_MESSAGE_TABLE_NAME="ChatMessage-slzhpdj7ifgljk54sxgaj62qeu-NONE"
+            export AMPLIFY_CONVERSATION_TABLE_NAME="Conversation-slzhpdj7ifgljk54sxgaj62qeu-NONE"
           fi
 
         - 'echo "Using DynamoDB Table: $AMPLIFY_USER_PROFILE_TABLE_NAME"'
         - 'echo "Using S3 Bucket: $AMPLIFY_STORAGE_BUCKET_NAME"'
         - 'echo "Using Everyone Role ARN: $AMPLIFY_EVERYONE_ROLE_ARN"'
+        - 'echo "Using AMPLIFY_CONVERSATION_TABLE_NAME ARN: $AMPLIFY_CHAT_MESSAGE_TABLE_NAME"'
+        - 'echo "Using AMPLIFY_CHAT_MESSAGE_TABLE_NAME: $AMPLIFY_CONVERSATION_TABLE_NAME"'
 
         # Deploy backend resources
         - 'npx ampx pipeline-deploy --branch "$AWS_BRANCH" --app-id "$AWS_APP_ID"'

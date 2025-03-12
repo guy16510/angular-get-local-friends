@@ -25,8 +25,3 @@ export class SetUserProfileImage {
   static readonly type = '[Auth] Set User Profile Image';
   constructor(public url: string) {}  // ✅ "public url"
 }
-
-export class UpdateUserOnlineStatus {
-  static readonly type = '[UserProfile] Update Online Status';
-  constructor(public identityId: string) {}
-}

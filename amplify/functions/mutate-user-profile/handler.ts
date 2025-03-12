@@ -19,8 +19,8 @@ export const handler: Schema["mutateUserProfile"]["functionHandler"] = async (ev
   // Expect a JSON-encoded payload along with an action
   const { action, payload: payloadStr } = event.arguments;
 
-  if (!action || !['create', 'update', 'delete'].includes(action)) {
-    throw new Error("Invalid action. Must be 'create', 'update', or 'delete'");
+  if (!action || !['create', 'update', 'delete', 'onlinePing'].includes(action)) {
+    throw new Error("Invalid action. Must be 'create', 'update', or 'delete', 'onlinePing'");
   }
 
   let payload: any;
