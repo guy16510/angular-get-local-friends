@@ -35,7 +35,7 @@ const schema = a.schema({
       action: a.string().required(),
       payload: a.string().required()
     })
-    .returns(a.string())
+    .returns(a.json())
     .handler(a.handler.function(mutateUserProfile))
     .authorization(allow => [allow.authenticated()]),
 
@@ -51,8 +51,10 @@ const schema = a.schema({
 
   getUserProfile: a
     .query()
-    .arguments({ identityId: a.string().required() })
-    .returns(a.string())
+    .arguments({
+      identityId: a.string().required()
+    })
+    .returns(a.json()) // ✅ this is key
     .handler(a.handler.function(getUserProfile))
     .authorization(allow => [allow.authenticated(), allow.guest()]),
 

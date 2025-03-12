@@ -1,4 +1,3 @@
-import type { Handler } from 'aws-lambda';
 import type { Schema } from '../../data/resource';
 import AWS from 'aws-sdk';
 import ngeohash from 'ngeohash';
@@ -64,7 +63,12 @@ export const handler: Schema["mutateUserProfile"]["functionHandler"] = async (ev
     };
 
     await docClient.put(params).promise();
-    return `UserProfile for ${identityId} created successfully.`;
+    return {
+      success: true,
+      message: `UserProfile for ${identityId} created successfully.`,
+      action: 'create',
+      identityId,
+    };
 
   } else if (action === 'update') {
     if (typeof locationLat !== 'number' || typeof locationLng !== 'number') {
@@ -92,7 +96,12 @@ export const handler: Schema["mutateUserProfile"]["functionHandler"] = async (ev
     };
 
     await docClient.update(params).promise();
-    return `UserProfile for ${identityId} updated successfully.`;
+    return {
+      success: true,
+      message: `UserProfile for ${identityId} updated successfully.`,
+      action: 'update',
+      identityId,
+    };
 
   } else if (action === 'delete') {
     const params: AWS.DynamoDB.DocumentClient.DeleteItemInput = {
@@ -101,7 +110,12 @@ export const handler: Schema["mutateUserProfile"]["functionHandler"] = async (ev
     };
 
     await docClient.delete(params).promise();
-    return `UserProfile for ${identityId} deleted successfully.`;
+    return {
+      success: true,
+      message: `UserProfile for ${identityId} deleted successfully.`,
+      action: 'delete',
+      identityId,
+    };
 
   } else if (action === 'onlinePing') {
     const params: AWS.DynamoDB.DocumentClient.UpdateItemInput = {
@@ -115,7 +129,12 @@ export const handler: Schema["mutateUserProfile"]["functionHandler"] = async (ev
     };
 
     await docClient.update(params).promise();
-    return `Online timestamp updated for ${identityId}.`;
+    return {
+      success: true,
+      message: `Online timestamp updated for ${identityId}.`,
+      action: 'onlinePing',
+      identityId,
+    };
   }
 
   throw new Error("Unhandled action");

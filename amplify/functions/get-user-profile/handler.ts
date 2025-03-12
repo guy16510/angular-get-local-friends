@@ -21,5 +21,5 @@ export const handler: Schema["getUserProfile"]["functionHandler"] = async (event
 
   const result = await docClient.get(params).promise();
   // Return the item as a JSON string (if your schema returns a string) or as an object.
-  return result.Item ? JSON.stringify(result.Item) : null;
+  return result.Item || null;
 };
