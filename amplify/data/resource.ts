@@ -71,7 +71,8 @@ const NearbyUsersResponse = a.model({
   error: a.string(),
   nearbyUsers: a.json().array(),
   nextToken: a.string()
-});
+}).authorization(allow => [allow.authenticated()]);
+
 /* --- Now Define Operations That Reference The Models --- */
 
 const schema = a.schema({
