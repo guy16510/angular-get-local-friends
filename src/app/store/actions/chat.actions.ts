@@ -10,5 +10,5 @@ export class LoadMessages {
 
 export class SendMessage {
   static readonly type = '[Chat] Send Message';
-  constructor(public senderId: string, public recipientId: string, public text: string) {}
+  constructor(public recipientId: string, public text: string) {}
 }

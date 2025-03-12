@@ -46,7 +46,7 @@ findNearbyUsersLambda.addToRolePolicy(new iam.PolicyStatement({
 
 const mutateUserProfileLambda = backend.mutateUserProfile.resources.lambda;
 mutateUserProfileLambda.addToRolePolicy(new iam.PolicyStatement({
-  actions: ['dynamodb:PutItem'],
+  actions: ['dynamodb:PutItem', "dynamodb:UpdateItem"],
   resources: [dynamoTableArn]
 }));
 

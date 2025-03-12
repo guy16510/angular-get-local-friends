@@ -1,4 +1,4 @@
-import { State, Action, StateContext, Selector } from '@ngxs/store';
+import { State, Action, StateContext, Selector, Store } from '@ngxs/store';
 import { Injectable } from '@angular/core';
 import { ChatService } from '../../services/chat.service';
 import { LoadConversations, LoadMessages, SendMessage } from '../actions/chat.actions';
@@ -21,7 +21,7 @@ export interface Conversation {
 
 export interface ChatStateModel {
   conversations: Conversation[];
-  messages: Record<string, ChatMessage[]>; // conversationId → array of messages
+  messages: Record<string, ChatMessage[]>;
 }
 
 @State<ChatStateModel>({
@@ -33,7 +33,7 @@ export interface ChatStateModel {
 })
 @Injectable()
 export class ChatState {
-  constructor(private chatService: ChatService) {}
+  constructor(private chatService: ChatService, private store: Store) {}
 
   @Selector()
   static messages(state: ChatStateModel) {
@@ -53,8 +53,8 @@ export class ChatState {
   }
 
   @Action(LoadConversations)
-  loadConversations(ctx: StateContext<ChatStateModel>, action: LoadConversations) {
-    return this.chatService.listConversations(action.userId).subscribe(convos => {
+  loadConversations(ctx: StateContext<ChatStateModel>) {
+    return this.chatService.listConversations().subscribe(convos => {
       ctx.patchState({ conversations: convos || [] });
     });
   }
@@ -74,9 +74,9 @@ export class ChatState {
 
   @Action(SendMessage)
   sendMessage(ctx: StateContext<ChatStateModel>, action: SendMessage) {
-    return this.chatService.sendMessage(action.senderId, action.recipientId, action.text).subscribe(msg => {
+    return this.chatService.sendMessage(action.recipientId, action.text).subscribe(msg => {
       const state = ctx.getState();
-      const conversationId = [action.senderId, action.recipientId].sort().join('#');
+      const conversationId = [msg.senderId, msg.recipientId].sort().join('#');
       const updatedMsgs = [...(state.messages[conversationId] || []), msg];
       ctx.patchState({
         messages: {

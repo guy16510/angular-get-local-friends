@@ -1,72 +1,60 @@
 import { Routes } from '@angular/router';
-import { ContactUsComponent } from './components/contact-us/contact-us.component';
-import { MyProfileComponent } from './components/my-profile/my-profile.component';
 import { authGuard } from './guards/auth.guard';
-import { HomeComponent } from './components/home/home.component';
-import { ErrorComponent } from './components/error/error.component';
-import { LoginComponent } from './components/login/login.component';
-import { SearchComponent } from './components/search/search.component';
-import { SurveyComponent } from './components/survey/survey.component';
-import { AccountSetupComponent } from './components/account-setup/account-setup.component';
-import { DashboardComponent } from './components/dashboard/dashboard.component';
-import { ChatComponent } from './components/chat/chat.component';
-import { ChatListComponent } from './components/chat-list/chat-list.component';
-import { UserBioComponent } from './components/user-bio/user-bio.component';
 
 export const routes: Routes = [
-    {
-        path: '',
-        component: HomeComponent
-    },
-    {
-        path: 'account-setup',
-        component: AccountSetupComponent
-    },
-    {
-        path: 'chat/:conversationId/:recipientId',
-        loadComponent: () => import('./components/chat/chat.component').then(m => m.ChatComponent)
-    },
-    {
-        path: 'chatList',
-        component: ChatListComponent
-    },
-    {
-        path: 'survey',
-        component: SurveyComponent
-    },
-    {
-        path: 'contact-us',
-        component: ContactUsComponent
-    },
-    {
-        path: 'dashboard',
-        component: DashboardComponent,
-        canActivate: [authGuard]
-    },
-    {
-        path: 'myProfile',
-        component: MyProfileComponent,
-        canActivate: [authGuard]
-    },
-    {
-        path: '404',
-        component: ErrorComponent
-    },
-    {
-        path: 'login',
-        component: LoginComponent
-    },
-    {
-        path: 'search',
-        component: SearchComponent,
-        canActivate: [authGuard]
-    },
-    {
-        path: 'user-bio/:id',
-        component: UserBioComponent
-    },
-    {
-        path: '**',
-        redirectTo: '404'
-    }
+  {
+    path: '',
+    loadComponent: () => import('./components/home/home.component').then(m => m.HomeComponent)
+  },
+  {
+    path: 'account-setup',
+    loadComponent: () => import('./components/account-setup/account-setup.component').then(m => m.AccountSetupComponent)
+  },
+  {
+    path: 'chat/:conversationId/:recipientId',
+    loadComponent: () => import('./components/chat/chat.component').then(m => m.ChatComponent)
+  },
+  {
+    path: 'chatList',
+    loadComponent: () => import('./components/chat-list/chat-list.component').then(m => m.ChatListComponent)
+  },
+  {
+    path: 'survey',
+    loadComponent: () => import('./components/survey/survey.component').then(m => m.SurveyComponent)
+  },
+  {
+    path: 'contact-us',
+    loadComponent: () => import('./components/contact-us/contact-us.component').then(m => m.ContactUsComponent)
+  },
+  {
+    path: 'dashboard',
+    canActivate: [authGuard],
+    loadComponent: () => import('./components/dashboard/dashboard.component').then(m => m.DashboardComponent)
+  },
+  {
+    path: 'myProfile',
+    canActivate: [authGuard],
+    loadComponent: () => import('./components/my-profile/my-profile.component').then(m => m.MyProfileComponent)
+  },
+  {
+    path: '404',
+    loadComponent: () => import('./components/error/error.component').then(m => m.ErrorComponent)
+  },
+  {
+    path: 'login',
+    loadComponent: () => import('./components/login/login.component').then(m => m.LoginComponent)
+  },
+  {
+    path: 'search',
+    canActivate: [authGuard],
+    loadComponent: () => import('./components/search/search.component').then(m => m.SearchComponent)
+  },
+  {
+    path: 'user-bio/:id',
+    loadComponent: () => import('./components/user-bio/user-bio.component').then(m => m.UserBioComponent)
+  },
+  {
+    path: '**',
+    redirectTo: '404'
+  }
 ];
