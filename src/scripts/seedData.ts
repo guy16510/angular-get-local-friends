@@ -2,7 +2,7 @@ import 'dotenv/config'; // Load environment variables
 import AWS from 'aws-sdk';
 import { v4 as uuidv4 } from 'uuid';
 import { faker } from '@faker-js/faker';
-import { SURVEY_QUESTIONS } from '../data/surveyQuestions'; // TypeScript import
+import { SURVEY_QUESTIONS } from '../app/data/surveyQuestions'; // TypeScript import
 
 // AWS Config
 AWS.config.update({ region: process.env['AWS_REGION'] });

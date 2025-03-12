@@ -14,7 +14,7 @@
     "typecheck": "tsc --noEmit",
     "precommit": "npm run typecheck && npm run build:prod",
     "prepare": "husky",
-    "seed": "ts-node -P tsconfig.scripts.json src/app/scripts/seedData.ts"
+    "seed": "ts-node -P tsconfig.scripts.json src/scripts/seedData.ts"
   },
   "private": true,
   "dependencies": {

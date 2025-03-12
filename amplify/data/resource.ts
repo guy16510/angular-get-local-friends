@@ -9,6 +9,64 @@ import { createMessage } from '../functions/create-message/resource';
 import { listConversations } from '../functions/list-conversations/resource';
 import { listMessagesByConversationId } from '../functions/list-messages-by-conversation-id/resource';
 
+/* --- Define Models First --- */
+
+const ChatMessage = a.model({
+  id: a.string().required(), // required primary field
+  conversationId: a.string().required(),
+  timestamp: a.datetime().required(),
+  senderId: a.string().required(),
+  recipientId: a.string().required(),
+  text: a.string().required(),
+  createdAt: a.datetime(),
+  updatedAt: a.datetime(),
+}).authorization(allow => [allow.authenticated()]);
+
+const Conversation = a.model({
+  id: a.string().required(), // required field
+  conversationId: a.string().required(),
+  participantA: a.string().required(),
+  participantB: a.string().required(),
+  lastMessage: a.string().required(),
+  lastTimestamp: a.datetime().required(),
+  createdAt: a.datetime(),
+  updatedAt: a.datetime(),
+}).secondaryIndexes(index => [
+  index('participantA').sortKeys(['lastTimestamp']),
+  index('participantB').sortKeys(['lastTimestamp'])
+]).authorization(allow => [allow.owner()]);
+
+const UserProfile = a.model({
+  identityId: a.string().required(),
+  locationLat: a.float().required(),
+  locationLng: a.float().required(),
+  geohash: a.string().required(),
+  rangeKey: a.string().required(),
+  geoPrecision: a.float(),
+  lastUpdated: a.datetime().required(),
+  lastOnlineAt: a.datetime(),
+  createdAt: a.datetime(),
+  updatedAt: a.datetime(),
+  images: a.string().array(),
+  userName: a.string().required(),
+  surveyAnswers: a.json().required()
+}).authorization(allow => [allow.owner()])
+  .secondaryIndexes(index => [index('geohash').sortKeys(['rangeKey'])]);
+
+const Contact = a.model({
+  email: a.string().required(),
+  name: a.string().required(),
+  summary: a.string().required(),
+  createdAt: a.datetime().required(),
+  ipAddress: a.string().required()
+}).authorization(allow => [
+  allow.guest().to(['create']),
+  allow.authenticated().to(['create']),
+  allow.owner().to(['read', 'update', 'delete'])
+]);
+
+/* --- Now Define Operations That Reference The Models --- */
+
 const schema = a.schema({
   sayHello: a
     .query()
@@ -17,7 +75,7 @@ const schema = a.schema({
     .handler(a.handler.function(sayHello))
     .authorization(allow => [allow.publicApiKey()]),
 
-    findNearbyUsers: a
+  findNearbyUsers: a
     .query()
     .arguments({
       lat: a.float().required(),  // latitude as a required float
@@ -103,60 +161,11 @@ const schema = a.schema({
     .returns(a.ref('ChatMessage').array())
     .handler(a.handler.function(listMessagesByConversationId))
     .authorization(allow => [allow.authenticated()]),
-
-  ChatMessage: a.model({
-    id: a.string().required(), // required primary field
-    conversationId: a.string().required(),
-    timestamp: a.datetime().required(),
-    senderId: a.string().required(),
-    recipientId: a.string().required(),
-    text: a.string().required(),
-    createdAt: a.datetime(),
-    updatedAt: a.datetime(),
-  }).authorization(allow => [allow.authenticated()]),
-
-  Conversation: a.model({
-    id: a.string().required(), // required field
-    conversationId: a.string().required(),
-    participantA: a.string().required(),
-    participantB: a.string().required(),
-    lastMessage: a.string().required(),
-    lastTimestamp: a.datetime().required(),
-    createdAt: a.datetime(),
-    updatedAt: a.datetime(),
-  }).secondaryIndexes(index => [
-    index('participantA').sortKeys(['lastTimestamp']),
-    index('participantB').sortKeys(['lastTimestamp'])
-  ]).authorization(allow => [allow.owner()]),
-
-  UserProfile: a.model({
-    identityId: a.string().required(),
-    locationLat: a.float().required(),
-    locationLng: a.float().required(),
-    geohash: a.string().required(),
-    rangeKey: a.string().required(),
-    geoPrecision: a.float(),
-    lastUpdated: a.datetime().required(),
-    lastOnlineAt: a.datetime(),
-    createdAt: a.datetime(),
-    updatedAt: a.datetime(),
-    images: a.string().array(),
-    userName: a.string().required(),
-    surveyAnswers: a.json().required()
-  }).authorization(allow => [allow.owner()])
-    .secondaryIndexes(index => [index('geohash').sortKeys(['rangeKey'])]),
-
-  Contact: a.model({
-    email: a.string().required(),
-    name: a.string().required(),
-    summary: a.string().required(),
-    createdAt: a.datetime().required(),
-    ipAddress: a.string().required()
-  }).authorization(allow => [
-    allow.guest().to(['create']),
-    allow.authenticated().to(['create']),
-    allow.owner().to(['read', 'update', 'delete'])
-  ])
+  
+  ChatMessage,
+  Conversation,
+  UserProfile,
+  Contact
 });
 
 export type Schema = ClientSchema<typeof schema>;
