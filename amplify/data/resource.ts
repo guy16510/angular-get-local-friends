@@ -151,7 +151,7 @@ const schema = a.schema({
     name: a.string().required(),
     summary: a.string().required(),
     createdAt: a.datetime().required(),
-    ipAddress: a.ipAddress().required()
+    ipAddress: a.string().required()
   }).authorization(allow => [
     allow.guest().to(['create']),
     allow.authenticated().to(['create']),
