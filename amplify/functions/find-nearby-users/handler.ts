@@ -86,7 +86,7 @@ export const handler: AppSyncResolverHandler<any, any> = async (event) => {
 
     // IMPORTANT: Return the required fields (id, createdAt, updatedAt) as the model auto-adds them.
     return {
-      responseId: "nearbyUsersResponse", // or generate a unique value if desired
+      id: "nearbyUsersResponse", // or generate a unique value if desired
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       success: true,
@@ -97,7 +97,7 @@ export const handler: AppSyncResolverHandler<any, any> = async (event) => {
   } catch (error: any) {
     console.error("❌ Unexpected Error in handler:", error);
     return {
-      responseId: "nearbyUsersResponse",
+      id: "nearbyUsersResponse",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       success: false,
