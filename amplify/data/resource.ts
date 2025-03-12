@@ -27,6 +27,7 @@ const schema = a.schema({
     })
     .returns({
       success: a.boolean(),  // success is a boolean
+      error: a.string(),
       nearbyUsers: a.ref('UserProfile').array(),  // Array of references to UserProfile
       nextToken: a.string() // optional nextToken for pagination
     })

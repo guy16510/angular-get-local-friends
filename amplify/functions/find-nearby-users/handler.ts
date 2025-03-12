@@ -100,6 +100,8 @@ export const handler: AppSyncResolverHandler<any, any> = async (event) => {
     return {
       success: false,
       error: error.message,
+      nearbyUsers: [],   // empty array when there's an error
+      nextToken: null    // null or empty string, as defined by your schema
     };
   }
 };
