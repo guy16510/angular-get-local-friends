@@ -47,7 +47,9 @@ export class ChatState {
 
   @Selector()
   static messagesForConversation(state: ChatStateModel) {
-    return (conversationId: string) => state.messages[conversationId] || [];
+    return (conversationId: string): ChatMessage[] => {
+      return state.messages?.[conversationId] || [];
+    };
   }
 
   @Action(LoadConversations)

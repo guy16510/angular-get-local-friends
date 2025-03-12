@@ -6,6 +6,7 @@ import { SearchState } from '../../store/states/search.state';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../shared/material.module';
 import { ImageDisplayComponent } from '../image-display/image-display.component';
+import { AuthState } from '../../store/states/auth.state';
 
 @Component({
   selector: 'app-user-bio',
@@ -16,14 +17,23 @@ import { ImageDisplayComponent } from '../image-display/image-display.component'
 export class UserBioComponent {
   identityId: string = '';
   profile$!: Observable<any>;
-
+  conversationId: string = '';
+  currentUserId: string = '';
   constructor(private route: ActivatedRoute, private store: Store) {}
 
   ngOnInit(): void {
     this.identityId = this.route.snapshot.paramMap.get('id') || '';
+    this.currentUserId = this.store.selectSnapshot(AuthState.identityId) || '';
+
     const allUsers = this.store.selectSnapshot(SearchState.nearbyUsers);
     const user = allUsers.find(u => u.identityId === this.identityId);
     this.profile$ = new Observable(observer => observer.next(user));
+
+    this.conversationId = this.getConversationId(this.identityId, this.currentUserId);
+  }
+
+  getConversationId(a: string, b: string): string {
+    return [a, b].sort().join('#');
   }
 
   getBioFromSurvey(answers: any[]): string {

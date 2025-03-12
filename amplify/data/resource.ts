@@ -105,10 +105,9 @@ const schema = a.schema({
   // --- Chat Operations ---
   createMessage: a
     .mutation()
-    .arguments({ 
-      senderId: a.string().required(), 
-      recipientId: a.string().required(), 
-      text: a.string().required() 
+    .arguments({
+      recipientId: a.string().required(),
+      text: a.string().required()
     })
     .returns(a.string())
     .handler(a.handler.function(createMessage))
@@ -123,7 +122,7 @@ const schema = a.schema({
   // Add your custom listConversations query under a new name to avoid conflict.
   customListConversations: a
     .query()
-    .arguments({ userId: a.string().required() })
+    .arguments({}) // ⬅️ No need for client to pass anything
     .returns(a.string())
     .handler(a.handler.function(listConversations))
     .authorization(allow => [allow.authenticated()]),

@@ -23,8 +23,8 @@ export const routes: Routes = [
         component: AccountSetupComponent
     },
     {
-        path: 'chat/:id',
-        component: ChatComponent
+        path: 'chat/:conversationId/:recipientId',
+        loadComponent: () => import('./components/chat/chat.component').then(m => m.ChatComponent)
     },
     {
         path: 'chatList',

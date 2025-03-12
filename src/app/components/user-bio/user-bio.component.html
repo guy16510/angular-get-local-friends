@@ -30,7 +30,8 @@
         <p class="timestamp">
           Last Updated: {{ profile.lastUpdated | date:'short' }}
         </p>
-        <button mat-raised-button color="primary" class="message-button" [routerLink]="['/chat', profile.id]">
+        <button mat-raised-button color="primary" class="message-button"
+          [routerLink]="['/chat', conversationId, identityId]">
           <mat-icon>chat</mat-icon> Message {{ profile.userName }}
         </button>
       </div>

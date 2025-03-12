@@ -34,8 +34,8 @@ export class AppComponent implements OnInit{
     setInterval(() => {
       const identityId = this.store.selectSnapshot(AuthState.identityId);
       if (identityId) {
-        // this.store.dispatch(new UpdateUserOnlineStatus());
+        this.store.dispatch(new UpdateUserOnlineStatus()); 
       }
-    }, 10000); // every 60s
+    }, 60000); // every 60s
   }
 }

@@ -1,33 +1,27 @@
 import { DynamoDB } from 'aws-sdk';
 import type { Schema } from '../../data/resource';
+import { getCognitoIdentityId } from '../../shared/utils/identity';
+
 const docClient = new DynamoDB.DocumentClient();
+const TABLE_NAME = process.env['CONVERSATION_TABLE_NAME'] || '';
 
 export const handler: Schema["customListConversations"]["functionHandler"] = async (event) => {
-  const { userId } = event.arguments;
+  const identityId = getCognitoIdentityId(event.identity);
+  if (!identityId) throw new Error("Unauthorized: Missing identity");
 
-  const conversationTableName = process.env['CONVERSATION_TABLE_NAME'] || '';
-  if (!conversationTableName) {
-    throw new Error("CONVERSATION_TABLE_NAME environment variable is not set.");
-  }
-
-  // Query index on participantA
   const queryAParams = {
-    TableName: conversationTableName,
+    TableName: TABLE_NAME,
     IndexName: 'conversationsByParticipantAAndLastTimestamp',
     KeyConditionExpression: 'participantA = :uid',
-    ExpressionAttributeValues: {
-      ':uid': userId,
-    },
+    ExpressionAttributeValues: { ':uid': identityId },
     ScanIndexForward: false
   };
 
   const queryBParams = {
-    TableName: conversationTableName,
+    TableName: TABLE_NAME,
     IndexName: 'conversationsByParticipantBAndLastTimestamp',
     KeyConditionExpression: 'participantB = :uid',
-    ExpressionAttributeValues: {
-      ':uid': userId,
-    },
+    ExpressionAttributeValues: { ':uid': identityId },
     ScanIndexForward: false
   };
 
@@ -36,11 +30,10 @@ export const handler: Schema["customListConversations"]["functionHandler"] = asy
     docClient.query(queryBParams).promise()
   ]);
 
-  // Combine and deduplicate
   const merged = [...(resultA.Items || []), ...(resultB.Items || [])];
   const dedupedMap = new Map();
   merged.forEach(item => {
-    dedupedMap.set(item['conversationId'], item);
+    dedupedMap.set(item['conversationId'], item); // ✅ bracket notation here
   });
 
   const uniqueConversations = Array.from(dedupedMap.values());

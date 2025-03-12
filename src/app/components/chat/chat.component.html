@@ -1,30 +1,30 @@
 <div class="chat-container">
-  <!-- Message List -->
-  <div class="chat-messages">
-    <!-- <ng-container *ngIf="messages$ | async as messages">
-      <div *ngIf="messages.length === 0" class="empty-message">No messages yet</div>
-    
-      <div *ngFor="let msg of messages" class="chat-message" [ngClass]="{'mine': msg.senderId === currentUserId, 'theirs': msg.senderId !== currentUserId}">
-        <div class="bubble">
-          <div class="text">{{ msg.text }}</div>
-          <div class="timestamp">{{ msg?.timestamp | date: 'shortTime' }}</div>
-        </div>
-      </div>
-    </ng-container> -->
+  <!-- Chat Header -->
+  <div class="chat-header">
+    <button mat-icon-button>
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <span class="recipient-name">{{ recipientId }}</span>
+  </div>
 
-    <ng-template #loading>
-      <div class="loading">Loading messages...</div>
-    </ng-template>
+  <!-- Messages List -->
+  <div class="chat-messages" *ngIf="messages$ | async as messages">
+    <!-- <div *ngFor="let msg of messages" class="chat-message" [ngClass]="{'mine': msg.senderId === currentUserId, 'theirs': msg.senderId !== currentUserId}"> -->
+      <div *ngFor="let msg of messages$ | async" class="chat-message">
+        <mat-card class="message-bubble">
+        <div class="text">{{ msg.text }}</div>
+        <div class="timestamp">{{ msg.timestamp | date: 'shortTime' }}</div>
+      </mat-card>
+    </div>
   </div>
 
   <!-- Message Input -->
   <div class="chat-input">
-    <input
-      [(ngModel)]="newMessageText"
-      placeholder="Type a message..."
-      (keydown.enter)="sendMessage()"
-      class="message-field"
-    />
-    <button (click)="sendMessage()" [disabled]="!newMessageText.trim()">Send</button>
+    <mat-form-field class="message-field">
+      <input matInput [(ngModel)]="newMessageText" placeholder="Type a message..." (keydown.enter)="sendMessage()" />
+    </mat-form-field>
+    <button mat-icon-button color="primary" (click)="sendMessage()" [disabled]="!newMessageText.trim()">
+      <mat-icon>send</mat-icon>
+    </button>
   </div>
 </div>
