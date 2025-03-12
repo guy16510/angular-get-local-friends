@@ -1,4 +1,3 @@
-// src/app/store/states/search.state.ts
 import { State, Action, StateContext, Selector } from '@ngxs/store';
 import { Injectable } from '@angular/core';
 import { generateClient } from 'aws-amplify/data';
@@ -13,7 +12,6 @@ interface NearbyUsersPayload {
   nearbyUsers: any[];
   nextToken?: string | null;
 }
-
 
 @State<SearchStateModel>({
   name: 'search',
@@ -58,13 +56,16 @@ export class SearchState {
         radius: action.radius,
         nextToken: action.nextToken || undefined,
       });
-  
-      const data = result?.data as NearbyUsersPayload;
-  
+
+      // Type-safe way to check if result and data exist
+      const data = result?.data as NearbyUsersPayload | null;
+
+      // Handle invalid data or missing 'nearbyUsers'
       if (!data || !Array.isArray(data.nearbyUsers)) {
         throw new Error('Invalid nearbyUsers payload');
       }
-  
+
+      // Safely update the state with nearbyUsers and nextToken
       ctx.patchState({
         nearbyUsers: action.nextToken
           ? [...ctx.getState().nearbyUsers, ...data.nearbyUsers]

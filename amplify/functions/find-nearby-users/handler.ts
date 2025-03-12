@@ -1,6 +1,7 @@
-import type { Schema } from '../../data/resource';
+import type { AppSyncResolverHandler } from 'aws-lambda';
 import AWS from 'aws-sdk';
 import ngeohash from 'ngeohash';
+
 
 const docClient = new AWS.DynamoDB.DocumentClient();
 const TABLE_NAME = process.env['USER_PROFILE_TABLE_NAME'] || '';
@@ -43,7 +44,9 @@ async function queryGeohash(geohash: string, nextToken?: AWS.DynamoDB.DocumentCl
   }
 }
 
-export const handler: Schema["findNearbyUsers"]["functionHandler"] = async (event) => {
+// Fix: Use AppSyncResolverHandler with the correct return type
+
+export const handler: AppSyncResolverHandler<any, any> = async (event) => {
   const { lat, lng, radius, nextToken } = event.arguments;
 
   if ([lat, lng, radius].some(param => typeof param !== 'number')) {
@@ -86,6 +89,7 @@ export const handler: Schema["findNearbyUsers"]["functionHandler"] = async (even
     const hasMoreResults = Object.values(evaluatedKeys).some(key => !!key);
     const newNextToken = hasMoreResults ? JSON.stringify({ evaluatedKeys }) : null;
 
+    // Return success with the appropriate format
     return {
       success: true,
       nearbyUsers: filteredUsers,

@@ -17,16 +17,20 @@ const schema = a.schema({
     .handler(a.handler.function(sayHello))
     .authorization(allow => [allow.publicApiKey()]),
 
-  findNearbyUsers: a
+    findNearbyUsers: a
     .query()
     .arguments({
-      lat: a.float().required(),
-      lng: a.float().required(),
-      radius: a.float().required(),
-      nextToken: a.string()
+      lat: a.float().required(),  // latitude as a required float
+      lng: a.float().required(),  // longitude as a required float
+      radius: a.float().required(),  // radius as a required float
+      nextToken: a.string() // optional nextToken for pagination
     })
-    .returns(a.json())
-    .handler(a.handler.function(findNearbyUsers))
+    .returns({
+      success: a.boolean(),  // success is a boolean
+      nearbyUsers: a.ref('UserProfile').array(),  // Array of references to UserProfile
+      nextToken: a.string() // optional nextToken for pagination
+    })
+    .handler(a.handler.function(findNearbyUsers)) // Attach the function handler
     .authorization(allow => [allow.guest(), allow.authenticated()]),
 
   mutateUserProfile: a
