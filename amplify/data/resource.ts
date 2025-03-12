@@ -9,28 +9,6 @@ import { createMessage } from '../functions/create-message/resource';
 import { listConversations } from '../functions/list-conversations/resource';
 import { listMessagesByConversationId } from '../functions/list-messages-by-conversation-id/resource';
 
-/*== DATA MODEL ===============================================================
-This schema defines several models. In addition to existing models, we add:
-  • Chat operations:
-       - createMessage mutation (and onCreateMessage subscription)
-       - listConversations query
-  • ChatMessage model for one-to-one messaging.
-      Fields: conversationId (composite key), timestamp, senderId, recipientId, text.
-      (Key generation is handled in the function handler.)
-  • Conversation model for conversation summaries.
-      Fields: conversationId, participantA, participantB, lastMessage, lastTimestamp.
-
-This schema defines several models. In addition to existing models, we add a
-UserProfile model with geospatial fields and an images field to store S3 keys:
-  - identityId: Unique user ID
-  - locationLat: Latitude coordinate
-  - locationLng: Longitude coordinate
-  - geohash: Geohash string for spatial queries
-  - geoPrecision: (Optional) The precision/length of the geohash
-  - lastUpdated: Timestamp for the last update
-  - images: Array of S3 keys or URLs for the user’s images
-  - surveyAnswers: Array of survey answers
-=============================================================================*/
 const schema = a.schema({
   sayHello: a
     .query()
@@ -38,22 +16,45 @@ const schema = a.schema({
     .returns(a.string())
     .handler(a.handler.function(sayHello))
     .authorization(allow => [allow.publicApiKey()]),
-  
+
   findNearbyUsers: a
     .query()
     .arguments({
       lat: a.float().required(),
       lng: a.float().required(),
       radius: a.float().required(),
-      nextToken: a.string(), // optional pagination token
+      nextToken: a.string()
     })
-    .returns(a.string()) // returns JSON string representing { nearbyUsers, nextToken }
+    .returns(a.json())
     .handler(a.handler.function(findNearbyUsers))
-    .authorization(allow => [
-      allow.guest(),
-      allow.authenticated(),
-    ]),
+    .authorization(allow => [allow.guest(), allow.authenticated()]),
 
+  mutateUserProfile: a
+    .mutation()
+    .arguments({
+      action: a.string().required(),
+      payload: a.string().required()
+    })
+    .returns(a.string())
+    .handler(a.handler.function(mutateUserProfile))
+    .authorization(allow => [allow.authenticated()]),
+
+  updateUserImages: a
+    .mutation()
+    .arguments({
+      identityId: a.string().required(),
+      images: a.string().array()
+    })
+    .returns(a.string())
+    .handler(a.handler.function(updateUserImages))
+    .authorization(allow => [allow.authenticated()]),
+
+  getUserProfile: a
+    .query()
+    .arguments({ identityId: a.string().required() })
+    .returns(a.string())
+    .handler(a.handler.function(getUserProfile))
+    .authorization(allow => [allow.authenticated(), allow.guest()]),
 
   findPremiumMatches: a
     .query()
@@ -61,148 +62,94 @@ const schema = a.schema({
       lat: a.float().required(),
       lng: a.float().required(),
       radius: a.float().required(),
-      surveyFilter: a.json().required(), // ✅ Using JSON to store the array structure
-      nextToken: a.string(), // Optional pagination token
+      surveyFilter: a.json().required(),
+      nextToken: a.string()
     })
-    .returns(a.string()) // Returns JSON string with { premiumMatches, nextToken }
+    .returns(a.string())
     .handler(a.handler.function(findPremiumMatches))
-    .authorization(allow => [
-      allow.authenticated(), // Premium users only
-    ]),
-
-  fetchUserProfile: a
-    .query()
-    .arguments({
-      identityId: a.string().required(),
-    })
-    .returns(a.string()) // or define a custom type if you prefer an object response
-    .handler(a.handler.function(getUserProfile))
-    .authorization(allow => [
-      allow.guest(), allow.authenticated()
-    ]),
-    
-  mutateUserProfile: a
-    .mutation()
-    .arguments({
-      action: a.string().required(),
-      payload: a.string().required(), // JSON-encoded payload
-    })
-    .returns(a.string())
-    .handler(a.handler.function(mutateUserProfile))
     .authorization(allow => [allow.authenticated()]),
 
-  // New mutation to update a user’s images
-  updateUserImages: a
-    .mutation()
-    .arguments({
-      identityId: a.string().required(),
-      images: a.string().array(), // array of S3 keys or URLs
-    })
-    .returns(a.string())
-    .handler(a.handler.function(updateUserImages))
-    .authorization(allow => [allow.authenticated()]),
-
-  // --- Chat Operations ---
   createMessage: a
     .mutation()
-    .arguments({
-      recipientId: a.string().required(),
-      text: a.string().required()
-    })
-    .returns(a.ref('ChatMessage')) // ✅ Updated return type
+    .arguments({ recipientId: a.string().required(), text: a.string().required() })
+    .returns(a.ref('ChatMessage'))
     .handler(a.handler.function(createMessage))
     .authorization(allow => [allow.authenticated()]),
-  
+
   onCreateMessage: a
     .subscription()
     .for(a.ref('createMessage'))
     .handler(a.handler.function(createMessage))
     .authorization(allow => [allow.authenticated()]),
 
-  // Add your custom listConversations query under a new name to avoid conflict.
   customListConversations: a
     .query()
-    .arguments({}) // ⬅️ No need for client to pass anything
+    .arguments({})
     .returns(a.ref('Conversation').array())
     .handler(a.handler.function(listConversations))
     .authorization(allow => [allow.authenticated()]),
-  
-   customListMessagesByConversationId: a
+
+  customListMessagesByConversationId: a
     .query()
     .arguments({ conversationId: a.string().required() })
     .returns(a.ref('ChatMessage').array())
     .handler(a.handler.function(listMessagesByConversationId))
     .authorization(allow => [allow.authenticated()]),
 
-    ChatMessage: a.model({
-      conversationId: a.string().required(),
-      timestamp: a.datetime().required(),
-      senderId: a.string().required(),
-      recipientId: a.string().required(),
-      text: a.string().required(),
-      id: a.string(),
-      createdAt: a.datetime(),
-      updatedAt: a.datetime(),
-    })
-    .authorization(allow => [allow.authenticated()]),
-    /**
-     * TODO update both chats to leverage this sort of model.
-     *   owners: a.string().array().required()  // New: list of owners (Cognito IDs)
-    *      }).authorization(allow => [allow.owner({ ownerField: 'owners', identityClaim: 'sub' })]),
-     */
-  
-  // Conversation model for conversation summaries.
+  ChatMessage: a.model({
+    id: a.string().required(), // ✅ now it's a required primary field
+    conversationId: a.string().required(),
+    timestamp: a.datetime().required(),
+    senderId: a.string().required(),
+    recipientId: a.string().required(),
+    text: a.string().required(),
+    createdAt: a.datetime(),
+    updatedAt: a.datetime(),
+  }).authorization(allow => [allow.authenticated()]),
+
   Conversation: a.model({
+    id: a.string().required(), // ✅ required field
     conversationId: a.string().required(),
     participantA: a.string().required(),
     participantB: a.string().required(),
     lastMessage: a.string().required(),
     lastTimestamp: a.datetime().required(),
-    id: a.string(),
     createdAt: a.datetime(),
     updatedAt: a.datetime(),
-  })
-  .secondaryIndexes(index => [
+  }).secondaryIndexes(index => [
     index('participantA').sortKeys(['lastTimestamp']),
-    index('participantB').sortKeys(['lastTimestamp']) // ✅ NEW INDEX
-  ])
-  .authorization(allow => [allow.owner()]),
-  
-  UserProfile: a
-    .model({
-      identityId: a.string().required(),        // Unique user ID
-      locationLat: a.float().required(),      // Latitude coordinate
-      locationLng: a.float().required(),      // Longitude coordinate
-      geohash: a.string().required(),         // Geohash for spatial queries
-      rangeKey: a.string().required(),        // Range key for spatial queries
-      geoPrecision: a.float(),                // Optional: Precision of the geohash
-      lastUpdated: a.datetime().required(),   // Last update timestamp
-      lastOnlineAt: a.datetime(),  // Optional: Last online timestamp
-      createdAt: a.datetime(),                // Add createdAt timestamp
-      updatedAt: a.datetime(),                // Add updatedAt timestamp
-      images: a.string().array(),              // Array of S3 keys/URLs for images
-      userName: a.string().required(),
-      surveyAnswers: a.json().required(),      // ✅ Using JSON to store the array structure
-    })
-    .authorization(allow => [allow.owner()])
+    index('participantB').sortKeys(['lastTimestamp'])
+  ]).authorization(allow => [allow.owner()]),
+
+  UserProfile: a.model({
+    identityId: a.string().required(),
+    locationLat: a.float().required(),
+    locationLng: a.float().required(),
+    geohash: a.string().required(),
+    rangeKey: a.string().required(),
+    geoPrecision: a.float(),
+    lastUpdated: a.datetime().required(),
+    lastOnlineAt: a.datetime(),
+    createdAt: a.datetime(),
+    updatedAt: a.datetime(),
+    images: a.string().array(),
+    userName: a.string().required(),
+    surveyAnswers: a.json().required()
+  }).authorization(allow => [allow.owner()])
     .secondaryIndexes(index => [index('geohash').sortKeys(['rangeKey'])]),
-        
-  Contact: a
-    .model({
-      email: a.string().required(),
-      name: a.string().required(),
-      summary: a.string().required(),
-      createdAt: a.datetime().required(),
-      ipAddress: a.ipAddress().required(),
-    })
-    .authorization(allow => [
-      allow.guest().to(['create']), // ✅ Unauthenticated users can submit
-      allow.authenticated().to(['create']), // ✅ Authenticated users can submit
-      allow.owner().to(['read', 'update', 'delete']), // ✅
-    ]),
+
+  Contact: a.model({
+    email: a.string().required(),
+    name: a.string().required(),
+    summary: a.string().required(),
+    createdAt: a.datetime().required(),
+    ipAddress: a.ipAddress().required()
+  }).authorization(allow => [
+    allow.guest().to(['create']),
+    allow.authenticated().to(['create']),
+    allow.owner().to(['read', 'update', 'delete'])
+  ])
 });
-
-
 
 export type Schema = ClientSchema<typeof schema>;
 
@@ -210,9 +157,8 @@ export const data = defineData({
   schema,
   authorizationModes: {
     defaultAuthorizationMode: 'userPool',
-    // API Key is used for a.allow.public() rules
     apiKeyAuthorizationMode: {
-      expiresInDays: 30,
-    },
-  },
+      expiresInDays: 30
+    }
+  }
 });

@@ -8,6 +8,13 @@ import { SearchStateModel } from '../../models/Search';
 
 const client = generateClient<Schema>();
 
+interface NearbyUsersPayload {
+  success: boolean;
+  nearbyUsers: any[];
+  nextToken?: string | null;
+}
+
+
 @State<SearchStateModel>({
   name: 'search',
   defaults: {
@@ -34,7 +41,7 @@ export class SearchState {
   @Selector() static nextToken(state: SearchStateModel) {
     return state.nextToken;
   }
-  
+
   @Selector()
   static getUserById(state: SearchStateModel): (identityId: string) => any | undefined {
     return (identityId: string) => state.nearbyUsers.find(user => user.identityId === identityId);
@@ -43,7 +50,7 @@ export class SearchState {
   @Action(SearchNearbyUsers)
   async search(ctx: StateContext<SearchStateModel>, action: SearchNearbyUsers) {
     ctx.patchState({ loading: true, error: null });
-
+  
     try {
       const result = await client.queries.findNearbyUsers({
         lat: action.lat,
@@ -51,9 +58,13 @@ export class SearchState {
         radius: action.radius,
         nextToken: action.nextToken || undefined,
       });
-
-      const data = JSON.parse(result.data || '{}');
-
+  
+      const data = result?.data as NearbyUsersPayload;
+  
+      if (!data || !Array.isArray(data.nearbyUsers)) {
+        throw new Error('Invalid nearbyUsers payload');
+      }
+  
       ctx.patchState({
         nearbyUsers: action.nextToken
           ? [...ctx.getState().nearbyUsers, ...data.nearbyUsers]

@@ -23,14 +23,8 @@ function haversine(lat1: number, lon1: number, lat2: number, lon2: number): numb
   return 2 * R * Math.asin(Math.sqrt(a));
 }
 
-/**
- * Always use precision 7 (~150m) for best accuracy.
- */
 const GEOHASH_PRECISION = 7;
 
-/**
- * Query DynamoDB for a given geohash and nextToken for pagination
- */
 async function queryGeohash(geohash: string, nextToken?: AWS.DynamoDB.DocumentClient.Key) {
   const params: AWS.DynamoDB.DocumentClient.QueryInput = {
     TableName: TABLE_NAME,
@@ -40,8 +34,6 @@ async function queryGeohash(geohash: string, nextToken?: AWS.DynamoDB.DocumentCl
     Limit: 25,
     ExclusiveStartKey: nextToken,
   };
-
-  console.log(`📌 Querying DynamoDB geohash: ${geohash}`, params);
 
   try {
     return await docClient.query(params).promise();
@@ -53,8 +45,6 @@ async function queryGeohash(geohash: string, nextToken?: AWS.DynamoDB.DocumentCl
 
 export const handler: Schema["findNearbyUsers"]["functionHandler"] = async (event) => {
   const { lat, lng, radius, nextToken } = event.arguments;
-
-  console.log("📌 Input parameters:", { lat, lng, radius, nextToken });
 
   if ([lat, lng, radius].some(param => typeof param !== 'number')) {
     throw new Error("lat, lng, and radius must be numbers");
@@ -68,11 +58,8 @@ export const handler: Schema["findNearbyUsers"]["functionHandler"] = async (even
   const hashesToQuery = [centerHash, ...ngeohash.neighbors(centerHash)];
 
   let allUsers: any[] = [];
-  let evaluatedKeys: { [hash: string]: AWS.DynamoDB.DocumentClient.Key | undefined } = {};
-
-  // Decode incoming pagination token if present
   const paginationState = nextToken ? JSON.parse(nextToken) : {};
-  evaluatedKeys = paginationState.evaluatedKeys || {};
+  const evaluatedKeys: { [hash: string]: AWS.DynamoDB.DocumentClient.Key | undefined } = paginationState.evaluatedKeys || {};
 
   try {
     for (const hash of hashesToQuery) {
@@ -82,44 +69,33 @@ export const handler: Schema["findNearbyUsers"]["functionHandler"] = async (even
       evaluatedKeys[hash] = result.LastEvaluatedKey;
 
       allUsers.push(...(result.Items || []));
-      console.log(`✅ Found ${result.Items?.length || 0} users in geohash ${hash}`);
-
-      if (allUsers.length >= 20) break; // Fetch at most 20 results per page
+      if (allUsers.length >= 20) break;
     }
 
-    // Filter precisely by haversine distance
     const filteredUsers = allUsers
-      .map(user => {
-        const distance = haversine(lat, lng, user.locationLat, user.locationLng);
-        return {
-          ...user,
-          distance: distance >= 5 ? `${distance.toFixed(1)} miles` : '< 5 miles',
-          actualDistance: distance // ✅ store privately for internal sorting only
-        };
+      .filter(user => {
+        if (typeof user['locationLat'] !== 'number' || typeof user['locationLng'] !== 'number') return false;
+        const distance = haversine(lat, lng, user['locationLat'], user['locationLng']);
+        user['distance'] = distance >= 5 ? `${distance.toFixed(1)} miles` : '< 5 miles';
+        user['actualDistance'] = distance;
+        return distance <= radius;
       })
-      .filter(user => user.actualDistance <= radius)
       .sort((a, b) => a.actualDistance - b.actualDistance)
-      .slice(0, 25); // use previously recommended limit
+      .slice(0, 25);
 
-    // Prepare the nextToken for pagination (if there are more results)
     const hasMoreResults = Object.values(evaluatedKeys).some(key => !!key);
-    const newNextToken = hasMoreResults
-      ? JSON.stringify({ evaluatedKeys })
-      : null;
+    const newNextToken = hasMoreResults ? JSON.stringify({ evaluatedKeys }) : null;
 
-    console.log(`✅ Users returned after filtering: ${filteredUsers.length}`);
-    console.log(`📌 Next token for pagination: ${newNextToken}`);
-
-    return JSON.stringify({
+    return {
       success: true,
       nearbyUsers: filteredUsers,
       nextToken: newNextToken,
-    });
+    };
   } catch (error: any) {
     console.error("❌ Unexpected Error in handler:", error);
-    return JSON.stringify({
+    return {
       success: false,
       error: error.message,
-    });
+    };
   }
 };

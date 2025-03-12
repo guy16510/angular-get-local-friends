@@ -4,7 +4,6 @@ import AWS from 'aws-sdk';
 import ngeohash from 'ngeohash';
 
 const docClient = new AWS.DynamoDB.DocumentClient();
-// Construct the table name dynamically using an environment variable
 const TABLE_NAME = process.env['USER_PROFILE_TABLE_NAME'] || null;
 
 if (!TABLE_NAME || TABLE_NAME.length === 0) {
@@ -12,15 +11,13 @@ if (!TABLE_NAME || TABLE_NAME.length === 0) {
   throw new Error("Missing environment variable: USER_PROFILE_TABLE_NAME");
 }
 
-// Use a fixed precision for geospatial encoding
 const GEO_PRECISION = 7;
 
 export const handler: Schema["mutateUserProfile"]["functionHandler"] = async (event) => {
-  // Expect a JSON-encoded payload along with an action
   const { action, payload: payloadStr } = event.arguments;
 
   if (!action || !['create', 'update', 'delete', 'onlinePing'].includes(action)) {
-    throw new Error("Invalid action. Must be 'create', 'update', or 'delete', 'onlinePing'");
+    throw new Error("Invalid action. Must be 'create', 'update', 'delete', or 'onlinePing'");
   }
 
   let payload: any;
@@ -31,7 +28,6 @@ export const handler: Schema["mutateUserProfile"]["functionHandler"] = async (ev
   }
 
   const { identityId, locationLat, locationLng, surveyAnswers, userName } = payload;
-
   if (!identityId || typeof identityId !== 'string') {
     throw new Error("Payload must include an identityId (string)");
   }
@@ -39,20 +35,18 @@ export const handler: Schema["mutateUserProfile"]["functionHandler"] = async (ev
   const now = new Date().toISOString();
 
   if (action === 'create') {
-    // For create, require locationLat and locationLng
     if (typeof locationLat !== 'number' || typeof locationLng !== 'number') {
       throw new Error("For create, payload must include locationLat and locationLng as numbers");
     }
 
-    // Compute geospatial fields
     const geohash = ngeohash.encode(locationLat, locationLng, GEO_PRECISION);
-    const rangeKey = `${geohash}#${identityId}`; // Example concatenation
+    const rangeKey = `${geohash}#${identityId}`;
     const geoPrecision = GEO_PRECISION;
 
     const params: AWS.DynamoDB.DocumentClient.PutItemInput = {
       TableName: TABLE_NAME,
       Item: {
-        id: identityId, // Ensure `id` is used as the primary key
+        id: identityId,
         identityId,
         locationLat,
         locationLng,
@@ -60,33 +54,31 @@ export const handler: Schema["mutateUserProfile"]["functionHandler"] = async (ev
         geohash,
         rangeKey,
         geoPrecision,
-        surveyAnswers, // ✅ Store survey answers as an array
-        createdAt: now,  // Track creation time
-        updatedAt: now,  // Track last update time
+        surveyAnswers,
+        createdAt: now,
+        updatedAt: now,
         lastOnlineAt: now,
         lastUpdated: now,
       },
-      ReturnValues: "ALL_OLD", // ✅ Allows overwriting without condition failure
+      ReturnValues: "ALL_OLD",
     };
 
     await docClient.put(params).promise();
     return `UserProfile for ${identityId} created successfully.`;
 
   } else if (action === 'update') {
-    // Ensure required fields exist
     if (typeof locationLat !== 'number' || typeof locationLng !== 'number') {
       throw new Error("For update, payload must include locationLat and locationLng as numbers");
     }
 
-    // Compute geospatial fields
     const geohash = ngeohash.encode(locationLat, locationLng, GEO_PRECISION);
     const rangeKey = `${geohash}#${identityId}`;
     const geoPrecision = GEO_PRECISION;
 
     const params: AWS.DynamoDB.DocumentClient.UpdateItemInput = {
       TableName: TABLE_NAME,
-      Key: { id: identityId }, // ✅ Use the correct key
-      UpdateExpression: 'set locationLat = :lat, locationLng = :lng, geohash = :gh, rangeKey = :rk, geoPrecision = :gp, lastUpdated = :lu, lastOnlineAt =: la',
+      Key: { id: identityId },
+      UpdateExpression: 'set locationLat = :lat, locationLng = :lng, geohash = :gh, rangeKey = :rk, geoPrecision = :gp, lastUpdated = :lu, lastOnlineAt = :la',
       ExpressionAttributeValues: {
         ':lat': locationLat,
         ':lng': locationLng,
@@ -103,18 +95,15 @@ export const handler: Schema["mutateUserProfile"]["functionHandler"] = async (ev
     return `UserProfile for ${identityId} updated successfully.`;
 
   } else if (action === 'delete') {
-    // For delete, only identityId is required.
     const params: AWS.DynamoDB.DocumentClient.DeleteItemInput = {
       TableName: TABLE_NAME,
-      Key: { id: identityId }, // ✅ Use correct key
+      Key: { id: identityId },
     };
 
     await docClient.delete(params).promise();
     return `UserProfile for ${identityId} deleted successfully.`;
+
   } else if (action === 'onlinePing') {
-    /**
-     * Facilitate last online, or online now.
-     */
     const params: AWS.DynamoDB.DocumentClient.UpdateItemInput = {
       TableName: TABLE_NAME,
       Key: { id: identityId },
@@ -124,7 +113,7 @@ export const handler: Schema["mutateUserProfile"]["functionHandler"] = async (ev
       },
       ReturnValues: "ALL_NEW",
     };
-  
+
     await docClient.update(params).promise();
     return `Online timestamp updated for ${identityId}.`;
   }
