@@ -36,6 +36,6 @@ export class AppComponent implements OnInit{
       if (identityId) {
         this.store.dispatch(new UpdateUserOnlineStatus()); 
       }
-    }, 60000); // every 60s
+    }, 120000); // every 2min
   }
 }

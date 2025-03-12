@@ -15,41 +15,32 @@
         <button mat-raised-button color="primary" (click)="searchUsers()" [disabled]="loading$ | async">Search</button>
       </div>
     </mat-card-content>
-    </mat-card>
-
-      <app-loading *ngIf="loading$ | async"></app-loading>
-
-    <mat-card>
-      <mat-card-content>
-      <mat-grid-list cols="3" rowHeight="1:1.2" gutterSize="12px" *ngIf="(nearbyUsers$ | async)?.length">
-        <mat-grid-tile *ngFor="let user of nearbyUsers$ | async">
-          <mat-card class="user-card" [routerLink]="['/user-bio', user.identityId]">
-            <app-image-display [identityId]="user.identityId"></app-image-display>
-              <!-- <span class="online-dot" *ngIf="isOnline"></span>
-              <span *ngIf="!isOnline">Last seen {{ user.lastOnlineAt | date:'short' }}</span> -->
-            <mat-card-content>
-              <p>{{ user.userName }}</p>
-              <p>{{user.distance}}</p>
-              <!-- <p>{{ user.distance < 5 ? 'Less than 5 mi' : (user.distance | number:'1.1-1') + ' mi' }}</p> -->
-            </mat-card-content>
-          </mat-card>
-        </mat-grid-tile>
-        <!-- <mat-grid-tile *ngFor="let user of nearbyUsers$ | async">
-          <mat-card class="user-card">
-            <app-image-display [identityId]="user.identityId"></app-image-display>
-            <mat-card-content>
-              <p class="user-id">{{ user.identityId }}</p>
-               {{user.distance}}
-              <p>Updated: {{ user.lastUpdated | date:'short' }}</p>
-            </mat-card-content>
-          </mat-card>
-        </mat-grid-tile> -->
-      </mat-grid-list>
-
-      <div class="navigation-buttons">
-        <button mat-stroked-button (click)="previousPage()">Previous</button>
-        <button mat-stroked-button (click)="nextPage()">Next</button>
-      </div>
-    </mat-card-content>
   </mat-card>
+
+  <app-loading *ngIf="loading$ | async"></app-loading>
+
+  <ng-container *ngIf="(nearbyUsers$ | async) as users">
+    <mat-card *ngIf="users.length > 0">
+      <mat-card-content>
+        <mat-grid-list cols="3" rowHeight="1:1.2" gutterSize="12px">
+          <mat-grid-tile *ngFor="let user of users">
+            <mat-card class="user-card" [routerLink]="['/user-bio', user.identityId]">
+              <app-image-display [identityId]="user.identityId"></app-image-display>
+              <span class="online-dot" *ngIf="isOnline(user.lastOnlineAt)"></span>
+              <span *ngIf="!isOnline(user.lastOnlineAt)">Last seen {{ user.lastOnlineAt | date:'short' }}</span>
+              <mat-card-content>
+                <p>{{ user.userName }}</p>
+                <p>{{ user.distance }}</p>
+              </mat-card-content>
+            </mat-card>
+          </mat-grid-tile>
+        </mat-grid-list>
+
+        <div class="navigation-buttons">
+          <button mat-stroked-button (click)="previousPage()">Previous</button>
+          <button mat-stroked-button (click)="nextPage()">Next</button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </ng-container>
 </main>

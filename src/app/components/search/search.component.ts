@@ -55,6 +55,16 @@ export class SearchComponent implements OnInit {
     }
   }
 
+  isOnline(lastOnlineAt: string) {
+    if(lastOnlineAt){ // last 5min
+      return Date.now() - new Date(lastOnlineAt).getTime() < 5 * 60 * 1000;
+    }
+    else{
+      return false;
+    }
+  };
+
+
   searchUsers(pageIndex = 0) {
     const token = this.paginationTokens[pageIndex] ?? undefined;
     this.store.dispatch(new SearchNearbyUsers(this.lat, this.lng, this.radius, token)).subscribe(() => {

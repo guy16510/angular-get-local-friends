@@ -1,6 +1,7 @@
 import { DynamoDB } from 'aws-sdk';
 import type { Schema } from '../../data/resource';
 import { getCognitoIdentityId } from '../../shared/utils/identity';
+import { toConversation } from '../../shared/mappers/conversationMapper';
 
 const docClient = new DynamoDB.DocumentClient();
 const TABLE_NAME = process.env['CONVERSATION_TABLE_NAME'] || '';
@@ -33,9 +34,9 @@ export const handler: Schema["customListConversations"]["functionHandler"] = asy
   const merged = [...(resultA.Items || []), ...(resultB.Items || [])];
   const dedupedMap = new Map();
   merged.forEach(item => {
-    dedupedMap.set(item['conversationId'], item); // ✅ bracket notation here
+    dedupedMap.set(item['conversationId'], item);
   });
 
   const uniqueConversations = Array.from(dedupedMap.values());
-  return JSON.stringify(uniqueConversations);
+  return uniqueConversations.map(toConversation);
 };

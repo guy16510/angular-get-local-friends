@@ -1,6 +1,7 @@
 import { DynamoDB } from 'aws-sdk';
 import type { Schema } from '../../data/resource';
 import { getCognitoIdentityId } from '../../shared/utils/identity';
+import { toChatMessage } from '../../shared/mappers/chatMessageMapper';
 
 const docClient = new DynamoDB.DocumentClient();
 
@@ -46,6 +47,11 @@ export const handler: Schema["createMessage"]["functionHandler"] = async (event)
 
   const [participantA, participantB] = [senderId, recipientId].sort();
 
+  await docClient.put({
+    TableName: chatTableName,
+    Item: chatMessage
+  }).promise();
+
   await docClient.update({
     TableName: conversationTableName,
     Key: { conversationId },
@@ -68,5 +74,5 @@ export const handler: Schema["createMessage"]["functionHandler"] = async (event)
     ReturnValues: "ALL_NEW"
   }).promise();
 
-  return JSON.stringify(chatMessage);
+  return toChatMessage(chatMessage);
 };

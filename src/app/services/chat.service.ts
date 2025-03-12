@@ -5,14 +5,11 @@ import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../../../amplify/data/resource';
 
 const client = generateClient<Schema>({
-  authMode: 'userPool'  // ⬅️ Critical to ensure identity context is attached
+  authMode: 'userPool'
 });
 
 @Injectable({ providedIn: 'root' })
 export class ChatService {
-  /**
-   * Sends a chat message from the currently authenticated user.
-   */
   sendMessage(recipientId: string, text: string): Observable<any> {
     const payload = { recipientId, text };
 
@@ -21,27 +18,22 @@ export class ChatService {
         if (Array.isArray(result.errors) && result.errors.length > 0) {
           throw new Error(result.errors[0].message);
         }
-
-        return result.data ? JSON.parse(result.data as string) : payload;
+        return result.data; // ✅ NO JSON.parse()
       }),
       catchError(err => {
         console.error('[ChatService] sendMessage error:', err);
-        return of(payload);  // Fallback: return payload so UI doesn't crash
+        return of(payload);
       })
     );
   }
 
-  /**
-   * Fetches all conversations for the currently authenticated user.
-   */
   listConversations(): Observable<any[]> {
     return from(client.queries.customListConversations({})).pipe(
       map(result => {
         if (Array.isArray(result.errors) && result.errors.length > 0) {
           throw new Error(result.errors[0].message);
         }
-
-        return result.data ? JSON.parse(result.data as string) : [];
+        return result.data ?? []; // ✅ No parsing
       }),
       catchError(err => {
         console.error('[ChatService] listConversations error:', err);
@@ -50,17 +42,13 @@ export class ChatService {
     );
   }
 
-  /**
-   * Fetches all messages in a specific conversation.
-   */
   listMessagesByConversationId(conversationId: string): Observable<any[]> {
     return from(client.queries.customListMessagesByConversationId({ conversationId })).pipe(
       map(result => {
         if (Array.isArray(result.errors) && result.errors.length > 0) {
           throw new Error(result.errors[0].message);
         }
-
-        return result.data ? JSON.parse(result.data as string) : [];
+        return result.data ?? []; // ✅ No parsing
       }),
       catchError(err => {
         console.error('[ChatService] listMessages error:', err);
@@ -69,11 +57,7 @@ export class ChatService {
     );
   }
 
-  /**
-   * Subscribe to real-time updates for a conversation (placeholder).
-   */
   subscribeToMessages(conversationId: string): Observable<any> {
-    // TODO: implement real-time subscription if using GraphQL Subscriptions
     return new Observable(observer => {
       observer.next(null);
       observer.complete();

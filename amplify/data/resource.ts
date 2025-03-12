@@ -109,7 +109,7 @@ const schema = a.schema({
       recipientId: a.string().required(),
       text: a.string().required()
     })
-    .returns(a.string())
+    .returns(a.ref('ChatMessage')) // ✅ Updated return type
     .handler(a.handler.function(createMessage))
     .authorization(allow => [allow.authenticated()]),
   
@@ -123,24 +123,26 @@ const schema = a.schema({
   customListConversations: a
     .query()
     .arguments({}) // ⬅️ No need for client to pass anything
-    .returns(a.string())
+    .returns(a.ref('Conversation').array())
     .handler(a.handler.function(listConversations))
     .authorization(allow => [allow.authenticated()]),
   
-    customListMessagesByConversationId: a
+   customListMessagesByConversationId: a
     .query()
     .arguments({ conversationId: a.string().required() })
-    .returns(a.string())
+    .returns(a.ref('ChatMessage').array())
     .handler(a.handler.function(listMessagesByConversationId))
     .authorization(allow => [allow.authenticated()]),
 
-  ChatMessage: a
-    .model({
-      conversationId: a.string().required(),  // composite key computed in the handler
+    ChatMessage: a.model({
+      conversationId: a.string().required(),
       timestamp: a.datetime().required(),
       senderId: a.string().required(),
       recipientId: a.string().required(),
       text: a.string().required(),
+      id: a.string(),
+      createdAt: a.datetime(),
+      updatedAt: a.datetime(),
     })
     .authorization(allow => [allow.authenticated()]),
     /**
@@ -156,6 +158,9 @@ const schema = a.schema({
     participantB: a.string().required(),
     lastMessage: a.string().required(),
     lastTimestamp: a.datetime().required(),
+    id: a.string(),
+    createdAt: a.datetime(),
+    updatedAt: a.datetime(),
   })
   .secondaryIndexes(index => [
     index('participantA').sortKeys(['lastTimestamp']),

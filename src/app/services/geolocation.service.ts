@@ -29,9 +29,34 @@ export class GeolocationService {
               lng: position.coords.longitude
             });
           },
-          (error) => {
+          async (error) => {
             this.loadingSubject.next(false);
-            this.errorSubject.next('Failed to get precise location.');
+        
+            // Retry once if it's a transient "unknown" location failure
+            if (error.code === error.POSITION_UNAVAILABLE) {
+              console.warn('[Geolocation] Location unknown. Retrying once...');
+              try {
+                const retry = await this.getCurrentPosition(options);
+                resolve(retry);
+                return;
+              } catch (retryError) {
+                this.errorSubject.next('Still unable to get location after retry.');
+                reject(retryError);
+                return;
+              }
+            }
+        
+            // Handle other error types
+            switch (error.code) {
+              case error.PERMISSION_DENIED:
+                this.errorSubject.next('Location permission denied.');
+                break;
+              case error.TIMEOUT:
+                this.errorSubject.next('Location request timed out.');
+                break;
+              default:
+                this.errorSubject.next('Failed to get location.');
+            }
             reject(error);
           },
           options
