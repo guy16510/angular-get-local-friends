@@ -78,7 +78,7 @@ export class MyProfileComponent implements OnInit {
   async getUserProfile(identityId: string) {
     try {
       //TODO use NGXS state.
-      const result: any = await client.queries.getUserProfile({ identityId });
+      const result: any = await client.queries.fetchUserProfile({ identityId });
       this.userProfile = JSON.parse(result.data);
     } catch (error) {
       console.error('Error fetching user profile:', error);

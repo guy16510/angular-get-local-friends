@@ -49,12 +49,13 @@ const schema = a.schema({
     .handler(a.handler.function(updateUserImages))
     .authorization(allow => [allow.authenticated()]),
 
-  getUserProfile: a
+  // Renamed query to avoid conflict with auto-generated getUserProfile
+  fetchUserProfile: a
     .query()
     .arguments({
       identityId: a.string().required()
     })
-    .returns(a.json()) // ✅ this is key
+    .returns(a.json())
     .handler(a.handler.function(getUserProfile))
     .authorization(allow => [allow.authenticated(), allow.guest()]),
 
@@ -99,7 +100,7 @@ const schema = a.schema({
     .authorization(allow => [allow.authenticated()]),
 
   ChatMessage: a.model({
-    id: a.string().required(), // ✅ now it's a required primary field
+    id: a.string().required(), // required primary field
     conversationId: a.string().required(),
     timestamp: a.datetime().required(),
     senderId: a.string().required(),
@@ -110,7 +111,7 @@ const schema = a.schema({
   }).authorization(allow => [allow.authenticated()]),
 
   Conversation: a.model({
-    id: a.string().required(), // ✅ required field
+    id: a.string().required(), // required field
     conversationId: a.string().required(),
     participantA: a.string().required(),
     participantB: a.string().required(),

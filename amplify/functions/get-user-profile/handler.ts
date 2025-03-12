@@ -9,7 +9,7 @@ if (!TABLE_NAME || TABLE_NAME.length === 0) {
   throw new Error("Missing environment variable: USER_PROFILE_TABLE_NAME");
 }
 
-export const handler: Schema["getUserProfile"]["functionHandler"] = async (event: Parameters<Schema["getUserProfile"]["functionHandler"]>[0]) => {  const { identityId } = event.arguments;
+export const handler: Schema["fetchUserProfile"]["functionHandler"] = async (event: Parameters<Schema["fetchUserProfile"]["functionHandler"]>[0]) => {  const { identityId } = event.arguments;
   if (!identityId) {
     throw new Error("identityId is required");
   }
