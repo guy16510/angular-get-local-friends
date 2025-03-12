@@ -67,14 +67,16 @@ const Contact = a.model({
 ]);
 
 const NearbyUsersResponse = a.model({
-  id: a.string(),
-  createdAt: a.datetime(),
-  updatedAt: a.datetime(),
+  responseId: a.string().required(),  // custom identifier field
+  createdAt: a.datetime().required(),
+  updatedAt: a.datetime().required(),
   success: a.boolean().required(),
-  error: a.string().default(null),
+  error: a.string(),                  // can be string or null
   nearbyUsers: a.json().array(),
   nextToken: a.string()
-}).authorization(allow => [allow.authenticated()]);
+})
+.identifier(['responseId']) // set your custom field as the identifier
+.authorization(allow => [allow.authenticated()]);
 
 /* --- Now Define Operations That Reference The Models --- */
 
