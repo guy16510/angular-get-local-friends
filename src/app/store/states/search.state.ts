@@ -56,21 +56,32 @@ export class SearchState {
         radius: action.radius,
         nextToken: action.nextToken || undefined,
       });
-
-      // Type-safe way to check if result and data exist
-      const data = result?.data as NearbyUsersPayload | null;
-
-      // Handle invalid data or missing 'nearbyUsers'
-      if (!data || !Array.isArray(data.nearbyUsers)) {
-        throw new Error('Invalid nearbyUsers payload');
+  
+      const rawData = result?.data as NearbyUsersPayload | null;
+      if (!rawData) {
+        throw new Error('No data received');
       }
-
-      // Safely update the state with nearbyUsers and nextToken
+  
+      // Parse nearbyUsers: if an element is a string, JSON.parse it.
+      const parsedNearbyUsers = Array.isArray(rawData.nearbyUsers)
+        ? rawData.nearbyUsers.map(user => {
+            if (typeof user === 'string') {
+              try {
+                return JSON.parse(user);
+              } catch (parseError) {
+                console.error("Failed to parse user:", user);
+                return null;
+              }
+            }
+            return user;
+          }).filter(user => user !== null)
+        : [];
+  
       ctx.patchState({
         nearbyUsers: action.nextToken
-          ? [...ctx.getState().nearbyUsers, ...data.nearbyUsers]
-          : data.nearbyUsers,
-        nextToken: data.nextToken || null,
+          ? [...ctx.getState().nearbyUsers, ...parsedNearbyUsers]
+          : parsedNearbyUsers,
+        nextToken: rawData.nextToken || null,
         loading: false,
       });
     } catch (error: any) {
