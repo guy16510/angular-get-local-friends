@@ -23,7 +23,7 @@ export const handler: Schema["customListMessagesByConversationId"]["functionHand
 
   const sampleMsg = await docClient.query({
     TableName: TABLE_NAME,
-    KeyConditionExpression: 'conversationId = :cid',
+    KeyConditionExpression: 'id = :id AND conversationId = :cid',
     ExpressionAttributeValues: { ':cid': conversationId },
     Limit: 1
   }).promise();
@@ -38,7 +38,7 @@ export const handler: Schema["customListMessagesByConversationId"]["functionHand
 
   const result = await docClient.query({
     TableName: TABLE_NAME,
-    KeyConditionExpression: 'conversationId = :cid',
+    KeyConditionExpression: 'id = :id AND conversationId = :cid',
     ExpressionAttributeValues: { ':cid': conversationId },
     ScanIndexForward: true
   }).promise();

@@ -74,10 +74,14 @@ everyoneRole.addToPrincipalPolicy(new iam.PolicyStatement({
 const chatMessageTableArn = `arn:aws:dynamodb:us-east-1:${process.env['AWS_ACCOUNT_ID']}:table/${process.env['AMPLIFY_CHAT_MESSAGE_TABLE_NAME']}`;
 const chatMessageIndexArn = `${chatMessageTableArn}/index/*`;
 
+/** 💬 Conversation Table Permissions */
+const conversationTableArn = `arn:aws:dynamodb:us-east-1:${process.env['AWS_ACCOUNT_ID']}:table/${process.env['AMPLIFY_CONVERSATION_TABLE_NAME']}`;
+const conversationIndexArn = `${conversationTableArn}/index/*`;
+
 const createMessageLambda = backend.createMessage.resources.lambda;
 createMessageLambda.addToRolePolicy(new iam.PolicyStatement({
-  actions: ['dynamodb:PutItem'],
-  resources: [chatMessageTableArn]
+  actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem'],
+  resources: [chatMessageTableArn, conversationTableArn]
 }));
 
 const listMessagesLambda = backend.listMessagesByConversationId.resources.lambda;
@@ -85,10 +89,6 @@ listMessagesLambda.addToRolePolicy(new iam.PolicyStatement({
   actions: ['dynamodb:Query'],
   resources: [chatMessageTableArn, chatMessageIndexArn]
 }));
-
-/** 💬 Conversation Table Permissions */
-const conversationTableArn = `arn:aws:dynamodb:us-east-1:${process.env['AWS_ACCOUNT_ID']}:table/${process.env['AMPLIFY_CONVERSATION_TABLE_NAME']}`;
-const conversationIndexArn = `${conversationTableArn}/index/*`;
 
 const listConversationsLambda = backend.listConversations.resources.lambda;
 listConversationsLambda.addToRolePolicy(new iam.PolicyStatement({
