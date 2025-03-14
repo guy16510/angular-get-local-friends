@@ -1,9 +1,10 @@
-import { State, Action, StateContext, Selector } from '@ngxs/store';
+import { State, Action, StateContext, Selector, Store } from '@ngxs/store';
 import { Injectable } from '@angular/core';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../../../../amplify/data/resource';
 import { SearchNearbyUsers } from '../actions/search.actions';
 import { SearchStateModel } from '../../models/Search';
+import { AuthState } from './auth.state';
 
 const client = generateClient<Schema>();
 
@@ -24,6 +25,11 @@ interface NearbyUsersPayload {
 })
 @Injectable()
 export class SearchState {
+  
+  constructor(
+    private store: Store
+  ) {}
+
   @Selector() static nearbyUsers(state: SearchStateModel) {
     return state.nearbyUsers;
   }
@@ -47,45 +53,43 @@ export class SearchState {
 
   @Action(SearchNearbyUsers)
   async search(ctx: StateContext<SearchStateModel>, action: SearchNearbyUsers) {
-    ctx.patchState({ loading: true, error: null });
+    const identityId = this.store.selectSnapshot(AuthState.identityId);
   
-    try {
-      const result = await client.queries.findNearbyUsers({
-        lat: action.lat,
-        lng: action.lng,
-        radius: action.radius,
-        nextToken: action.nextToken || undefined,
-      });
+    ctx.patchState({ loading: true });
   
-      const rawData = result?.data as NearbyUsersPayload | null;
-      if (!rawData) {
-        throw new Error('No data received');
-      }
+    const result = await client.queries.findNearbyUsers({
+      lat: action.lat,
+      lng: action.lng,
+      radius: action.radius,
+      nextToken: action.nextToken || undefined,
+      // identityId: identityId
+    });
   
-      // Parse nearbyUsers: if an element is a string, JSON.parse it.
-      const parsedNearbyUsers = Array.isArray(rawData.nearbyUsers)
-        ? rawData.nearbyUsers.map(user => {
-            if (typeof user === 'string') {
-              try {
-                return JSON.parse(user);
-              } catch (parseError) {
-                console.error("Failed to parse user:", user);
-                return null;
-              }
-            }
-            return user;
-          }).filter(user => user !== null)
-        : [];
-  
-      ctx.patchState({
-        nearbyUsers: action.nextToken
-          ? [...ctx.getState().nearbyUsers, ...parsedNearbyUsers]
-          : parsedNearbyUsers,
-        nextToken: rawData.nextToken || null,
-        loading: false,
-      });
-    } catch (error: any) {
-      ctx.patchState({ error: error.message, loading: false });
+    const rawData = result.data as NearbyUsersPayload | null;
+    if (!rawData) {
+      ctx.patchState({ error: 'No data received', loading: false });
+      return;
     }
+  
+    const parsedNearbyUsers = rawData.nearbyUsers.map((user: string | any) => {
+      if (typeof user === 'string') {
+        try {
+          return JSON.parse(user);
+        } catch (e) {
+          console.error("Failed to parse user:", user);
+          return null;
+        }
+      }
+      return user;
+    }).filter(Boolean);
+  
+    ctx.patchState({
+      nearbyUsers: action.nextToken
+        ? [...ctx.getState().nearbyUsers, ...parsedNearbyUsers]
+        : parsedNearbyUsers,
+      nextToken: rawData.nextToken || null,
+      loading: false,
+      error: null
+    });
   }
 }

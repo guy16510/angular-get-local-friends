@@ -35,16 +35,11 @@ async function queryGeohash(geohash: string, nextToken?: AWS.DynamoDB.DocumentCl
     ExclusiveStartKey: nextToken,
   };
 
-  try {
-    return await docClient.query(params).promise();
-  } catch (error: any) {
-    console.error(`❌ DynamoDB Query Error (${geohash}):`, error);
-    throw new Error(error.message);
-  }
+  return docClient.query(params).promise();
 }
 
 export const handler: AppSyncResolverHandler<any, any> = async (event) => {
-  const { lat, lng, radius, nextToken } = event.arguments;
+  const { lat, lng, radius, nextToken, identityId } = event.arguments;
 
   if ([lat, lng, radius].some(param => typeof param !== 'number')) {
     throw new Error("lat, lng, and radius must be numbers");
@@ -67,11 +62,12 @@ export const handler: AppSyncResolverHandler<any, any> = async (event) => {
       const result = await queryGeohash(hash, exclusiveStartKey);
       evaluatedKeys[hash] = result.LastEvaluatedKey;
       allUsers.push(...(result.Items || []));
-      if (allUsers.length >= 20) break;
+      if (allUsers.length >= 25) break;
     }
 
     const filteredUsers = allUsers
       .filter(user => {
+        if (user.identityId === identityId) return false; // Exclude the current user
         if (typeof user['locationLat'] !== 'number' || typeof user['locationLng'] !== 'number') return false;
         const distance = haversine(lat, lng, user['locationLat'], user['locationLng']);
         user['distance'] = distance >= 5 ? `${distance.toFixed(1)} miles` : '< 5 miles';
@@ -84,13 +80,12 @@ export const handler: AppSyncResolverHandler<any, any> = async (event) => {
     const hasMoreResults = Object.values(evaluatedKeys).some(key => !!key);
     const newNextToken = hasMoreResults ? JSON.stringify({ evaluatedKeys }) : null;
 
-    // IMPORTANT: Return the required fields (id, createdAt, updatedAt) as the model auto-adds them.
     return {
-      id: "nearbyUsersResponse", // or generate a unique value if desired
+      id: "nearbyUsersResponse",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       success: true,
-      error: null, // explicitly returning null if there's no error
+      error: null,
       nearbyUsers: filteredUsers,
       nextToken: newNextToken,
     };
