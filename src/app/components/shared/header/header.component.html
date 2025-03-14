@@ -29,16 +29,16 @@
               <a routerLink="/myProfile">My Profile</a>
             </div>
             <div>
-              <a class="signOut" (click)="signOut()">Logout</a>
+              <a class="signOut" (click)="signOut()"><mat-icon>logout</mat-icon>Logout</a>
             </div>
           </div>
         </div>
       </ng-container>
       <ng-template #loggedOut>
         <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
-        <a routerLink="/survey" routerLinkActive="active">Survey</a>
-        <a routerLink="/contact-us" routerLinkActive="active">Contact Us</a>
-        <a routerLink="/login" routerLinkActive="active">Sign Up</a>
+        <a routerLink="/survey" routerLinkActive="active"><mat-icon>assignment</mat-icon>Survey</a>
+        <a routerLink="/contact-us" routerLinkActive="active"><mat-icon>mail</mat-icon>Contact Us</a>
+        <a routerLink="/login" routerLinkActive="active"><mat-icon>login</mat-icon>Sign Up</a>
         <!-- <a routerLink="/login" routerLinkActive="active">Login</a> -->
       </ng-template>
 

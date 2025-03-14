@@ -13,7 +13,7 @@ export const handler: Schema["customListConversations"]["functionHandler"] = asy
   const [participantAResult, participantBResult] = await Promise.all([
     docClient.query({
       TableName: TABLE_NAME,
-      IndexName: 'participantA',
+      IndexName: 'conversationsByParticipantAAndLastTimestamp',
       KeyConditionExpression: 'participantA = :uid',
       ExpressionAttributeValues: { ':uid': identityId },
       ScanIndexForward: false,
@@ -21,7 +21,7 @@ export const handler: Schema["customListConversations"]["functionHandler"] = asy
 
     docClient.query({
       TableName: TABLE_NAME,
-      IndexName: 'participantB',
+      IndexName: 'conversationsByParticipantBAndLastTimestamp',
       KeyConditionExpression: 'participantB = :uid',
       ExpressionAttributeValues: { ':uid': identityId },
       ScanIndexForward: false,

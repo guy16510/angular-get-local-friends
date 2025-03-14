@@ -62,7 +62,7 @@ export class SearchState {
       lng: action.lng,
       radius: action.radius,
       nextToken: action.nextToken || undefined,
-      // identityId: identityId
+      identityId: identityId
     });
   
     const rawData = result.data as NearbyUsersPayload | null;

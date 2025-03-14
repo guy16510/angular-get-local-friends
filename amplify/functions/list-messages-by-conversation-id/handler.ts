@@ -16,6 +16,7 @@ export const handler: Schema["customListMessagesByConversationId"]["functionHand
 
   const result = await docClient.query({
     TableName: TABLE_NAME,
+    IndexName: 'conversationId', // Explicitly query secondary index
     KeyConditionExpression: 'conversationId = :cid',
     ExpressionAttributeValues: { ':cid': conversationId },
     ScanIndexForward: true
@@ -23,7 +24,6 @@ export const handler: Schema["customListMessagesByConversationId"]["functionHand
 
   const items = result.Items || [];
 
-  // Optional (but recommended): security validation
   if (items.length > 0) {
     const authorized = items.some(msg => [msg['senderId'], msg['recipientId']].includes(identityId));
     if (!authorized) throw new Error("Unauthorized: You're not a participant in this conversation.");

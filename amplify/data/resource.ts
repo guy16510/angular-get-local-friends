@@ -13,15 +13,18 @@ import { listMessagesByConversationId } from '../functions/list-messages-by-conv
 
 
 const ChatMessage = a.model({
-  conversationId: a.string().required(), // Partition key
-  timestamp: a.datetime().required(),    // Sort key
-  id: a.string().required(),             // Just a unique ID, not indexed separately
+  id: a.string().required(),
+  conversationId: a.string().required(),
+  timestamp: a.datetime().required(),
   senderId: a.string().required(),
   recipientId: a.string().required(),
   text: a.string().required(),
   createdAt: a.datetime(),
   updatedAt: a.datetime(),
 })
+.secondaryIndexes(index => [
+  index('conversationId').sortKeys(['timestamp'])
+])
 .authorization(allow => [allow.authenticated()]);
 
 const Conversation = a.model({
@@ -95,7 +98,8 @@ const schema = a.schema({
       lat: a.float().required(),
       lng: a.float().required(),
       radius: a.float().required(),
-      nextToken: a.string()
+      nextToken: a.string(),
+      identityId: a.string(),
     })
     .returns(a.ref('NearbyUsersResponse'))
     .handler(a.handler.function(findNearbyUsers))
