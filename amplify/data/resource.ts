@@ -15,15 +15,14 @@ import { listMessagesByConversationId } from '../functions/list-messages-by-conv
 const ChatMessage = a.model({
   conversationId: a.string().required(), // Partition key
   timestamp: a.datetime().required(),    // Sort key
-  id: a.string().required(),             // unique message ID
+  id: a.string().required(),             // Just a unique ID, not indexed separately
   senderId: a.string().required(),
   recipientId: a.string().required(),
   text: a.string().required(),
   createdAt: a.datetime(),
   updatedAt: a.datetime(),
 })
-.authorization(allow => [allow.authenticated()])
-.secondaryIndexes(index => [index('id')]);
+.authorization(allow => [allow.authenticated()]);
 
 const Conversation = a.model({
   id: a.string().required(),              // Partition key
