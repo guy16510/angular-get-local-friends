@@ -8,35 +8,29 @@ const TABLE_NAME = process.env['CONVERSATION_TABLE_NAME'] || '';
 
 export const handler: Schema["customListConversations"]["functionHandler"] = async (event) => {
   const identityId = getCognitoIdentityId(event.identity);
-  if (!identityId) throw new Error("Unauthorized: Missing identity");
+  if (!identityId) throw new Error("Unauthorized: No identity provided.");
 
-  const queryAParams = {
-    TableName: TABLE_NAME,
-    IndexName: 'conversationsByParticipantAAndLastTimestamp',
-    KeyConditionExpression: 'participantA = :uid',
-    ExpressionAttributeValues: { ':uid': identityId },
-    ScanIndexForward: false
-  };
+  const [participantAResult, participantBResult] = await Promise.all([
+    docClient.query({
+      TableName: TABLE_NAME,
+      IndexName: 'participantA',
+      KeyConditionExpression: 'participantA = :uid',
+      ExpressionAttributeValues: { ':uid': identityId },
+      ScanIndexForward: false,
+    }).promise(),
 
-  const queryBParams = {
-    TableName: TABLE_NAME,
-    IndexName: 'conversationsByParticipantBAndLastTimestamp',
-    KeyConditionExpression: 'participantB = :uid',
-    ExpressionAttributeValues: { ':uid': identityId },
-    ScanIndexForward: false
-  };
-
-  const [resultA, resultB] = await Promise.all([
-    docClient.query(queryAParams).promise(),
-    docClient.query(queryBParams).promise()
+    docClient.query({
+      TableName: TABLE_NAME,
+      IndexName: 'participantB',
+      KeyConditionExpression: 'participantB = :uid',
+      ExpressionAttributeValues: { ':uid': identityId },
+      ScanIndexForward: false,
+    }).promise()
   ]);
 
-  const merged = [...(resultA.Items || []), ...(resultB.Items || [])];
-  const dedupedMap = new Map();
-  merged.forEach(item => {
-    dedupedMap.set(item['conversationId'], item);
-  });
+  const conversations = [...(participantAResult.Items || []), ...(participantBResult.Items || [])];
 
-  const uniqueConversations = Array.from(dedupedMap.values());
-  return uniqueConversations.map(toConversation);
+  const uniqueConversations = new Map(conversations.map(c => [c['id'], c]));
+  
+  return Array.from(uniqueConversations.values()).map(toConversation);
 };

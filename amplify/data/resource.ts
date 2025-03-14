@@ -13,26 +13,28 @@ import { listMessagesByConversationId } from '../functions/list-messages-by-conv
 
 
 const ChatMessage = a.model({
-  id: a.string().required(), // required primary field
-  conversationId: a.string().required(),
-  timestamp: a.datetime().required(),
+  conversationId: a.string().required(), // Partition key
+  timestamp: a.datetime().required(),    // Sort key
+  id: a.string().required(),             // unique message ID
   senderId: a.string().required(),
   recipientId: a.string().required(),
   text: a.string().required(),
   createdAt: a.datetime(),
   updatedAt: a.datetime(),
-}).authorization(allow => [allow.authenticated()]);
+})
+.authorization(allow => [allow.authenticated()])
+.secondaryIndexes(index => [index('id')]);
 
 const Conversation = a.model({
-  id: a.string().required(), // required field
-  conversationId: a.string().required(),
+  id: a.string().required(),              // Partition key
   participantA: a.string().required(),
   participantB: a.string().required(),
   lastMessage: a.string().required(),
   lastTimestamp: a.datetime().required(),
   createdAt: a.datetime(),
   updatedAt: a.datetime(),
-}).secondaryIndexes(index => [
+})
+.secondaryIndexes(index => [
   index('participantA').sortKeys(['lastTimestamp']),
   index('participantB').sortKeys(['lastTimestamp'])
 ]).authorization(allow => [allow.owner()]);

@@ -14,31 +14,33 @@ export const handler: Schema["customListMessagesByConversationId"]["functionHand
 
   const identityId = getCognitoIdentityId(event.identity);
   if (!identityId) throw new Error("Unauthorized");
-
   if (!conversationId) throw new Error("Missing conversationId");
-
   if (!/^[\w\-#:]+$/.test(conversationId)) {
     throw new Error("Invalid conversationId format.");
   }
 
-  const sampleMsg = await docClient.query({
+  // Fetch first message to verify participation (authorization)
+  const authCheck = await docClient.query({
     TableName: TABLE_NAME,
-    KeyConditionExpression: 'id = :id AND conversationId = :cid',
+    KeyConditionExpression: 'conversationId = :cid',
     ExpressionAttributeValues: { ':cid': conversationId },
     Limit: 1
   }).promise();
 
-  const oneMessage = sampleMsg.Items?.[0];
+  const oneMessage = authCheck.Items?.[0];
   if (oneMessage) {
     const isParticipant = [oneMessage['senderId'], oneMessage['recipientId']].includes(identityId);
     if (!isParticipant) {
       throw new Error("Unauthorized: You are not part of this conversation.");
     }
+  } else {
+    throw new Error("No messages found or invalid conversationId.");
   }
 
+  // Fetch all messages
   const result = await docClient.query({
     TableName: TABLE_NAME,
-    KeyConditionExpression: 'id = :id AND conversationId = :cid',
+    KeyConditionExpression: 'conversationId = :cid',
     ExpressionAttributeValues: { ':cid': conversationId },
     ScanIndexForward: true
   }).promise();
