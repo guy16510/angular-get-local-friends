@@ -32,21 +32,19 @@ const backend = defineBackend({
 const dynamoTableArn = `arn:aws:dynamodb:us-east-1:${process.env['AWS_ACCOUNT_ID']}:table/${process.env['AMPLIFY_USER_PROFILE_TABLE_NAME']}`;
 const dynamoGeoIndexArn = `${dynamoTableArn}/index/*`;
 
-// GetUserProfile Lambda Permissions
-backend.getUserProfile.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
-  actions: ['dynamodb:GetItem', 'dynamodb:Query'],
-  resources: [dynamoTableArn, dynamoGeoIndexArn]
-}));
-
-// FindNearbyUsers Lambda Permissions (Geo Queries)
+// Permissions for Geo Operations (REQUIRED!)
 backend.findNearbyUsers.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
   actions: ['dynamodb:Query'],
-  resources: [dynamoTableArn, dynamoGeoIndexArn]
+  resources: [dynamoTableArn, dynamoGeoIndexArn] // explicitly allow index queries
 }));
 
-// MutateUserProfile Lambda Permissions (Geo mutations)
 backend.mutateUserProfile.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
   actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem', 'dynamodb:DeleteItem'],
+  resources: [dynamoTableArn, dynamoGeoIndexArn] // explicitly include geo index
+}));
+
+backend.getUserProfile.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
+  actions: ['dynamodb:GetItem', 'dynamodb:Query'],
   resources: [dynamoTableArn, dynamoGeoIndexArn]
 }));
 
