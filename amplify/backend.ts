@@ -28,26 +28,26 @@ const backend = defineBackend({
   listMessagesByConversationId
 });
 
-/** 🔐 User Profile Table Permissions */
+/** 🔐 User Profile Table Permissions (Geo Enabled) */
 const dynamoTableArn = `arn:aws:dynamodb:us-east-1:${process.env['AWS_ACCOUNT_ID']}:table/${process.env['AMPLIFY_USER_PROFILE_TABLE_NAME']}`;
-const dynamoIndexArn = `${dynamoTableArn}/index/userProfilesByGeohashAndRangeKey`;
+const dynamoGeoIndexArn = `${dynamoTableArn}/index/*`;
 
-const userProfileLambda = backend.getUserProfile.resources.lambda;
-userProfileLambda.addToRolePolicy(new iam.PolicyStatement({
+// GetUserProfile Lambda Permissions
+backend.getUserProfile.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
   actions: ['dynamodb:GetItem', 'dynamodb:Query'],
-  resources: [dynamoTableArn]
+  resources: [dynamoTableArn, dynamoGeoIndexArn]
 }));
 
-const findNearbyUsersLambda = backend.findNearbyUsers.resources.lambda;
-findNearbyUsersLambda.addToRolePolicy(new iam.PolicyStatement({
+// FindNearbyUsers Lambda Permissions (Geo Queries)
+backend.findNearbyUsers.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
   actions: ['dynamodb:Query'],
-  resources: [dynamoTableArn, dynamoIndexArn]
+  resources: [dynamoTableArn, dynamoGeoIndexArn]
 }));
 
-const mutateUserProfileLambda = backend.mutateUserProfile.resources.lambda;
-mutateUserProfileLambda.addToRolePolicy(new iam.PolicyStatement({
-  actions: ['dynamodb:PutItem', "dynamodb:UpdateItem"],
-  resources: [dynamoTableArn]
+// MutateUserProfile Lambda Permissions (Geo mutations)
+backend.mutateUserProfile.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
+  actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem', 'dynamodb:DeleteItem'],
+  resources: [dynamoTableArn, dynamoGeoIndexArn]
 }));
 
 /** 🔐 Allow `EVERYONE` Cognito Role to access S3 Bucket */
@@ -78,20 +78,17 @@ const chatMessageIndexArn = `${chatMessageTableArn}/index/*`;
 const conversationTableArn = `arn:aws:dynamodb:us-east-1:${process.env['AWS_ACCOUNT_ID']}:table/${process.env['AMPLIFY_CONVERSATION_TABLE_NAME']}`;
 const conversationIndexArn = `${conversationTableArn}/index/*`;
 
-const createMessageLambda = backend.createMessage.resources.lambda;
-createMessageLambda.addToRolePolicy(new iam.PolicyStatement({
+backend.createMessage.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
   actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem'],
   resources: [chatMessageTableArn, conversationTableArn]
 }));
 
-const listMessagesLambda = backend.listMessagesByConversationId.resources.lambda;
-listMessagesLambda.addToRolePolicy(new iam.PolicyStatement({
+backend.listMessagesByConversationId.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
   actions: ['dynamodb:Query'],
   resources: [chatMessageTableArn, chatMessageIndexArn]
 }));
 
-const listConversationsLambda = backend.listConversations.resources.lambda;
-listConversationsLambda.addToRolePolicy(new iam.PolicyStatement({
+backend.listConversations.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
   actions: ['dynamodb:Query'],
   resources: [conversationTableArn, conversationIndexArn]
 }));

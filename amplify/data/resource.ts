@@ -45,16 +45,18 @@ const UserProfile = a.model({
   identityId: a.string().required(),
   locationLat: a.float().required(),
   locationLng: a.float().required(),
+  hashKey: a.integer().required(),
+  rangeKey: a.string().required(),
+  geohash: a.string().required(),
+  geoPrecision: a.float(),
+  lastUpdated: a.datetime().required(),
   lastOnlineAt: a.datetime(),
-  hashKey: a.integer().required(),       // required by dynamodb-geo
-  rangeKey: a.string().required(),       // required by dynamodb-geo
-  geoJson: a.json(),                     // optional
   createdAt: a.datetime(),
   updatedAt: a.datetime(),
+  images: a.string().array(),
   userName: a.string().required(),
   surveyAnswers: a.json().required()
-})
-.identifier(['hashKey', 'rangeKey'])
+}).identifier(['hashKey', 'rangeKey'])
 .authorization(allow => [allow.owner()]);
 
 const Contact = a.model({
