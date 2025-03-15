@@ -1,94 +1,56 @@
-import type { AppSyncResolverHandler } from 'aws-lambda';
-import AWS from 'aws-sdk';
-import ngeohash from 'ngeohash';
+import type { Schema } from '../../data/resource';
+import type { AppSyncIdentityCognito } from 'aws-lambda';
+import { DynamoDB } from '@aws-sdk/client-dynamodb';
+import { unmarshall } from '@aws-sdk/util-dynamodb';
+import * as ddbGeo from 'dynamodb-geo-v3';
 
-const docClient = new AWS.DynamoDB.DocumentClient();
-const TABLE_NAME = process.env['USER_PROFILE_TABLE_NAME'] || '';
+const ddb = new DynamoDB({});
 
-if (!TABLE_NAME) {
-  console.error("ERROR: USER_PROFILE_TABLE_NAME is not set!");
-  throw new Error("Missing environment variable: USER_PROFILE_TABLE_NAME");
-}
+const TABLE_NAME = process.env['USER_PROFILE_TABLE_NAME']!;
+if (!TABLE_NAME) throw new Error("Missing environment variable: USER_PROFILE_TABLE_NAME");
 
-function toRadians(degrees: number): number {
-  return degrees * (Math.PI / 180);
-}
+const config = new ddbGeo.GeoDataManagerConfiguration(ddb, TABLE_NAME);
+config.hashKeyLength = 5;
+const geoTableManager = new ddbGeo.GeoDataManager(config);
 
-function haversine(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 3958.8; // Earth radius in miles
-  const dLat = toRadians(lat2 - lat1);
-  const dLon = toRadians(lon2 - lon1);
-  const a = Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) * Math.sin(dLon / 2) ** 2;
-  return 2 * R * Math.asin(Math.sqrt(a));
-}
+export const handler: Schema["findNearbyUsers"]["functionHandler"] = async (event) => {
+  const { lat, lng, radius } = event.arguments;
 
-function calculateGeohashPrecision(radiusInMiles: number): number {
-  const radiusInKm = radiusInMiles * 1.60934;
-  if (radiusInKm >= 2500) return 1;
-  if (radiusInKm >= 630) return 2;
-  if (radiusInKm >= 78) return 3;
-  if (radiusInKm >= 20) return 4;
-  if (radiusInKm >= 2.4) return 5;
-  if (radiusInKm >= 0.6) return 6;
-  if (radiusInKm >= 0.076) return 7;
-  return 8;
-}
-
-async function queryGeohash(geohash: string, nextToken?: AWS.DynamoDB.DocumentClient.Key) {
-  const params: AWS.DynamoDB.DocumentClient.QueryInput = {
-    TableName: TABLE_NAME,
-    IndexName: 'userProfilesByGeohashAndRangeKey',
-    KeyConditionExpression: 'geohash = :hash',
-    ExpressionAttributeValues: { ':hash': geohash },
-    Limit: 35,
-    ExclusiveStartKey: nextToken,
-  };
-  return docClient.query(params).promise();
-}
-
-export const handler: AppSyncResolverHandler<any, any> = async (event) => {
-  const { lat, lng, radius, nextToken, identityId } = event.arguments;
-
-  if ([lat, lng, radius].some(param => typeof param !== 'number')) {
-    throw new Error("lat, lng, and radius must be numbers");
+  let identityId: string;
+  if (event.identity && 'username' in event.identity) {
+    identityId = (event.identity as AppSyncIdentityCognito).username;
+  } else if (event.arguments.identityId) {
+    identityId = event.arguments.identityId;
+  } else {
+    throw new Error('IdentityId is missing from event');
   }
 
-  if (radius < 1 || radius > 50) {
-    throw new Error("Radius must be between 1 and 50 miles");
-  }
-
-  const precision = calculateGeohashPrecision(radius);
-  const centerHash = ngeohash.encode(lat, lng, precision);
-  const hashesToQuery = new Set([centerHash, ...ngeohash.neighbors(centerHash)]);
-
-  let allUsers: any[] = [];
-  const paginationState = nextToken ? JSON.parse(nextToken) : {};
-  const evaluatedKeys: { [hash: string]: AWS.DynamoDB.DocumentClient.Key | undefined } = paginationState.evaluatedKeys || {};
+  console.info('🔍 [findNearbyUsers] Query:', { lat, lng, radius, identityId });
 
   try {
-    for (const hash of hashesToQuery) {
-      const exclusiveStartKey = evaluatedKeys[hash];
-      const result = await queryGeohash(hash, exclusiveStartKey);
-      evaluatedKeys[hash] = result.LastEvaluatedKey;
-      allUsers.push(...(result.Items || []));
-      if (allUsers.length >= 50) break;
-    }
+    const results = await geoTableManager.queryRadius({
+      RadiusInMeter: radius * 1609.34,
+      CenterPoint: { latitude: lat, longitude: lng }
+    });
 
-    const filteredUsers = allUsers
-      .filter(user => {
-        if (user.identityId === identityId) return false; // Exclude current user
-        if (typeof user.locationLat !== 'number' || typeof user.locationLng !== 'number') return false;
-        const distance = haversine(lat, lng, user.locationLat, user.locationLng);
-        user.distance = distance >= 5 ? `${distance.toFixed(1)} miles` : '< 5 miles';
-        user.actualDistance = distance;
-        return distance <= radius;
+    console.info(`[findNearbyUsers] Dynamo results count:`, results.length);
+
+    const items = results.map(item => unmarshall(item));
+
+    const filteredUsers = items
+      .filter(user => user['identityId'] !== identityId)
+      .map(user => {
+        const distance = haversine(lat, lng, user['locationLat'], user['locationLng']);
+        return {
+          ...user,
+          distance: distance >= 5 ? `${distance.toFixed(1)} miles` : '< 5 miles',
+          actualDistance: distance,
+        };
       })
       .sort((a, b) => a.actualDistance - b.actualDistance)
       .slice(0, 25);
 
-    const hasMoreResults = Object.values(evaluatedKeys).some(key => !!key);
-    const newNextToken = hasMoreResults ? JSON.stringify({ evaluatedKeys }) : null;
+    console.info(`✅ [findNearbyUsers] Found ${filteredUsers.length} users`);
 
     return {
       id: "nearbyUsersResponse",
@@ -97,18 +59,28 @@ export const handler: AppSyncResolverHandler<any, any> = async (event) => {
       success: true,
       error: null,
       nearbyUsers: filteredUsers,
-      nextToken: newNextToken,
+      nextToken: null,
     };
+
   } catch (error: any) {
-    console.error("❌ Unexpected Error in handler:", error);
+    console.error("❌ [findNearbyUsers] Error:", error);
     return {
       id: "nearbyUsersResponse",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       success: false,
-      error: error.message,
+      error: "Internal error occurred",
       nearbyUsers: [],
       nextToken: null,
     };
   }
 };
+
+function haversine(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 3958.8;
+  const toRad = (d: number) => d * (Math.PI / 180);
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2)**2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}

@@ -6,12 +6,15 @@ import { SearchNearbyUsers } from '../actions/search.actions';
 import { SearchStateModel } from '../../models/Search';
 import { AuthState } from './auth.state';
 
-const client = generateClient<Schema>();
+const client = generateClient<Schema>({
+  authMode: 'userPool'
+});
 
 interface NearbyUsersPayload {
   success: boolean;
   nearbyUsers: any[];
   nextToken?: string | null;
+  error: string | null;
 }
 
 @State<SearchStateModel>({
@@ -56,7 +59,7 @@ export class SearchState {
     const identityId = this.store.selectSnapshot(AuthState.identityId);
   
     ctx.patchState({ loading: true });
-  
+    debugger;
     const result = await client.queries.findNearbyUsers({
       lat: action.lat,
       lng: action.lng,
@@ -66,8 +69,13 @@ export class SearchState {
     });
   
     const rawData = result.data as NearbyUsersPayload | null;
-    if (!rawData) {
-      ctx.patchState({ error: 'No data received', loading: false });
+
+    if (!rawData || !rawData.success) {
+      ctx.patchState({ 
+        error: rawData?.error || 'Failed to retrieve nearby users.',
+        loading: false
+      });
+      console.error('[SearchState] Error fetching nearby users:', rawData?.error);
       return;
     }
   
