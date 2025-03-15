@@ -56,7 +56,12 @@ const UserProfile = a.model({
   images: a.string().array(),
   userName: a.string().required(),
   surveyAnswers: a.json().required()
-}).identifier(['hashKey', 'rangeKey'])
+})
+.identifier(['hashKey', 'rangeKey'])
+.secondaryIndexes(index => [
+  index('identityId'),
+  index('geohash') 
+])
 .authorization(allow => [allow.owner()]);
 
 const Contact = a.model({
