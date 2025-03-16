@@ -59,8 +59,7 @@ const UserProfile = a.model({
 })
 .identifier(['hashKey', 'rangeKey'])
 .secondaryIndexes(index => [
-  index('identityId'),
-  index('geohash') 
+  index('identityId') // explicitly correct
 ])
 .authorization(allow => [allow.owner()]);
 

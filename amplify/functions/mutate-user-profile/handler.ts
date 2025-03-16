@@ -6,38 +6,34 @@ import ngeohash from 'ngeohash';
 const TABLE_NAME = process.env['USER_PROFILE_TABLE_NAME']!;
 if (!TABLE_NAME) throw new Error("Missing USER_PROFILE_TABLE_NAME environment variable");
 
-// Correct DynamoDB instance (NOT DocumentClient!)
 const ddb = new DynamoDB({});
 const geoConfig = new ddbGeo.GeoDataManagerConfiguration(ddb, TABLE_NAME);
 geoConfig.hashKeyLength = 5;
-
 const geoTableManager = new ddbGeo.GeoDataManager(geoConfig);
-const GEO_PRECISION = 7;
 
 export const handler: Schema["mutateUserProfile"]["functionHandler"] = async (event) => {
   const { action, payload: payloadStr } = event.arguments;
 
-  if (!action || !['create', 'update', 'delete', 'onlinePing'].includes(action)) {
-    throw new Error("Invalid action.");
+  if (!['create', 'update', 'delete', 'onlinePing'].includes(action)) {
+    throw new Error("Invalid action");
   }
 
   let payload: any;
   try {
     payload = JSON.parse(payloadStr);
   } catch (err) {
-    console.error('[mutateUserProfile] Invalid JSON:', err);
+    console.error('❌ Invalid JSON:', err);
     throw new Error("Payload must be valid JSON");
   }
 
   const { identityId, locationLat, locationLng, userName, surveyAnswers, images } = payload;
-  const now = new Date().toISOString();
 
   if (['create', 'update'].includes(action)) {
     if (!identityId || typeof locationLat !== 'number' || typeof locationLng !== 'number') {
       throw new Error(`identityId, locationLat, and locationLng are required for ${action}`);
     }
 
-    const geohash = ngeohash.encode(locationLat, locationLng, GEO_PRECISION);
+    const geohash = ngeohash.encode(locationLat, locationLng, 7);
     const rangeKey = `${geohash}#${identityId}`;
 
     await geoTableManager.putPoint({
@@ -51,10 +47,14 @@ export const handler: Schema["mutateUserProfile"]["functionHandler"] = async (ev
           locationLat: { N: locationLat.toString() },
           locationLng: { N: locationLng.toString() },
           geohash: { S: geohash },
+          geoPrecision: { N: '7' },
           createdAt: { S: new Date().toISOString() },
-          updatedAt: { S: new Date().toISOString() }
+          updatedAt: { S: new Date().toISOString() },
+          lastUpdated: { S: new Date().toISOString() },
+          lastOnlineAt: { S: new Date().toISOString() },
         }
-      }});
+      }
+    });
 
     console.info(`✅ [mutateUserProfile] ${action} successful for ${identityId}`);
 
@@ -67,15 +67,11 @@ export const handler: Schema["mutateUserProfile"]["functionHandler"] = async (ev
   }
 
   if (action === 'delete') {
-    const params = {
-      TableName: TABLE_NAME,
-      Key: {
-        hashKey: { N: payload.hashKey.toString() },
-        rangeKey: { S: payload.rangeKey }
-      }
-    };
+    await geoTableManager.deletePoint({
+      RangeKeyValue: { S: payload.rangeKey },
+      GeoPoint: { latitude: payload.locationLat, longitude: payload.locationLng }
+    });
 
-    await ddb.deleteItem(params);
     console.info(`🗑️ [mutateUserProfile] Deleted ${identityId}`);
 
     return {
@@ -110,6 +106,5 @@ export const handler: Schema["mutateUserProfile"]["functionHandler"] = async (ev
     };
   }
 
-  console.error("❌ [mutateUserProfile] Invalid action provided");
-  throw new Error("Invalid action");
+  throw new Error("Unhandled action");
 };
