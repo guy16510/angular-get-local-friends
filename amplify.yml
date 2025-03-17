@@ -7,19 +7,19 @@ backend:
         - export AWS_ACCOUNT_ID=438347844807
         - |
           if [[ "$AWS_BRANCH" == "develop" ]]; then
-            export AMPLIFY_USER_PROFILE_TABLE_NAME="UserProfile-slzhpdj7ifgljk54sxgaj62qeu-NONE"
+            export AMPLIFY_USER_PROFILE_TABLE_NAME=UserProfile-dev"
             export AMPLIFY_STORAGE_BUCKET_NAME="amplify-dkrmsanbniimt-dev-userimagesdevelopbucket4-wpaceuhzu52d"
             export AMPLIFY_EVERYONE_ROLE_ARN="arn:aws:iam::438347844807:role/amplify-dkrmsanbniimt-dev-amplifyAuthEVERYONEdevelo-zsnlJdljcJae"
             export AMPLIFY_CHAT_MESSAGE_TABLE_NAME="ChatMessage-slzhpdj7ifgljk54sxgaj62qeu-NONE"
             export AMPLIFY_CONVERSATION_TABLE_NAME="Conversation-slzhpdj7ifgljk54sxgaj62qeu-NONE"
           elif [[ "$AWS_BRANCH" == "main" ]]; then
-            export AMPLIFY_USER_PROFILE_TABLE_NAME="UserProfile-x334imiw7fh4hlc6cfem5zw2vy-NONE"
+            export AMPLIFY_USER_PROFILE_TABLE_NAME="UserProfile-prod"
             export AMPLIFY_STORAGE_BUCKET_NAME="amplify-dkrmsanbniimt-main-userimagesmainbucket4-xyz123abc"
             export AMPLIFY_EVERYONE_ROLE_ARN="arn:aws:iam::438347844807:role/amplify-<your-main-role-name>"
             export AMPLIFY_CHAT_MESSAGE_TABLE_NAME=""
             export AMPLIFY_CONVERSATION_TABLE_NAME=""
           else
-            export AMPLIFY_USER_PROFILE_TABLE_NAME="UserProfile-default-NONE"
+            export AMPLIFY_USER_PROFILE_TABLE_NAME="UserProfile-dev"
             export AMPLIFY_STORAGE_BUCKET_NAME="amplify-dkrmsanbniimt-default-userimagesdefaultbucket4-xyz999"
             export AMPLIFY_EVERYONE_ROLE_ARN="arn:aws:iam::438347844807:role/amplify-<your-default-role-name>"
             export AMPLIFY_CHAT_MESSAGE_TABLE_NAME="ChatMessage-slzhpdj7ifgljk54sxgaj62qeu-NONE"
