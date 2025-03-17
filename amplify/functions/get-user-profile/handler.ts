@@ -13,7 +13,7 @@ export const handler: Schema["fetchUserProfile"]["functionHandler"] = async (eve
 
   const result = await docClient.query({
     TableName: TABLE_NAME,
-    IndexName: 'userProfilesByIdentityId',
+    IndexName: 'identityId-index',
     KeyConditionExpression: 'identityId = :id',
     ExpressionAttributeValues: { ':id': identityId }
   });

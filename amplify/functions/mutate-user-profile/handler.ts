@@ -35,6 +35,7 @@ export const handler: Schema["mutateUserProfile"]["functionHandler"] = async (ev
 
     const geohash = ngeohash.encode(locationLat, locationLng, 7);
     const rangeKey = `${geohash}#${identityId}`;
+    const now = new Date().toISOString();
 
     await geoTableManager.putPoint({
       RangeKeyValue: { S: rangeKey },
@@ -46,12 +47,12 @@ export const handler: Schema["mutateUserProfile"]["functionHandler"] = async (ev
           surveyAnswers: { S: JSON.stringify(surveyAnswers) },
           locationLat: { N: locationLat.toString() },
           locationLng: { N: locationLng.toString() },
-          geohash: { S: geohash },
           geoPrecision: { N: '7' },
-          createdAt: { S: new Date().toISOString() },
-          updatedAt: { S: new Date().toISOString() },
-          lastUpdated: { S: new Date().toISOString() },
-          lastOnlineAt: { S: new Date().toISOString() },
+          createdAt: { S: now },
+          updatedAt: { S: now },
+          lastUpdated: { S: now },
+          lastOnlineAt: { S: now }
+          // ⚠️ DO NOT manually include geohash here — it's set internally by the lib
         }
       }
     });
@@ -73,7 +74,6 @@ export const handler: Schema["mutateUserProfile"]["functionHandler"] = async (ev
     });
 
     console.info(`🗑️ [mutateUserProfile] Deleted ${identityId}`);
-
     return {
       success: true,
       message: "Deleted successfully",
