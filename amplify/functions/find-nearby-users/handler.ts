@@ -43,19 +43,16 @@ export const handler: Schema["findNearbyUsers"]["functionHandler"] = async (even
     const filtered = items
       .filter((user) => user?.identityId !== identityId)
       .map((user) => {
-        const distance = haversine(lat, lng, user.locationLat, user.locationLng);
+        const distance = haversine(lat, lng, normalize(user.locationLat), normalize(user.locationLng));
         return {
-          ...user,
+          ...sanitizeUser(user),
           distance: distance >= 5 ? `${distance.toFixed(1)} miles` : '< 5 miles',
           actualDistance: distance,
         };
       })
       .sort((a, b) => a.actualDistance - b.actualDistance);
 
-    // 🔥 Clean serialization-friendly sanitized output
-    const sanitizedUsers = filtered.map(({ actualDistance, ...user }) =>
-      JSON.parse(JSON.stringify(user))
-    );
+    const sanitizedUsers = filtered.map(({ actualDistance, ...user }) => user);
 
     return {
       id: 'nearbyUsersResponse',
@@ -64,7 +61,7 @@ export const handler: Schema["findNearbyUsers"]["functionHandler"] = async (even
       success: true,
       error: null,
       nearbyUsers: sanitizedUsers,
-      nextToken: null, // Pagination TBD if needed
+      nextToken: null
     };
   } catch (err) {
     console.error('❌ [findNearbyUsers] Error:', err);
@@ -75,10 +72,31 @@ export const handler: Schema["findNearbyUsers"]["functionHandler"] = async (even
       success: false,
       error: 'Internal server error',
       nearbyUsers: [],
-      nextToken: null,
+      nextToken: null
     };
   }
 };
+
+// Normalizes BigInt → Number
+function normalize(val: any): number {
+  return typeof val === 'bigint' ? Number(val) : val;
+}
+
+// Recursively converts all BigInts to Number
+function sanitizeUser(obj: Record<string, any>): Record<string, any> {
+  const clean: Record<string, any> = {};
+  for (const key in obj) {
+    const val = obj[key];
+    if (typeof val === 'bigint') {
+      clean[key] = Number(val);
+    } else if (typeof val === 'object' && val !== null) {
+      clean[key] = sanitizeUser(val); // deep sanitize
+    } else {
+      clean[key] = val;
+    }
+  }
+  return clean;
+}
 
 function haversine(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 3958.8; // miles
