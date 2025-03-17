@@ -28,24 +28,24 @@ const backend = defineBackend({
   listMessagesByConversationId
 });
 
-/** 🔐 User Profile Table Permissions (Geo Enabled) */
-const dynamoTableArn = `arn:aws:dynamodb:us-east-1:${process.env['AWS_ACCOUNT_ID']}:table/${process.env['AMPLIFY_USER_PROFILE_TABLE_NAME']}`;
-const dynamoGeoIndexArn = `${dynamoTableArn}/index/*`;
+/** 🔐 User Profile Table (Geo-Enabled) — External DynamoDB Table */
+const userProfileTableArn = `arn:aws:dynamodb:us-east-1:${process.env['AWS_ACCOUNT_ID']}:table/${process.env['AMPLIFY_USER_PROFILE_TABLE_NAME']}`;
+const userProfileTableIndexArn = `${userProfileTableArn}/index/*`;
 
-// Permissions for Geo Operations (REQUIRED!)
+/** 🔐 Grant DynamoDB access for Geo-based Lambdas */
 backend.findNearbyUsers.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
-  actions: ['dynamodb:Query'],
-  resources: [dynamoTableArn, dynamoGeoIndexArn] // explicitly allow index queries
+  actions: ['dynamodb:Query', 'dynamodb:Scan'],
+  resources: [userProfileTableArn, userProfileTableIndexArn]
 }));
 
 backend.mutateUserProfile.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
   actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem', 'dynamodb:DeleteItem'],
-  resources: [dynamoTableArn, dynamoGeoIndexArn] // explicitly include geo index
+  resources: [userProfileTableArn]
 }));
 
 backend.getUserProfile.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
   actions: ['dynamodb:GetItem', 'dynamodb:Query'],
-  resources: [dynamoTableArn, dynamoGeoIndexArn]
+  resources: [userProfileTableArn, userProfileTableIndexArn]
 }));
 
 /** 🔐 Allow `EVERYONE` Cognito Role to access S3 Bucket */
@@ -60,12 +60,12 @@ const bucketArn = `arn:aws:s3:::${process.env['AMPLIFY_STORAGE_BUCKET_NAME']}`;
 
 everyoneRole.addToPrincipalPolicy(new iam.PolicyStatement({
   actions: ['s3:GetObject'],
-  resources: [`${bucketArn}/protected/*`],
+  resources: [`${bucketArn}/protected/*`]
 }));
 
 everyoneRole.addToPrincipalPolicy(new iam.PolicyStatement({
   actions: ['s3:PutObject', 's3:DeleteObject'],
-  resources: [`${bucketArn}/protected/\${cognito-identity.amazonaws.com:sub}/*`],
+  resources: [`${bucketArn}/protected/\${cognito-identity.amazonaws.com:sub}/*`]
 }));
 
 /** 💬 ChatMessage Table Permissions */

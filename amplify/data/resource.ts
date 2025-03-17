@@ -9,8 +9,7 @@ import { createMessage } from '../functions/create-message/resource';
 import { listConversations } from '../functions/list-conversations/resource';
 import { listMessagesByConversationId } from '../functions/list-messages-by-conversation-id/resource';
 
-/* --- Define Models First --- */
-
+/* --- Define Models --- */
 
 const ChatMessage = a.model({
   id: a.string().required(),
@@ -28,7 +27,7 @@ const ChatMessage = a.model({
 .authorization(allow => [allow.authenticated()]);
 
 const Conversation = a.model({
-  id: a.string().required(),              // Partition key
+  id: a.string().required(),
   participantA: a.string().required(),
   participantB: a.string().required(),
   lastMessage: a.string().required(),
@@ -40,28 +39,6 @@ const Conversation = a.model({
   index('participantA').sortKeys(['lastTimestamp']),
   index('participantB').sortKeys(['lastTimestamp'])
 ]).authorization(allow => [allow.owner()]);
-
-const UserProfile = a.model({
-  identityId: a.string().required(),
-  locationLat: a.float().required(),
-  locationLng: a.float().required(),
-  hashKey: a.integer().required(),
-  rangeKey: a.string().required(),
-  geohash: a.string().required(),
-  geoPrecision: a.float(),
-  lastUpdated: a.datetime().required(),
-  lastOnlineAt: a.datetime(),
-  createdAt: a.datetime(),
-  updatedAt: a.datetime(),
-  images: a.string().array(),
-  userName: a.string().required(),
-  surveyAnswers: a.json().required()
-})
-.identifier(['hashKey', 'rangeKey'])
-.secondaryIndexes(index => [
-  index('identityId') // explicitly correct
-])
-.authorization(allow => [allow.owner()]);
 
 const Contact = a.model({
   email: a.string().required(),
@@ -76,18 +53,18 @@ const Contact = a.model({
 ]);
 
 const NearbyUsersResponse = a.model({
-  id: a.string().required(), // explicitly define id
+  id: a.string().required(),
   createdAt: a.datetime().required(),
   updatedAt: a.datetime().required(),
   success: a.boolean().required(),
-  error: a.string(), // can be null if not set
+  error: a.string(),
   nearbyUsers: a.json().array(),
   nextToken: a.string()
 })
-.identifier(['id']) // use id as the identifier
+.identifier(['id'])
 .authorization(allow => [allow.authenticated()]);
 
-/* --- Now Define Operations That Reference The Models --- */
+/* --- Define Operations --- */
 
 const schema = a.schema({
   sayHello: a
@@ -130,7 +107,6 @@ const schema = a.schema({
     .handler(a.handler.function(updateUserImages))
     .authorization(allow => [allow.authenticated()]),
 
-  // Renamed query to avoid conflict with auto-generated getUserProfile
   fetchUserProfile: a
     .query()
     .arguments({
@@ -179,12 +155,12 @@ const schema = a.schema({
     .returns(a.ref('ChatMessage').array())
     .handler(a.handler.function(listMessagesByConversationId))
     .authorization(allow => [allow.authenticated()]),
-  
+
+  // Models
   ChatMessage,
   Conversation,
-  UserProfile,
   Contact,
-  NearbyUsersResponse
+  NearbyUsersResponse,
 });
 
 export type Schema = ClientSchema<typeof schema>;
@@ -194,7 +170,7 @@ export const data = defineData({
   authorizationModes: {
     defaultAuthorizationMode: 'userPool',
     apiKeyAuthorizationMode: {
-      expiresInDays: 30
+      expiresInDays: 30,
     }
   }
 });
