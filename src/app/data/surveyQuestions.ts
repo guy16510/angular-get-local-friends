@@ -696,7 +696,7 @@ export const SURVEY_QUESTIONS: SurveyQuestion[] = [
 //     question: 'How important is it to you to have friends with similar hobbies?',
 //     type: 'multiple-choice',
 //     options: ['Important', 'Somewhat Important', 'Not Important']
-//   }
+//   },
   {
     id: 91,
     category: 'Personal Information',

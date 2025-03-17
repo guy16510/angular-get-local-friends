@@ -10,49 +10,54 @@ npm install @aws-sdk/client-dynamodb dynamodb-geo-v3
 # 4. Create create-userprofile-table.js
 cat << 'EOF' > create-userprofile-table.js
 const { DynamoDB } = require('@aws-sdk/client-dynamodb');
+const ddbGeo = require('dynamodb-geo-v3');
 
 const ddb = new DynamoDB({ region: 'us-east-1' });
 
-const TABLE_NAME = 'UserProfile-dev';
+const TABLE_NAME = 'UserProfile-dev'; // change per environment
 
-const createTableInput = {
-  TableName: TABLE_NAME,
-  AttributeDefinitions: [
-    { AttributeName: 'hashKey', AttributeType: 'N' },
-    { AttributeName: 'rangeKey', AttributeType: 'S' },
-    { AttributeName: 'geohash', AttributeType: 'S' }, // optional, if indexing on geohash
-    { AttributeName: 'identityId', AttributeType: 'S' } // optional secondary index
-  ],
-  KeySchema: [
-    { AttributeName: 'hashKey', KeyType: 'HASH' },
-    { AttributeName: 'rangeKey', KeyType: 'RANGE' }
-  ],
-  BillingMode: 'PAY_PER_REQUEST',
-  GlobalSecondaryIndexes: [
+const config = new ddbGeo.GeoDataManagerConfiguration(ddb, TABLE_NAME);
+config.hashKeyLength = 5;
+
+(async () => {
+  // Start with standard geo-enabled config
+  const createTableInput = ddbGeo.GeoTableUtil.getCreateTableRequest(config);
+
+  // Optional: Override throughput (for PROVISIONED mode only — not PAY_PER_REQUEST)
+  // If you want on-demand, delete this block and use BillingMode: 'PAY_PER_REQUEST' instead.
+  createTableInput.ProvisionedThroughput = {
+    ReadCapacityUnits: 5,
+    WriteCapacityUnits: 5
+  };
+
+  // Optional: Switch to on-demand billing
+  // createTableInput.BillingMode = 'PAY_PER_REQUEST';
+  // delete createTableInput.ProvisionedThroughput;
+
+  // 👉 Add identityId-index manually
+  createTableInput.AttributeDefinitions.push({ AttributeName: 'identityId', AttributeType: 'S' });
+
+  createTableInput.GlobalSecondaryIndexes = [
     {
       IndexName: 'identityId-index',
       KeySchema: [{ AttributeName: 'identityId', KeyType: 'HASH' }],
-      Projection: { ProjectionType: 'ALL' }
-    },
-    {
-      IndexName: 'geohash-index',
-      KeySchema: [{ AttributeName: 'geohash', KeyType: 'HASH' }],
-      Projection: { ProjectionType: 'ALL' }
+      Projection: { ProjectionType: 'ALL' },
+      // If you're using provisioned mode:
+      ProvisionedThroughput: {
+        ReadCapacityUnits: 5,
+        WriteCapacityUnits: 5
+      }
     }
-  ]
-};
+  ];
 
-const create = async () => {
   try {
-    console.log(`🚀 Creating table: ${TABLE_NAME}...`);
-    await ddb.createTable(createTableInput);
-    console.log(`✅ Table created: ${TABLE_NAME}`);
+    console.log(`🚀 Creating geo-enabled table: ${TABLE_NAME}`);
+    const result = await ddb.createTable(createTableInput);
+    console.log(`✅ Created table: ${result.TableDescription.TableName}`);
   } catch (err) {
-    console.error(`❌ Table creation failed:`, err);
+    console.error('❌ Table creation failed:', err);
   }
-};
-
-create();
+})();
 EOF
 
 # 5. Run the script
