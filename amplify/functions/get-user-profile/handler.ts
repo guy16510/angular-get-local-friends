@@ -10,13 +10,43 @@ const docClient = DynamoDBDocument.from(ddbClient);
 
 export const handler: Schema["fetchUserProfile"]["functionHandler"] = async (event) => {
   const { identityId } = event.arguments;
+  if (!identityId) throw new Error("Missing identityId");
 
-  const result = await docClient.query({
-    TableName: TABLE_NAME,
-    IndexName: 'identityId-index',
-    KeyConditionExpression: 'identityId = :id',
-    ExpressionAttributeValues: { ':id': identityId }
-  });
+  try {
+    // Try query via GSI (assuming identityId-index exists)
+    const result = await docClient.query({
+      TableName: TABLE_NAME,
+      IndexName: 'identityId-index',
+      KeyConditionExpression: 'identityId = :identityId',
+      ExpressionAttributeValues: {
+        ':identityId': identityId
+      }
+    });
 
-  return result.Items?.[0] || null;
+    if (!result.Items || result.Items.length === 0) {
+      console.warn(`⚠️ No user profile found for identityId: ${identityId}`);
+      return null;
+    }
+
+    const sanitized = sanitizeBigInts(result.Items[0]);
+
+    return sanitized;
+  } catch (err) {
+    console.error(`❌ [fetchUserProfile] Error:`, err);
+    throw new Error("Internal server error");
+  }
 };
+
+// Recursively convert BigInt → Number for safe JSON return
+function sanitizeBigInts(obj: any): any {
+  if (typeof obj === 'bigint') return Number(obj);
+  if (Array.isArray(obj)) return obj.map(sanitizeBigInts);
+  if (typeof obj === 'object' && obj !== null) {
+    const sanitized: Record<string, any> = {};
+    for (const key in obj) {
+      sanitized[key] = sanitizeBigInts(obj[key]);
+    }
+    return sanitized;
+  }
+  return obj;
+}

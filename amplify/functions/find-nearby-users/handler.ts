@@ -4,10 +4,10 @@ import { DynamoDB } from '@aws-sdk/client-dynamodb';
 import { unmarshall } from '@aws-sdk/util-dynamodb';
 import * as ddbGeo from 'dynamodb-geo-v3';
 
-const ddb = new DynamoDB({});
 const TABLE_NAME = process.env['USER_PROFILE_TABLE_NAME']!;
-if (!TABLE_NAME) throw new Error("Missing USER_PROFILE_TABLE_NAME env var");
+if (!TABLE_NAME) throw new Error("Missing environment variable: USER_PROFILE_TABLE_NAME");
 
+const ddb = new DynamoDB({});
 const geoConfig = new ddbGeo.GeoDataManagerConfiguration(ddb, TABLE_NAME);
 geoConfig.hashKeyLength = 5;
 
@@ -27,84 +27,83 @@ interface NearbyUser {
 
 export const handler: Schema["findNearbyUsers"]["functionHandler"] = async (event) => {
   const { lat, lng, radius } = event.arguments;
-
-  const identityId =
-    (event.identity as AppSyncIdentityCognito)?.username || event.arguments.identityId;
   const radiusInMeters = radius * 1609.34;
 
+  let identityId: string | undefined;
+  if (event.identity && 'username' in event.identity) {
+    identityId = (event.identity as AppSyncIdentityCognito).username;
+  } else if (event.arguments.identityId) {
+    identityId = event.arguments.identityId;
+  }
+
+  console.info(`🔍 [findNearbyUsers] lat=${lat}, lng=${lng}, radius=${radius}mi, identityId=${identityId}`);
+
   try {
-    const results = await geoTableManager.queryRadius({
+    const rawResults = await geoTableManager.queryRadius({
       RadiusInMeter: radiusInMeters,
-      CenterPoint: { latitude: lat, longitude: lng },
+      CenterPoint: { latitude: lat, longitude: lng }
     });
 
-    const items: NearbyUser[] = results.map((item) => unmarshall(item)) as NearbyUser[];
+    const items = rawResults.map(item => sanitizeBigInts(unmarshall(item))) as NearbyUser[];
 
-    const filtered = items
-      .filter((user) => user?.identityId !== identityId)
-      .map((user) => {
-        const distance = haversine(lat, lng, normalize(user.locationLat), normalize(user.locationLng));
+    const filteredUsers = items
+      .filter(user => user && user.identityId !== identityId)
+      .map(user => {
+        const distance = haversine(lat, lng, user.locationLat, user.locationLng);
         return {
-          ...sanitizeUser(user),
+          ...user,
           distance: distance >= 5 ? `${distance.toFixed(1)} miles` : '< 5 miles',
-          actualDistance: distance,
+          actualDistance: distance
         };
       })
       .sort((a, b) => a.actualDistance - b.actualDistance);
 
-    const sanitizedUsers = filtered.map(({ actualDistance, ...user }) => user);
-
     return {
-      id: 'nearbyUsersResponse',
+      id: "nearbyUsersResponse",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       success: true,
       error: null,
-      nearbyUsers: sanitizedUsers,
-      nextToken: null
+      nearbyUsers: filteredUsers.map(({ actualDistance, ...rest }) => rest),
+      nextToken: null // extend later if paginating via ddbGeo
     };
+
   } catch (err) {
-    console.error('❌ [findNearbyUsers] Error:', err);
+    console.error("❌ [findNearbyUsers] Error:", err);
     return {
-      id: 'nearbyUsersResponse',
+      id: "nearbyUsersResponse",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       success: false,
-      error: 'Internal server error',
+      error: "Internal server error",
       nearbyUsers: [],
       nextToken: null
     };
   }
 };
 
-// Normalizes BigInt → Number
-function normalize(val: any): number {
-  return typeof val === 'bigint' ? Number(val) : val;
-}
-
-// Recursively converts all BigInts to Number
-function sanitizeUser(obj: Record<string, any>): Record<string, any> {
-  const clean: Record<string, any> = {};
-  for (const key in obj) {
-    const val = obj[key];
-    if (typeof val === 'bigint') {
-      clean[key] = Number(val);
-    } else if (typeof val === 'object' && val !== null) {
-      clean[key] = sanitizeUser(val); // deep sanitize
-    } else {
-      clean[key] = val;
-    }
-  }
-  return clean;
-}
-
+// Simple haversine formula to compute distance in miles
 function haversine(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 3958.8; // miles
-  const toRad = (d: number) => (d * Math.PI) / 180;
+  const R = 3958.8; // Radius of Earth in miles
+  const toRad = (d: number) => d * Math.PI / 180;
   const dLat = toRad(lat2 - lat1);
   const dLon = toRad(lon2 - lon1);
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
-  return 2 * R * Math.asin(Math.sqrt(a));
+  const a = Math.sin(dLat / 2) ** 2 +
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+            Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.asin(Math.sqrt(a));
+}
+
+// Recursively sanitize DynamoDB BigInt values
+function sanitizeBigInts(obj: any): any {
+  if (typeof obj === 'bigint') return Number(obj);
+  if (Array.isArray(obj)) return obj.map(sanitizeBigInts);
+  if (typeof obj === 'object' && obj !== null) {
+    const sanitized: Record<string, any> = {};
+    for (const key in obj) {
+      sanitized[key] = sanitizeBigInts(obj[key]);
+    }
+    return sanitized;
+  }
+  return obj;
 }

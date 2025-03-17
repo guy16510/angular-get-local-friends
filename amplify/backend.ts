@@ -39,8 +39,8 @@ backend.findNearbyUsers.resources.lambda.addToRolePolicy(new iam.PolicyStatement
 }));
 
 backend.mutateUserProfile.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
-  actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem', 'dynamodb:DeleteItem'],
-  resources: [userProfileTableArn]
+  actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem', 'dynamodb:DeleteItem', 'dynamodb:Query'],
+  resources: [userProfileTableArn, `${userProfileTableArn}/index/identityId-index`]
 }));
 
 backend.getUserProfile.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
