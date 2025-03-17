@@ -68,16 +68,55 @@ export const handler: Schema["mutateUserProfile"]["functionHandler"] = async (ev
   }
 
   if (action === 'onlinePing') {
+    // First lookup the user by identityId index to get hashKey + rangeKey
+    const queryResult = await ddb.query({
+      TableName: TABLE_NAME,
+      IndexName: 'identityId-index',
+      KeyConditionExpression: 'identityId = :id',
+      ExpressionAttributeValues: {
+        ':id': { S: identityId }
+      }
+    });
+
+    if (!queryResult.Items || queryResult.Items.length === 0) {
+      console.warn(`[mutateUserProfile] No user found for identityId: ${identityId}`);
+      return {
+        success: false,
+        message: 'User not found for onlinePing',
+        action,
+        identityId
+      };
+    }
+
+    const userItem = queryResult.Items[0];
+    const hashKey = userItem['hashKey']?.N;
+    const rangeKey = userItem['rangeKey']?.S;
+
+    if (!hashKey || !rangeKey) {
+      console.error(`[mutateUserProfile] User item missing hashKey or rangeKey`);
+      throw new Error("UserProfile missing keys");
+    }
+
     await ddb.updateItem({
       TableName: TABLE_NAME,
       Key: {
-        hashKey: { N: payload.hashKey.toString() },
-        rangeKey: { S: payload.rangeKey }
+        hashKey: { N: hashKey.toString() },
+        rangeKey: { S: rangeKey }
       },
-      UpdateExpression: 'SET lastOnlineAt = :lo',
-      ExpressionAttributeValues: { ':lo': { S: now } }
+      UpdateExpression: 'set lastOnlineAt = :lo',
+      ExpressionAttributeValues: {
+        ':lo': { S: new Date().toISOString() }
+      }
     });
-    return { success: true, message: "Pinged", action, identityId };
+
+    console.info(`✅ [mutateUserProfile] Online ping updated for ${identityId}`);
+
+    return {
+      success: true,
+      message: 'Online ping updated successfully',
+      action,
+      identityId
+    };
   }
 
   throw new Error("Unhandled action");
