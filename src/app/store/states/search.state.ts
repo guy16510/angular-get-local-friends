@@ -80,15 +80,39 @@ export class SearchState {
     }
   
     const parsedNearbyUsers = rawData.nearbyUsers.map((user: string | any) => {
+      let parsedUser: any;
+
       if (typeof user === 'string') {
         try {
-          return JSON.parse(user);
+          parsedUser = JSON.parse(user);
         } catch (e) {
-          console.error("Failed to parse user:", user);
+          console.error('❌ Failed to parse user JSON:', user);
           return null;
         }
+      } else {
+        parsedUser = user;
       }
-      return user;
+
+      // 🔥 Parse nested `surveyAnswers` field if it's still stringified
+      if (typeof parsedUser?.surveyAnswers === 'string') {
+        try {
+          parsedUser.surveyAnswers = JSON.parse(parsedUser.surveyAnswers);
+        } catch (err) {
+          console.warn('⚠️ Failed to parse nested surveyAnswers:', parsedUser.surveyAnswers);
+          parsedUser.surveyAnswers = [];
+        }
+      }
+
+      // 🔥 Parse nested `images` field if it's still stringified
+      if (typeof parsedUser?.images === 'string') {
+        try {
+          parsedUser.images = JSON.parse(parsedUser.images);
+        } catch (err) {
+          parsedUser.images = [];
+        }
+      }
+
+      return parsedUser;
     }).filter(Boolean);
   
     ctx.patchState({

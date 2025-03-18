@@ -29,12 +29,11 @@ export const handler: Schema["findNearbyUsers"]["functionHandler"] = async (even
   const { lat, lng, radius } = event.arguments;
   const radiusInMeters = radius * 1609.34;
 
-  let identityId: string | undefined;
-  if (event.identity && 'username' in event.identity) {
-    identityId = (event.identity as AppSyncIdentityCognito).username;
-  } else if (event.arguments.identityId) {
-    identityId = event.arguments.identityId;
-  }
+  let identityId: string | undefined =
+    event.arguments.identityId ||
+    (event.identity && 'username' in event.identity
+      ? (event.identity as AppSyncIdentityCognito).username
+      : undefined);
 
   console.info(`🔍 [findNearbyUsers] lat=${lat}, lng=${lng}, radius=${radius}mi, identityId=${identityId}`);
 

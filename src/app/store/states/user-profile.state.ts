@@ -1,105 +1,146 @@
 import { State, Action, StateContext, Selector, Store } from '@ngxs/store';
 import { Injectable } from '@angular/core';
-import { SubmitUserProfile } from '../actions/user-profile.actions';
-import { UserProfile, UserProfileStateModel } from '../../models/user-profile.model';
+import { UserProfile } from '../../models/user-profile.model';
 import { UserProfileService } from '../../services/user-profile.service';
+import {
+  LoadUserProfile,
+  LoadUserProfileSuccess,
+  LoadUserProfileFail,
+  SubmitUserProfile,
+  UpdateUserOnlineStatus,
+  
+} from '../actions/user-profile.actions';
 import { tap, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
-import { UpdateUserOnlineStatus } from '../actions/user-profile.actions';
 import { AuthState } from './auth.state';
+
+export interface UserProfileStateModel {
+  profile: UserProfile | null;
+  loading: boolean;
+  error: string | null;
+}
 
 @State<UserProfileStateModel>({
   name: 'userProfile',
   defaults: {
     profile: null,
     loading: false,
-    error: null,
+    error: null
   }
 })
 @Injectable()
 export class UserProfileState {
-
-  constructor(
-    private userProfileService: UserProfileService,
-    private store: Store
-  ) {}
+  constructor(private userProfileService: UserProfileService, private store: Store) { }
 
   @Selector()
-  static profile(state: UserProfileStateModel): UserProfile | null {
-    return state?.profile || null;
+  static profile(state: UserProfileStateModel) {
+    return state.profile;
   }
 
   @Selector()
-  static loading(state: UserProfileStateModel): boolean {
+  static loading(state: UserProfileStateModel) {
     return state.loading;
   }
 
   @Selector()
-  static error(state: UserProfileStateModel): string | null {
+  static error(state: UserProfileStateModel) {
     return state.error;
   }
 
-  @Selector()
-  static lastOnlineAt(state: UserProfileStateModel): string | null {
-    return state.profile?.lastOnlineAt || null;
-  }
-
-  @Action(SubmitUserProfile)
-  submitUserProfile(ctx: StateContext<UserProfileStateModel>, action: SubmitUserProfile) {
-    // Set loading true and clear any previous error
+  @Action(LoadUserProfile)
+  loadUserProfile(ctx: StateContext<UserProfileStateModel>) {
     ctx.patchState({ loading: true, error: null });
+    const identityId = this.store.selectSnapshot(AuthState.identityId);
+    if (!identityId) {
+      ctx.dispatch(new LoadUserProfileFail('Missing identityId'));
+      return of();
+    }
 
-    return this.userProfileService.submitUserProfile(action.payload).pipe(
-      tap((result: UserProfile) => {
-        debugger;
-        // Ensure surveyAnswers is correctly structured
-        //TODO this is the response: "UserProfile for us-east-1:660f914c-c773-ca1c-3919-26f3b4f97eb2 created successfully."
-        const formattedProfile: UserProfile = {
-          ...result,
-          surveyAnswers: result.surveyAnswers.map(answer => ({
-            questionId: Number(answer.questionId),
-            answer: answer.answer
-          }))
-        };
-
-        // On success, update the profile state with the API response
-        ctx.patchState({
-          profile: formattedProfile,
-          loading: false,
-          error: null
-        });
+    return this.userProfileService.getUserProfile(identityId).pipe(
+      tap((profile) => {
+        ctx.dispatch(new LoadUserProfileSuccess(profile));
       }),
-      catchError(error => {
-        const errorMessage = error instanceof Error ? error.message : 'Failed to submit profile';
-        ctx.patchState({ loading: false, error: errorMessage });
-        // Return an observable so the action completes gracefully.
-        return of(null);
+      catchError((err) => {
+        ctx.dispatch(new LoadUserProfileFail(err.message || 'Unknown error'));
+        return of(err);
       })
     );
   }
 
-  @Action(UpdateUserOnlineStatus)
-  updateOnlineStatus(ctx: StateContext<UserProfileStateModel>) {
-    const identityId = this.store.selectSnapshot(AuthState.identityId);
-    if (!identityId) {
-      console.warn('[UserProfileState] No identityId found — skipping online status update.');
-      return;
+  @Action(LoadUserProfileSuccess)
+  loadUserProfileSuccess(ctx: StateContext<UserProfileStateModel>, action: LoadUserProfileSuccess) {
+    debugger;
+    let parsedProfile: any;
+    try {
+      parsedProfile = JSON.parse(action.payload as unknown as string);
+    } catch (e) {
+      console.error('❌ Failed to parse user profile JSON string:', action.payload, e);
+      parsedProfile = {};
     }
-  
-    const now = new Date().toISOString();
-    const state = ctx.getState();
-  
-    // Optimistic update, only if profile is populated
-    if (state.profile) {
-      ctx.patchState({
-        profile: {
-          ...state.profile,
-          lastOnlineAt: now
-        }
-      });
+
+    if (typeof parsedProfile.surveyAnswers === 'string') {
+      try {
+        parsedProfile.surveyAnswers = JSON.parse(parsedProfile.surveyAnswers);
+      } catch {
+        parsedProfile.surveyAnswers = [];
+      }
     }
-  
-    return this.userProfileService.updateUserOnlineStatus(identityId);
+
+    if (typeof parsedProfile.images === 'string') {
+      try {
+        parsedProfile.images = JSON.parse(parsedProfile.images);
+      } catch {
+        parsedProfile.images = [];
+      }
+    }
+
+    ctx.patchState({
+      profile: parsedProfile,
+      loading: false,
+      error: null
+    });
   }
 
+  @Action(LoadUserProfileFail)
+  loadUserProfileFail(ctx: StateContext<UserProfileStateModel>, action: LoadUserProfileFail) {
+    ctx.patchState({
+      loading: false,
+      error: action.error
+    });
+  }
+
+  @Action(SubmitUserProfile)
+  submitUserProfile(ctx: StateContext<UserProfileStateModel>, action: SubmitUserProfile) {
+    ctx.patchState({ loading: true });
+    return this.userProfileService.submitUserProfile(action.payload).pipe(
+      tap((response) => {
+        debugger;
+        ctx.patchState({
+          profile: response,
+          loading: false,
+          error: null
+        });
+      }),
+      catchError((err) => {
+        ctx.patchState({ loading: false, error: err.message || 'Unknown error' });
+        return of(err);
+      })
+    );
+  }
+  @Action(UpdateUserOnlineStatus)
+  updateUserOnlineStatus(ctx: StateContext<UserProfileStateModel>) {
+    const identityId = this.store.selectSnapshot(AuthState.identityId);
+    if (!identityId) return of();
+
+    return this.userProfileService.onlinePing(identityId).pipe(
+      tap(() => {
+        // optional: patch lastPing timestamp if you want
+        // ctx.patchState({ lastPing: new Date().toISOString() });
+      }),
+      catchError(err => {
+        console.error('Online Ping failed:', err.message);
+        return of(); // swallow errors silently
+      })
+    );
+  }
 }

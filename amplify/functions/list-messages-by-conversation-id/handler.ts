@@ -16,7 +16,7 @@ export const handler: Schema["customListMessagesByConversationId"]["functionHand
 
   const result = await docClient.query({
     TableName: TABLE_NAME,
-    IndexName: 'conversationId', // Explicitly query secondary index
+    IndexName: 'chatMessagesByConversationIdAndTimestamp', // Explicitly query secondary index
     KeyConditionExpression: 'conversationId = :cid',
     ExpressionAttributeValues: { ':cid': conversationId },
     ScanIndexForward: true
