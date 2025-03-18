@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { from, Observable, of } from 'rxjs';
+import { from, Observable, of, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../../../amplify/data/resource';
+import { Conversation } from '../models/chat';
 
 const client = generateClient<Schema>({
   authMode: 'userPool'
@@ -27,17 +28,14 @@ export class ChatService {
     );
   }
 
-  listConversations(): Observable<any[]> {
+  listConversations(): Observable<Conversation[]> {
     return from(client.queries.customListConversations({})).pipe(
-      map(result => {
-        if (Array.isArray(result.errors) && result.errors.length > 0) {
-          throw new Error(result.errors[0].message);
-        }
-        return result.data ?? []; // ✅ No parsing
+      map((res: any) => {
+        return res?.data || []
       }),
-      catchError(err => {
+      catchError((err) => {
         console.error('[ChatService] listConversations error:', err);
-        return of([]);
+        return throwError(() => new Error('List conversations failed'));
       })
     );
   }
@@ -63,4 +61,5 @@ export class ChatService {
       observer.complete();
     });
   }
+  
 }

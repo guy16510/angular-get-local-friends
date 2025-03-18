@@ -31,7 +31,8 @@ export class SearchComponent implements OnInit {
   radiusOptions = [5, 10, 15, 25, 50];
 
   paginationTokens: (string | null)[] = [null];
-  currentPage = 0;
+  currentPage: number = 0;
+  hasMoreResults: boolean = false; // Set based on API response length > 25
 
   constructor(
     private geoService: GeolocationService,
@@ -71,6 +72,7 @@ export class SearchComponent implements OnInit {
       const nextToken = this.store.selectSnapshot(SearchState.nextToken);
       if (nextToken && !this.paginationTokens.includes(nextToken)) {
         this.paginationTokens.push(nextToken);
+        this.hasMoreResults = true;
       }
       this.currentPage = pageIndex;
     });

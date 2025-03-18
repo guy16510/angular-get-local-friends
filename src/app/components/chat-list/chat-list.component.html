@@ -1,27 +1,39 @@
-<!-- <mat-card>
-    <mat-card-header>
-      <mat-card-title>Your Conversations</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <app-loading  *ngIf="(loading$ | async)"></app-loading>
-      <div *ngIf="(error$ | async) as err">
-        <p style="color: red;">Error: {{ err }}</p>
-      </div>
-      <mat-list>
-        <mat-list-item *ngFor="let conv of (conversations$ | async)" (click)="openConversation(conv)">
-          <div mat-line>
-            <strong>
-              {{ conv.participantA === currentUserId ? conv.participantB : conv.participantA }}
-            </strong>
-          </div>
-          <div mat-line>
-            {{ conv.lastMessage }}
-          </div>
-          <div mat-line style="font-size: 0.8em; color: gray;">
-            {{ conv.lastTimestamp | date:'short' }}
-          </div>
-        </mat-list-item>
-      </mat-list>
-    </mat-card-content>
-  </mat-card> -->
-  <p>hi</p>
+<mat-card class="chat-list-card">
+  <mat-card-header>
+    <mat-card-title>Your Conversations</mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content>
+    <app-loading *ngIf="loading$ | async"></app-loading>
+
+    <div *ngIf="error$ | async as err" class="error-msg">
+      Error: {{ err }}
+    </div>
+    <!-- <pre>{{conversations$ | async | json}}</pre> -->
+    <ng-container *ngIf="conversations$ | async as conversations">
+      <ng-container *ngIf="conversations.length > 0; else noChats">
+        <mat-list>
+          <mat-list-item style="height:auto;"
+            *ngFor="let convo of conversations"
+            (click)="openConversation(convo)"
+            class="chat-item"
+          >
+            <div mat-line class="chat-user">
+              {{ getRecipientId(convo) }}
+            </div>
+            <div mat-line class="chat-preview">
+              {{ convo.lastMessage }}
+            </div>
+            <div mat-line class="chat-timestamp">
+              {{ convo.lastTimestamp | date: 'short' }}
+            </div>
+          </mat-list-item>
+        </mat-list>
+      </ng-container>
+
+      <ng-template #noChats>
+        <p class="no-results">You have no past conversations.</p>
+      </ng-template>
+    </ng-container>
+  </mat-card-content>
+</mat-card>

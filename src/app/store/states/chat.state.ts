@@ -13,6 +13,7 @@ export interface ChatMessage {
 
 export interface Conversation {
   conversationId: string;
+  id: string;
   participantA: string;
   participantB: string;
   lastMessage: string;
@@ -22,13 +23,17 @@ export interface Conversation {
 export interface ChatStateModel {
   conversations: Conversation[];
   messages: Record<string, ChatMessage[]>;
+  loading: boolean;
+  error: string | null;
 }
 
 @State<ChatStateModel>({
   name: 'chat',
   defaults: {
     conversations: [],
-    messages: {}
+    messages: {},
+    loading: false,
+    error: null
   }
 })
 @Injectable()
@@ -41,8 +46,18 @@ export class ChatState {
   }
 
   @Selector()
-  static conversations(state: ChatStateModel) {
+  static getConversations(state: ChatStateModel) {
     return state.conversations;
+  }
+  
+  @Selector()
+  static getLoading(state: ChatStateModel) {
+    return state.loading;
+  }
+  
+  @Selector()
+  static getError(state: ChatStateModel) {
+    return state.error;
   }
 
   @Selector()
@@ -53,9 +68,24 @@ export class ChatState {
   }
 
   @Action(LoadConversations)
-  loadConversations(ctx: StateContext<ChatStateModel>) {
-    return this.chatService.listConversations().subscribe(convos => {
-      ctx.patchState({ conversations: convos || [] });
+  loadConversations(ctx: StateContext<ChatStateModel>, action: LoadConversations) {
+    ctx.patchState({ loading: true, error: null });
+  
+    return this.chatService.listConversations().subscribe({
+      next: (conversations: Conversation[]) => {
+        ctx.patchState({
+          conversations,
+          loading: false,
+          error: null
+        });
+      },
+      error: (err) => {
+        console.error('[ChatState] LoadConversations failed:', err);
+        ctx.patchState({
+          loading: false,
+          error: err?.message || 'Failed to load conversations'
+        });
+      }
     });
   }
 

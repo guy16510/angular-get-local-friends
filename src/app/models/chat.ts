@@ -9,6 +9,7 @@ export interface ChatMessage {
 
 export interface Conversation {
   conversationId: string;
+  id: string;
   participantA: string;
   participantB: string;
   lastMessage: string;

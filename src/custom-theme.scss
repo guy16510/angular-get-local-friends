@@ -39,6 +39,12 @@ $font-size: 16px;
   --mdc-elevated-card-container-color: #ffffff;
   --mdc-elevated-card-container-shape: 4px;
   --mdc-elevated-card-container-elevation: 0 2px 4px rgba(0, 0, 0, 1);
+  --bio-layout-bg: #ffffff;
+  --label-color: #ff0055;
+  --meta-color: #555;
+  --description-color: #444;
+  --footer-meta-color: #777;
+  --bio-image-bg: #f8f8f8;
 }
 
 /* Dark Theme Overrides */
@@ -53,6 +59,12 @@ $font-size: 16px;
   /* Global dark background/text */
   background-color: #121212;
   color: #ffffff;
+  --bio-layout-bg: #1e1e1e;
+  --label-color: #ff4d6e; // <- Inject actual value of $accent-dark here
+  --meta-color: #ccc;
+  --description-color: #ddd;
+  --footer-meta-color: #aaa;
+  --bio-image-bg: #2a2a2a;
 }
 
 //======================================================
@@ -292,4 +304,38 @@ button[mat-raised-button][color="accent"] {
 .toast-info {
   background-color: #2196f3;
   color: #fff;
+}
+
+.mat-select-panel {
+  z-index: 1000 !important;
+  position: absolute !important;
+}
+
+.cdk-overlay-container {
+  z-index: 1000 !important;
+}
+
+footer {
+  z-index: 10 !important;
+  position: relative;
+}
+
+.disabled-btn {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+// Override MDC select panel background and layering
+.mat-mdc-select-panel {
+  background-color: #fff !important; // Light theme
+  color: #000 !important;
+  opacity: 1 !important;
+  z-index: 1000 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+// Dark mode variant (if using a .dark-theme class or similar)
+.dark-theme .mat-mdc-select-panel {
+  background-color: #1e1e1e !important;
+  color: #fff !important;
 }

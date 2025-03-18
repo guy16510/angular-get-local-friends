@@ -37,8 +37,18 @@
         </mat-grid-list>
 
         <div class="navigation-buttons">
-          <button mat-stroked-button (click)="previousPage()">Previous</button>
-          <button mat-stroked-button (click)="nextPage()">Next</button>
+          <button mat-stroked-button
+                  (click)="previousPage()"
+                  [disabled]="currentPage === 0"
+                  [ngClass]="{ 'disabled-btn': currentPage === 0 }">
+            Previous
+          </button>
+          <button mat-stroked-button
+                  (click)="nextPage()"
+                  [disabled]="!hasMoreResults"
+                  [ngClass]="{ 'disabled-btn': !hasMoreResults }">
+            Next
+          </button>
         </div>
       </mat-card-content>
     </mat-card>

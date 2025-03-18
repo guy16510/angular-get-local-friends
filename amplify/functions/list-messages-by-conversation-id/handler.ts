@@ -1,33 +1,23 @@
 import { DynamoDB } from 'aws-sdk';
-import type { Schema } from '../../data/resource';
-import { getCognitoIdentityId } from '../../shared/utils/identity';
-import { toChatMessage } from '../../shared/mappers/chatMessageMapper';
-
 const docClient = new DynamoDB.DocumentClient();
-const TABLE_NAME = process.env['CHAT_MESSAGE_TABLE_NAME'] || '';
+const TABLE_NAME = process.env['CHAT_MESSAGE_TABLE_NAME'] || ''; // make sure this matches actual env var name
 
-export const handler: Schema["customListMessagesByConversationId"]["functionHandler"] = async (event) => {
+export const handler = async (event: any) => {
   const { conversationId } = event.arguments;
 
-  if (!conversationId) throw new Error("Missing conversationId");
-
-  const identityId = getCognitoIdentityId(event.identity);
-  if (!identityId) throw new Error("Unauthorized");
+  if (!conversationId) {
+    throw new Error('Missing conversationId');
+  }
 
   const result = await docClient.query({
     TableName: TABLE_NAME,
-    IndexName: 'chatMessagesByConversationIdAndTimestamp', // Explicitly query secondary index
+    IndexName: 'chatMessagesByConversationIdAndTimestamp',
     KeyConditionExpression: 'conversationId = :cid',
-    ExpressionAttributeValues: { ':cid': conversationId },
-    ScanIndexForward: true
+    ExpressionAttributeValues: {
+      ':cid': conversationId,
+    },
+    ScanIndexForward: true // or false if you want latest first
   }).promise();
 
-  const items = result.Items || [];
-
-  if (items.length > 0) {
-    const authorized = items.some(msg => [msg['senderId'], msg['recipientId']].includes(identityId));
-    if (!authorized) throw new Error("Unauthorized: You're not a participant in this conversation.");
-  }
-
-  return items.map(toChatMessage);
+  return result.Items || [];
 };

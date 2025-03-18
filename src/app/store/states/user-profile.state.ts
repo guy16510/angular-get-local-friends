@@ -69,7 +69,6 @@ export class UserProfileState {
 
   @Action(LoadUserProfileSuccess)
   loadUserProfileSuccess(ctx: StateContext<UserProfileStateModel>, action: LoadUserProfileSuccess) {
-    debugger;
     let parsedProfile: any;
     try {
       parsedProfile = JSON.parse(action.payload as unknown as string);
