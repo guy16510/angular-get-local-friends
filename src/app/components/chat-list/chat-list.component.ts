@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { Observable } from 'rxjs';
-import { LoadMessages, LoadConversations } from '../../store/actions/chat.actions';
+import { LoadConversations } from '../../store/actions/chat.actions';
 import { ChatState } from '../../store/states/chat.state';
 import { Conversation } from '../../models/chat';
 import { MaterialModule } from '../../shared/material.module';

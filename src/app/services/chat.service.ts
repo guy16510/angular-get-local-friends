@@ -3,7 +3,7 @@ import { from, Observable, of, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../../../amplify/data/resource';
-import { Conversation } from '../models/chat';
+import { ChatMessage, Conversation } from '../models/chat';
 
 const client = generateClient<Schema>({
   authMode: 'userPool'
@@ -46,7 +46,7 @@ export class ChatService {
         if (Array.isArray(result.errors) && result.errors.length > 0) {
           throw new Error(result.errors[0].message);
         }
-        return result.data ?? []; // ✅ No parsing
+        return result?.data ?? [];
       }),
       catchError(err => {
         console.error('[ChatService] listMessages error:', err);
@@ -55,11 +55,30 @@ export class ChatService {
     );
   }
 
-  subscribeToMessages(conversationId: string): Observable<any> {
-    return new Observable(observer => {
-      observer.next(null);
-      observer.complete();
+
+  /**
+   * Subscribes to all new messages and filters only those for the given conversationId.
+   */
+  subscribeToMessagesForConversation(conversationId: string): Observable<ChatMessage> {
+    return new Observable<ChatMessage>((observer) => {
+      const subscription = client.subscriptions.onCreateMessage().subscribe({
+        next: (event) => {
+          const message = event;
+          debugger;
+          if (!message) return;
+
+          if (message.conversationId === conversationId) {
+            observer.next(message);
+          }
+        },
+        error: (err) => {
+          console.error('[ChatService] subscribeToMessages error:', err);
+          observer.error(err);
+        }
+      });
+
+      // Cleanup
+      return () => subscription.unsubscribe();
     });
   }
-  
 }

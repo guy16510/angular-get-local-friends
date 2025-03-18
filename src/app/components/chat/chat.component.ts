@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Store } from '@ngxs/store';
 import { Observable, Subscription } from 'rxjs';
-import { LoadMessages, SendMessage } from '../../store/actions/chat.actions';
+import { AppendMessage, LoadMessages, SendMessage } from '../../store/actions/chat.actions';
 import { ChatService } from '../../services/chat.service';
 import { ChatMessage } from '../../models/chat';
 import { ChatState } from '../../store/states/chat.state';
@@ -50,8 +50,8 @@ export class ChatComponent implements OnInit, OnDestroy {
       ChatState.messagesForConversation(state.chat)(this.conversationId)
     );
 
-    this.sub = this.chatService.subscribeToMessages(this.conversationId).subscribe(() => {
-      this.store.dispatch(new LoadMessages(this.conversationId));
+    this.sub = this.chatService.subscribeToMessagesForConversation(this.conversationId).subscribe((message) => {
+      this.store.dispatch(new AppendMessage(message));
     });
   }
 

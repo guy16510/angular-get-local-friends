@@ -1,3 +1,5 @@
+import { ChatMessage } from "../../models/chat";
+
 export class LoadConversations {
   static readonly type = '[Chat] Load Conversations';
   constructor(public userId: string) {}
@@ -11,4 +13,9 @@ export class LoadMessages {
 export class SendMessage {
   static readonly type = '[Chat] Send Message';
   constructor(public recipientId: string, public text: string) {}
+}
+
+export class AppendMessage {
+  static readonly type = '[Chat] Append Message';
+  constructor(public message: ChatMessage) {}
 }

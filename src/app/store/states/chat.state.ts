@@ -1,7 +1,8 @@
 import { State, Action, StateContext, Selector, Store } from '@ngxs/store';
 import { Injectable } from '@angular/core';
 import { ChatService } from '../../services/chat.service';
-import { LoadConversations, LoadMessages, SendMessage } from '../actions/chat.actions';
+import { AppendMessage, LoadConversations, LoadMessages, SendMessage } from '../actions/chat.actions';
+import { getNormalizedConversationId } from '../../utils/chat-utils';
 
 export interface ChatMessage {
   conversationId: string;
@@ -91,14 +92,34 @@ export class ChatState {
 
   @Action(LoadMessages)
   loadMessages(ctx: StateContext<ChatStateModel>, action: LoadMessages) {
-    return this.chatService.listMessagesByConversationId(action.conversationId).subscribe(msgs => {
-      const state = ctx.getState();
+    const state = ctx.getState();
+  
+    // Split and normalize in case caller didn’t already do so
+    const ids = action.conversationId.split('#');
+    const conversationId = getNormalizedConversationId(ids[0], ids[1]);
+  
+    return this.chatService.listMessagesByConversationId(conversationId).subscribe(msgs => {
       ctx.patchState({
         messages: {
           ...state.messages,
-          [action.conversationId]: msgs || []
+          [conversationId]: msgs || []
         }
       });
+    });
+  }
+
+  @Action(AppendMessage)
+  appendMessage(ctx: StateContext<ChatStateModel>, action: AppendMessage) {
+    const state = ctx.getState();
+    const msg = action.message;
+    const conversationId = msg.conversationId;
+    const updated = [...(state.messages[conversationId] || []), msg];
+
+    ctx.patchState({
+      messages: {
+        ...state.messages,
+        [conversationId]: updated
+      }
     });
   }
 
