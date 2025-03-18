@@ -6,7 +6,7 @@ import type { Schema } from '../../../amplify/data/resource';
 import { ChatMessage, Conversation } from '../models/chat';
 
 const client = generateClient<Schema>({
-  authMode: 'userPool'
+  authMode: 'identityPool'
 });
 
 @Injectable({ providedIn: 'root' })

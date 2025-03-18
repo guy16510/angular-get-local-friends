@@ -9,7 +9,7 @@ export const handler: Schema["createMessage"]["functionHandler"] = async (event)
   const { recipientId, text } = event.arguments;
 
   const senderId = getCognitoIdentityId(event.identity);
-
+  
   if (!senderId) {
     throw new Error("Unauthorized: Missing identity");
   }
