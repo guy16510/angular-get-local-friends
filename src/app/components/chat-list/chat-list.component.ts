@@ -10,6 +10,7 @@ import { Router } from '@angular/router';
 import { ChatService } from '../../services/chat.service';
 import { AuthState } from '../../store/states/auth.state';
 import { LoadingComponent } from '../shared/loading/loading.component';
+import { getNormalizedConversationId } from '../../utils/chat-utils';
 
 @Component({
   selector: 'app-chat-list',
@@ -34,9 +35,8 @@ export class ChatListComponent implements OnInit {
   }
 
   openConversation(convo: Conversation): void {
-    const conversationId = convo.conversationId || convo.id; // fallback if API uses id
     const recipientId = this.getRecipientId(convo);
-    // this.store.dispatch(new LoadMessages(conversationId));
+    const conversationId = getNormalizedConversationId(this.currentUserId!, recipientId);
     this.router.navigate(['/chat', conversationId, recipientId]);
   }
 

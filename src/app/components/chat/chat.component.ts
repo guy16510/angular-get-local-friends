@@ -10,6 +10,7 @@ import { AuthState } from '../../store/states/auth.state';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../shared/material.module';
+import { getNormalizedConversationId } from '../../utils/chat-utils';
 
 @Component({
   selector: 'app-chat',
@@ -23,7 +24,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   recipientId!: string;
   messages$!: Observable<ChatMessage[]>;
   newMessageText: string = '';
-  currentUserId: string = '';
+  currentUserId: string | null = null;
   private sub: Subscription | null = null;
 
   constructor(
@@ -33,15 +34,11 @@ export class ChatComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    const identity = this.store.selectSnapshot(AuthState.identityId);
-    if (!identity) {
-      console.error('AuthState.identityId is null — aborting chat init');
-      return;
-    }
-
-    this.currentUserId = identity;
-    this.conversationId = this.route.snapshot.paramMap.get('conversationId') || '';
     this.recipientId = this.route.snapshot.paramMap.get('recipientId') || '';
+    this.currentUserId = this.store.selectSnapshot(AuthState.identityId);
+    if(this.currentUserId) {
+      this.conversationId = getNormalizedConversationId(this.currentUserId, this.recipientId);
+    }
 
     if (!this.conversationId || !this.recipientId) {
       console.error('Missing conversationId or recipientId');

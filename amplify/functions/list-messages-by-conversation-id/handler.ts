@@ -3,20 +3,20 @@ const docClient = new DynamoDB.DocumentClient();
 const TABLE_NAME = process.env['CHAT_MESSAGE_TABLE_NAME'] || ''; // make sure this matches actual env var name
 
 export const handler = async (event: any) => {
-  const { conversationId } = event.arguments;
+  const { conversationId, senderId, recipientId } = event.arguments;
 
-  if (!conversationId) {
-    throw new Error('Missing conversationId');
-  }
+  const normalizedConversationId = senderId && recipientId
+    ? [senderId, recipientId].sort().join('#')
+    : conversationId;
 
   const result = await docClient.query({
     TableName: TABLE_NAME,
     IndexName: 'chatMessagesByConversationIdAndTimestamp',
     KeyConditionExpression: 'conversationId = :cid',
     ExpressionAttributeValues: {
-      ':cid': conversationId,
+      ':cid': normalizedConversationId,
     },
-    ScanIndexForward: true // or false if you want latest first
+    ScanIndexForward: true
   }).promise();
 
   return result.Items || [];
