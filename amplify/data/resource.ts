@@ -1,5 +1,4 @@
 import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
-import { sayHello } from '../functions/say-hello/resource';
 import { findNearbyUsers } from '../functions/find-nearby-users/resource';
 import { mutateUserProfile } from '../functions/mutate-user-profile/resource';
 import { updateUserImages } from '../functions/update-user-images/resource';
@@ -67,13 +66,6 @@ const NearbyUsersResponse = a.model({
 /* --- Define Operations --- */
 
 const schema = a.schema({
-  sayHello: a
-    .query()
-    .arguments({ name: a.string().required() })
-    .returns(a.string())
-    .handler(a.handler.function(sayHello))
-    .authorization(allow => [allow.publicApiKey()]),
-
   findNearbyUsers: a
     .query()
     .arguments({
