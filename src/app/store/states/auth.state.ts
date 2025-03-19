@@ -11,7 +11,7 @@ export interface AuthStateModel {
   error: string | null;
   userName: string | null;
   profileImageUrl: string | null;
-
+  cognitoId: string | null;
 }
 
 @State<AuthStateModel>({
@@ -19,6 +19,7 @@ export interface AuthStateModel {
   defaults: {
     user: null,
     identityId: null,
+    cognitoId: null,
     loading: false,
     error: null,
     userName: null,
@@ -83,7 +84,8 @@ export class AuthState {
       ]);
       patchState({
         user: { ...currentUser, attributes },
-        identityId: authSession.identityId,
+        identityId: currentUser.userId,
+        cognitoId: authSession.identityId,
         userName: attributes.nickname || null,
         loading: false,
         error: null
@@ -93,6 +95,7 @@ export class AuthState {
         user: null,
         identityId: null,
         userName: null,
+        cognitoId: null,
         loading: false,
         error: error.message || 'Error checking authentication'
       });

@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { ChatService } from '../../services/chat.service';
 import { AppendMessage, LoadConversations, LoadMessages, SendMessage } from '../actions/chat.actions';
 import { getNormalizedConversationId } from '../../utils/chat-utils';
+import { tap } from 'rxjs/internal/operators/tap';
 
 export interface ChatMessage {
   conversationId: string;
@@ -92,22 +93,22 @@ export class ChatState {
   }
 
   @Action(LoadMessages)
-  async loadMessages(ctx: StateContext<ChatStateModel>, action: LoadMessages) {
-    const state = ctx.getState();
-  
-    // Split and normalize in case caller didn’t already do so
+  loadMessages(ctx: StateContext<ChatStateModel>, action: LoadMessages) {
+    // Normalize the conversationId
     const ids = action.conversationId.split('#');
     const conversationId = getNormalizedConversationId(ids[0], ids[1]);
   
-    const obs = await this.chatService.listMessagesByConversationId(conversationId);
-    return obs.subscribe((msgs: ChatMessage[]) => {
-      ctx.patchState({
-        messages: {
-          ...state.messages,
-          [conversationId]: msgs || []
-        }
-      });
-    });
+    return this.chatService.listMessagesByConversationId(conversationId).pipe(
+      tap((msgs: ChatMessage[]) => {
+        const state = ctx.getState();
+        ctx.patchState({
+          messages: {
+            ...state.messages,
+            [conversationId]: msgs || []
+          }
+        });
+      })
+    );
   }
 
   @Action(AppendMessage)
@@ -126,18 +127,23 @@ export class ChatState {
   }
 
   @Action(SendMessage)
-  async sendMessage(ctx: StateContext<ChatStateModel>, action: SendMessage) {
-    const obs = await this.chatService.sendMessage(action.recipientId, action.text);
-    return obs.subscribe((msg: ChatMessage) => {
-      const state = ctx.getState();
-      const conversationId = [msg.senderId, msg.recipientId].sort().join('#');
-      const updatedMsgs = [...(state.messages[conversationId] || []), msg];
-      ctx.patchState({
-        messages: {
-          ...state.messages,
-          [conversationId]: updatedMsgs
+  sendMessage(ctx: StateContext<ChatStateModel>, action: SendMessage) {
+    return this.chatService.sendMessage(action.recipientId, action.text).pipe(
+      tap((msg: ChatMessage) => {
+        if (!msg) {
+          console.error('Received undefined message');
+          return;
         }
-      });
-    });
+        const state = ctx.getState();
+        const conversationId = [msg.senderId, msg.recipientId].sort().join('#');
+        const updatedMsgs = [...(state.messages[conversationId] || []), msg];
+        ctx.patchState({
+          messages: {
+            ...state.messages,
+            [conversationId]: updatedMsgs
+          }
+        });
+      })
+    );
   }
 }

@@ -5,18 +5,22 @@ import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../../../amplify/data/resource';
 import { ChatMessage, Conversation } from '../models/chat';
 
-const client = generateClient<Schema>({ authMode: 'AWS_IAM' as any });
+const client = generateClient<Schema>();
 
 @Injectable({ providedIn: 'root' })
 export class ChatService {
-  async sendMessage(recipientId: string, text: string): Promise<Observable<any>> {
+  sendMessage(recipientId: string, text: string): Observable<ChatMessage> {
     return from(
       client.mutations.createMessage({ recipientId, text })
     ).pipe(
-      map((result: any) => result?.data?.createMessage),
+      map((result: any) => {
+        console.log('createMessage result:', result);
+        // Ensure we return the chat message from the result
+        return result?.data as ChatMessage;
+      }),
       catchError(err => {
         console.error('[ChatService] sendMessage error:', err);
-        return of({ recipientId, text });
+        return throwError(() => err);
       })
     );
   }
@@ -25,7 +29,9 @@ export class ChatService {
     return from(
       client.queries.customListConversations({})
     ).pipe(
-      map((res: any) => res?.data?.customListConversations || []),
+      map((res: any) => {
+        return res?.data || [];
+      }),
       catchError(err => {
         console.error('[ChatService] listConversations error:', err);
         return throwError(() => new Error('List conversations failed'));
@@ -33,11 +39,11 @@ export class ChatService {
     );
   }
 
-  async listMessagesByConversationId(conversationId: string): Promise<Observable<any[]>> {
+  listMessagesByConversationId(conversationId: string): Observable<any[]> {
     return from(
       client.queries.customListMessagesByConversationId({ conversationId })
     ).pipe(
-      map((result: any) => result?.data?.customListMessagesByConversationId ?? []),
+      map((result: any) => result?.data ?? []),
       catchError(err => {
         console.error('[ChatService] listMessages error:', err);
         return of([]);

@@ -40,7 +40,7 @@ export class UserProfileService {
     return from(
       client.mutations.mutateUserProfile({
         action: 'onlinePing',
-        payload: JSON.stringify({ identityId }),
+        payload: JSON.stringify({}),
       })
     ).pipe(
       map(result => {

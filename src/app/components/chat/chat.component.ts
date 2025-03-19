@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Store } from '@ngxs/store';
 import { Observable, Subscription } from 'rxjs';
@@ -11,15 +11,19 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../shared/material.module';
 import { getNormalizedConversationId } from '../../utils/chat-utils';
+import { ImageDisplayComponent } from '../image-display/image-display.component';
 
 @Component({
   selector: 'app-chat',
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, MaterialModule]
+  imports: [CommonModule, FormsModule, MaterialModule, ImageDisplayComponent]
 })
 export class ChatComponent implements OnInit, OnDestroy {
+  @ViewChild('messagesContainer') private messagesContainer!: ElementRef;
+  private messagesSub: Subscription | null = null;
+
   conversationId!: string;
   recipientId!: string;
   messages$!: Observable<ChatMessage[]>;
@@ -36,7 +40,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.recipientId = this.route.snapshot.paramMap.get('recipientId') || '';
     this.currentUserId = this.store.selectSnapshot(AuthState.identityId);
-    if(this.currentUserId) {
+    if (this.currentUserId) {
       this.conversationId = getNormalizedConversationId(this.currentUserId, this.recipientId);
     }
 
@@ -50,6 +54,11 @@ export class ChatComponent implements OnInit, OnDestroy {
       ChatState.messagesForConversation(state.chat)(this.conversationId)
     );
 
+    // Subscribe to messages$ changes to auto-scroll
+    this.messagesSub = this.messages$.subscribe(() => {
+      setTimeout(() => this.scrollToBottom(), 0);
+    });
+
     this.sub = this.chatService.subscribeToMessagesForConversation(this.conversationId).subscribe((message) => {
       this.store.dispatch(new AppendMessage(message));
     });
@@ -57,12 +66,19 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   sendMessage(): void {
     if (!this.newMessageText.trim()) return;
-    
     this.store.dispatch(new SendMessage(this.recipientId, this.newMessageText));
     this.newMessageText = '';
   }
 
+  private scrollToBottom() {
+    if (this.messagesContainer) {
+      const el = this.messagesContainer.nativeElement;
+      el.scrollTop = el.scrollHeight;
+    }
+  }
+
   ngOnDestroy(): void {
     this.sub?.unsubscribe();
+    this.messagesSub?.unsubscribe();
   }
 }
