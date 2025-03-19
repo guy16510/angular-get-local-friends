@@ -37,7 +37,8 @@ const Conversation = a.model({
 .secondaryIndexes(index => [
   index('participantA').sortKeys(['lastTimestamp']),
   index('participantB').sortKeys(['lastTimestamp'])
-]).authorization(allow => [allow.owner()]);
+])
+.authorization(allow => [allow.authenticated()]);
 
 const Contact = a.model({
   email: a.string().required(),
@@ -77,7 +78,7 @@ const schema = a.schema({
     })
     .returns(a.ref('NearbyUsersResponse'))
     .handler(a.handler.function(findNearbyUsers))
-    .authorization(allow => [allow.guest(), allow.authenticated()]),
+    .authorization(allow => [allow.authenticated()]),
 
   mutateUserProfile: a
     .mutation()
@@ -106,7 +107,7 @@ const schema = a.schema({
     })
     .returns(a.json())
     .handler(a.handler.function(getUserProfile))
-    .authorization(allow => [allow.authenticated(), allow.guest()]),
+    .authorization(allow => [allow.authenticated()]),
 
   findPremiumMatches: a
     .query()
@@ -160,9 +161,9 @@ export type Schema = ClientSchema<typeof schema>;
 export const data = defineData({
   schema,
   authorizationModes: {
-    defaultAuthorizationMode: 'userPool',
+    defaultAuthorizationMode: 'identityPool',
     apiKeyAuthorizationMode: {
-      expiresInDays: 30,
+      expiresInDays: 30
     }
   }
 });
