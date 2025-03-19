@@ -60,12 +60,12 @@ export class SearchState {
   
     ctx.patchState({ loading: true });
     debugger;
+    //todo add identityId to the query, or may not need to do anything?
     const result = await client.queries.findNearbyUsers({
       lat: action.lat,
       lng: action.lng,
       radius: action.radius,
       nextToken: action.nextToken || undefined,
-      identityId: identityId
     });
   
     const rawData = result.data as NearbyUsersPayload | null;

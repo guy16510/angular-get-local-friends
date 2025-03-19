@@ -1,8 +1,9 @@
 import type { Schema } from '../../data/resource';
-import type { AppSyncIdentityCognito } from 'aws-lambda';
 import { DynamoDB } from '@aws-sdk/client-dynamodb';
 import { unmarshall } from '@aws-sdk/util-dynamodb';
 import * as ddbGeo from 'dynamodb-geo-v3';
+import { getIdentityId } from '../../shared/utils/identity';
+import { sanitizeBigInts } from '../../shared/utils/sanitize';
 
 const TABLE_NAME = process.env['USER_PROFILE_TABLE_NAME']!;
 if (!TABLE_NAME) throw new Error("Missing environment variable: USER_PROFILE_TABLE_NAME");
@@ -29,11 +30,8 @@ export const handler: Schema["findNearbyUsers"]["functionHandler"] = async (even
   const { lat, lng, radius } = event.arguments;
   const radiusInMeters = radius * 1609.34;
 
-  let identityId: string | undefined =
-    event.arguments.identityId ||
-    (event.identity && 'username' in event.identity
-      ? (event.identity as AppSyncIdentityCognito).username
-      : undefined);
+  // Get the identityId from the event context (requester’s identity)
+  const identityId = getIdentityId(event.identity);
 
   console.info(`🔍 [findNearbyUsers] lat=${lat}, lng=${lng}, radius=${radius}mi, identityId=${identityId}`);
 
@@ -91,18 +89,4 @@ function haversine(lat1: number, lon1: number, lat2: number, lon2: number): numb
             Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
             Math.sin(dLon / 2) ** 2;
   return R * 2 * Math.asin(Math.sqrt(a));
-}
-
-// Recursively sanitize DynamoDB BigInt values
-function sanitizeBigInts(obj: any): any {
-  if (typeof obj === 'bigint') return Number(obj);
-  if (Array.isArray(obj)) return obj.map(sanitizeBigInts);
-  if (typeof obj === 'object' && obj !== null) {
-    const sanitized: Record<string, any> = {};
-    for (const key in obj) {
-      sanitized[key] = sanitizeBigInts(obj[key]);
-    }
-    return sanitized;
-  }
-  return obj;
 }

@@ -1,6 +1,7 @@
 import type { Schema } from '../../data/resource';
 import { DynamoDB } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
+import { sanitizeBigInts } from '../../shared/utils/sanitize';
 
 const TABLE_NAME = process.env['USER_PROFILE_TABLE_NAME']!;
 if (!TABLE_NAME) throw new Error("Missing environment variable: USER_PROFILE_TABLE_NAME");
@@ -36,17 +37,3 @@ export const handler: Schema["fetchUserProfile"]["functionHandler"] = async (eve
     throw new Error("Internal server error");
   }
 };
-
-// Recursively convert BigInt → Number for safe JSON return
-function sanitizeBigInts(obj: any): any {
-  if (typeof obj === 'bigint') return Number(obj);
-  if (Array.isArray(obj)) return obj.map(sanitizeBigInts);
-  if (typeof obj === 'object' && obj !== null) {
-    const sanitized: Record<string, any> = {};
-    for (const key in obj) {
-      sanitized[key] = sanitizeBigInts(obj[key]);
-    }
-    return sanitized;
-  }
-  return obj;
-}

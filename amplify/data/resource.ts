@@ -8,6 +8,7 @@ import { findPremiumMatches } from '../functions/find-premium-matches/resource';
 import { createMessage } from '../functions/create-message/resource';
 import { listConversations } from '../functions/list-conversations/resource';
 import { listMessagesByConversationId } from '../functions/list-messages-by-conversation-id/resource';
+import { identity } from 'rxjs';
 
 /* --- Define Models --- */
 
@@ -74,8 +75,7 @@ const schema = a.schema({
       lat: a.float().required(),
       lng: a.float().required(),
       radius: a.float().required(),
-      nextToken: a.string(),
-      identityId: a.string(),
+      nextToken: a.string()
     })
     .returns(a.ref('NearbyUsersResponse'))
     .handler(a.handler.function(findNearbyUsers))
@@ -94,7 +94,6 @@ const schema = a.schema({
   updateUserImages: a
     .mutation()
     .arguments({
-      identityId: a.string().required(),
       images: a.string().array()
     })
     .returns(a.string())
@@ -112,9 +111,7 @@ const schema = a.schema({
 
   fetchAnimalProfile: a
     .query()
-    .arguments({
-      identityId: a.string().required()
-    })
+    .arguments({})
     .returns(a.json())
     .handler(a.handler.function(getAnimalProfile))
     .authorization(allow => [allow.authenticated()]),
@@ -134,7 +131,10 @@ const schema = a.schema({
 
   createMessage: a
     .mutation()
-    .arguments({ recipientId: a.string().required(), text: a.string().required() })
+    .arguments({ 
+      recipientId: a.string().required(),
+      text: a.string().required() 
+    })
     .returns(a.ref('ChatMessage'))
     .handler(a.handler.function(createMessage))
     .authorization(allow => [allow.authenticated()]),
@@ -154,7 +154,9 @@ const schema = a.schema({
 
   customListMessagesByConversationId: a
     .query()
-    .arguments({ conversationId: a.string().required() })
+    .arguments({ 
+      conversationId: a.string().required() 
+    })
     .returns(a.ref('ChatMessage').array())
     .handler(a.handler.function(listMessagesByConversationId))
     .authorization(allow => [allow.authenticated()]),
