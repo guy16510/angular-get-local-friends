@@ -3,6 +3,7 @@ import { findNearbyUsers } from '../functions/find-nearby-users/resource';
 import { mutateUserProfile } from '../functions/mutate-user-profile/resource';
 import { updateUserImages } from '../functions/update-user-images/resource';
 import { getUserProfile } from '../functions/get-user-profile/resource';
+import { getAnimalProfile } from '../functions/get-animal-profile/resource';
 import { findPremiumMatches } from '../functions/find-premium-matches/resource';
 import { createMessage } from '../functions/create-message/resource';
 import { listConversations } from '../functions/list-conversations/resource';
@@ -107,6 +108,15 @@ const schema = a.schema({
     })
     .returns(a.json())
     .handler(a.handler.function(getUserProfile))
+    .authorization(allow => [allow.authenticated()]),
+
+  fetchAnimalProfile: a
+    .query()
+    .arguments({
+      identityId: a.string().required()
+    })
+    .returns(a.json())
+    .handler(a.handler.function(getAnimalProfile))
     .authorization(allow => [allow.authenticated()]),
 
   findPremiumMatches: a

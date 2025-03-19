@@ -9,6 +9,7 @@ import { updateUserImages } from './functions/update-user-images/resource';
 import { createMessage } from './functions/create-message/resource';
 import { listConversations } from './functions/list-conversations/resource';
 import { getUserProfile } from './functions/get-user-profile/resource';
+import { getAnimalProfile } from './functions/get-animal-profile/resource';
 import { listMessagesByConversationId } from './functions/list-messages-by-conversation-id/resource';
 import * as iam from 'aws-cdk-lib/aws-iam';
 
@@ -23,6 +24,7 @@ const backend = defineBackend({
   createMessage,
   listConversations,
   getUserProfile,
+  getAnimalProfile,
   listMessagesByConversationId
 });
 
@@ -44,6 +46,11 @@ backend.mutateUserProfile.resources.lambda.addToRolePolicy(new iam.PolicyStateme
 backend.getUserProfile.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
   actions: ['dynamodb:GetItem', 'dynamodb:Query'],
   resources: [userProfileTableArn, userProfileTableIndexArn]
+}));
+
+backend.getAnimalProfile.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
+  actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem', 'dynamodb:GetItem', 'dynamodb:Query'],
+  resources: [userProfileTableArn, `${userProfileTableArn}/index/identityId-index`]
 }));
 
 /** 🔐 Allow `EVERYONE` Cognito Role to access S3 Bucket */
