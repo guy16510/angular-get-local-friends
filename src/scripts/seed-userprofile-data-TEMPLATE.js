@@ -1,15 +1,32 @@
-export type QuestionType = 'multiple-choice' | 'multiple-select' | 'true-false' | 'fill-in' | 'sliding-scale';
+/**
+ * 
+  npm install @aws-sdk/client-dynamodb uuid
+  node seed-userprofile-data.js
+ */
+const { DynamoDB } = require('@aws-sdk/client-dynamodb');
+const { v4: uuidv4 } = require('uuid');
 
-export interface SurveyQuestion {
-  id: number;
-  category: string;
-  question: string;
-  type: QuestionType;
-  options?: string[];
-  scale?: { min: number; max: number };
+const ddb = new DynamoDB({ region: 'us-east-1' });
+const TABLE_NAME = 'UserProfile-dev';
+const NUM_USERS = 25;
+
+const BASE_LAT = 42.6707;
+const BASE_LNG = -71.4164;
+
+function getRandomOffset() {
+  return (Math.random() - 0.5) * 0.2;
 }
 
-export const SURVEY_QUESTIONS: SurveyQuestion[] = [
+function getRandom(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function getRandomSubset(arr) {
+  return arr.filter(() => Math.random() < 0.4);
+}
+
+// 👇 Paste your full SURVEY_QUESTIONS array here
+const SURVEY_QUESTIONS = [
   {
     id: 1,
     category: 'Friendship Preferences',
@@ -704,3 +721,62 @@ export const SURVEY_QUESTIONS: SurveyQuestion[] = [
     type: 'fill-in' ,
   }
 ];
+
+function generateSurveyAnswers() {
+  const answers = [];
+
+  for (const q of SURVEY_QUESTIONS) {
+    if (q.type === 'multiple-choice' && Array.isArray(q.options)) {
+      answers.push({ questionId: q.id, answer: getRandom(q.options) });
+    } else if (q.type === 'multiple-select' && Array.isArray(q.options)) {
+      answers.push({ questionId: q.id, answer: getRandomSubset(q.options) });
+    } else if (q.type === 'true-false') {
+      answers.push({ questionId: q.id, answer: Math.random() < 0.5 ? 'true' : 'false' });
+    } else if (q.type === 'sliding-scale' && q.scale) {
+      const { min, max } = q.scale;
+      answers.push({ questionId: q.id, answer: Math.floor(Math.random() * (max - min + 1)) + min });
+    } else if (q.type === 'fill-in') {
+      answers.push({ questionId: q.id, answer: 'I am a test user who enjoys life.' });
+    }
+  }
+
+  return answers;
+}
+
+(async () => {
+  for (let i = 0; i < NUM_USERS; i++) {
+    const identityId = `us-east-1:${uuidv4()}`;
+    const locationLat = BASE_LAT + getRandomOffset();
+    const locationLng = BASE_LNG + getRandomOffset();
+    const timestamp = new Date().toISOString();
+
+    const item = {
+      hashKey: { N: `${Math.floor(locationLat * 1000)}` },
+      rangeKey: { S: `geo#${identityId}` },
+      geohash: { N: `${Math.floor(Math.random() * 1e18)}` },
+      geoJson: {
+        S: JSON.stringify({
+          type: 'Point',
+          coordinates: [locationLng, locationLat]
+        })
+      },
+      identityId: { S: identityId },
+      userName: { S: `TestUser${i + 1}` },
+      images: { S: JSON.stringify([]) },
+      lastOnlineAt: { S: timestamp },
+      lastUpdated: { S: timestamp },
+      createdAt: { S: timestamp },
+      updatedAt: { S: timestamp },
+      locationLat: { N: `${locationLat}` },
+      locationLng: { N: `${locationLng}` },
+      surveyAnswers: { S: JSON.stringify(generateSurveyAnswers()) }
+    };
+
+    try {
+      await ddb.putItem({ TableName: TABLE_NAME, Item: item });
+      console.log(`✅ Inserted user ${item.userName.S}`);
+    } catch (err) {
+      console.error('❌ Failed to insert user:', err);
+    }
+  }
+})();

@@ -1,3 +1,9 @@
+############
+## Use this to provision dynamo for Geo Spatial look ups
+## I spent days trying to get amplify to provision it.. It can not creating the index/hashing needed to support.
+## Use this document to provision
+################
+
 # 1. Create a temp project directory
 mkdir -p ~/geo-table-setup && cd ~/geo-table-setup
 

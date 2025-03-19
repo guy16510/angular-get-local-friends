@@ -10,7 +10,6 @@ import { AuthState } from './store/states/auth.state';
 import { SurveyState } from './store/states/survey.state';
 import { UserProfileState } from './store/states/user-profile.state';
 import { withNgxsLoggerPlugin } from '@ngxs/logger-plugin';
-import { TodoState } from './store/states/todo.state';
 import { withNgxsStoragePlugin } from '@ngxs/storage-plugin';
 import { ChatState } from './store/states/chat.state';
 import { SearchState } from './store/states/search.state';
@@ -25,7 +24,6 @@ export const appConfig: ApplicationConfig = {
         AuthState, 
         SurveyState, 
         UserProfileState, 
-        TodoState, 
         ChatState,
         SearchState,
         GeolocationState

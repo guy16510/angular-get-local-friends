@@ -66,6 +66,14 @@ everyoneRole.addToPrincipalPolicy(new iam.PolicyStatement({
   resources: [`${bucketArn}/protected/\${cognito-identity.amazonaws.com:sub}/*`]
 }));
 
+/** 🔐 AppSync Scoped IAM Policy */
+const appsyncApiArn = `arn:aws:appsync:us-east-1:${process.env['AWS_ACCOUNT_ID']}:apis/${process.env['AMPLIFY_GRAPHQL_API_ID']}/*`;
+
+everyoneRole.addToPrincipalPolicy(new iam.PolicyStatement({
+  actions: ['appsync:GraphQL'],
+  resources: [appsyncApiArn]
+}));
+
 /** 💬 ChatMessage Table Permissions */
 const chatMessageTableArn = `arn:aws:dynamodb:us-east-1:${process.env['AWS_ACCOUNT_ID']}:table/${process.env['AMPLIFY_CHAT_MESSAGE_TABLE_NAME']}`;
 const chatMessageIndexArn = `${chatMessageTableArn}/index/*`;
