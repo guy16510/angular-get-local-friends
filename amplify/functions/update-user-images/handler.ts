@@ -1,6 +1,9 @@
 import type { Schema } from '../../data/resource';
 import AWS from 'aws-sdk';
 
+/**
+ * TODO not implemented yet.
+ */
 const docClient = new AWS.DynamoDB.DocumentClient();
 const TABLE_NAME = process.env['USER_PROFILE_TABLE_NAME'] || '';
 

@@ -1,13 +1,13 @@
 import { DynamoDB } from 'aws-sdk';
 import type { Schema } from '../../data/resource';
-import { getCognitoIdentityId } from '../../shared/utils/identity';
+import { getIdentityId } from '../../shared/utils/identity';
 import { toConversation } from '../../shared/mappers/conversationMapper';
 
 const docClient = new DynamoDB.DocumentClient();
 const TABLE_NAME = process.env['CONVERSATION_TABLE_NAME'] || '';
 
 export const handler: Schema["customListConversations"]["functionHandler"] = async (event) => {
-  const identityId = getCognitoIdentityId(event.identity);
+  const identityId = getIdentityId(event.identity);
   if (!identityId) throw new Error("Unauthorized: No identity provided.");
 
   const [participantAResult, participantBResult] = await Promise.all([

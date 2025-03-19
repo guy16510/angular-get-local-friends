@@ -1,23 +1,16 @@
-export function getCognitoIdentityId(identity: any): string {
+export function getIdentityId(identity: any): string {
   if (!identity || typeof identity !== 'object') {
-    console.error("[getCognitoIdentityId] Identity object missing or malformed:", identity);
+    console.error("[getIdentityId] Identity object missing or malformed:", identity);
     throw new Error("Unauthorized: Identity object is missing or malformed.");
   }
 
-  // Prefer identityId when using identityPool (best practice for IAM-based systems)
-  const identityId = identity?.identityId;
-  if (typeof identityId === 'string' && identityId.includes(':')) {
-    console.log(`[getCognitoIdentityId] Using identityId: ${identityId}`);
-    return identityId;
+  // Use the unique identifier from the Cognito User Pool
+  const uniqueId = identity.sub || identity?.claims?.sub;
+  if (typeof uniqueId === 'string') {
+    console.log(`[getIdentityId] Using Cognito User Pool unique identifier (sub): ${uniqueId}`);
+    return uniqueId;
   }
 
-  // Fallback warning: system is in userPool mode
-  const sub = identity?.sub || identity?.claims?.sub;
-  if (typeof sub === 'string') {
-    console.warn("[getCognitoIdentityId] WARNING: Falling back to sub — identityId not available. Using sub instead:", sub);
-    return sub;
-  }
-
-  console.error("[getCognitoIdentityId] Neither identityId nor sub is available. Identity object:", identity);
-  throw new Error("Unauthorized: Missing Cognito identityId or sub.");
+  console.error("[getIdentityId] Unique identifier (sub) not found in identity object:", identity);
+  throw new Error("Unauthorized: Missing Cognito unique identifier.");
 }

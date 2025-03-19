@@ -1,12 +1,11 @@
 import { Injectable } from '@angular/core';
 import { from, Observable, of, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
-import { fetchAuthSession } from 'aws-amplify/auth';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../../../amplify/data/resource';
 import { ChatMessage, Conversation } from '../models/chat';
 
-const client = generateClient<Schema>();
+const client = generateClient<Schema>({ authMode: 'AWS_IAM' as any });
 
 @Injectable({ providedIn: 'root' })
 export class ChatService {

@@ -1,6 +1,6 @@
 import { DynamoDB } from 'aws-sdk';
 import type { Schema } from '../../data/resource';
-import { getCognitoIdentityId } from '../../shared/utils/identity';
+import { getIdentityId } from '../../shared/utils/identity';
 import { toChatMessage } from '../../shared/mappers/chatMessageMapper';
 
 const docClient = new DynamoDB.DocumentClient();
@@ -8,8 +8,8 @@ const docClient = new DynamoDB.DocumentClient();
 export const handler: Schema["createMessage"]["functionHandler"] = async (event) => {
   const { recipientId, text } = event.arguments;
 
-  const senderId = getCognitoIdentityId(event.identity);
-  
+  // Retrieve the unique user identifier (sub) from the signed request
+  const senderId = getIdentityId(event.identity);
   if (!senderId) {
     throw new Error("Unauthorized: Missing identity");
   }
@@ -18,7 +18,7 @@ export const handler: Schema["createMessage"]["functionHandler"] = async (event)
     throw new Error("Missing recipientId or text");
   }
 
-  // 💬 Compose conversationId consistently (sorted for uniqueness)
+  // Compose conversationId consistently (sorted for uniqueness)
   const [participantA, participantB] = [senderId, recipientId].sort();
   const conversationId = `${participantA}#${participantB}`;
 
@@ -36,7 +36,7 @@ export const handler: Schema["createMessage"]["functionHandler"] = async (event)
     updatedAt: timestamp
   };
 
-  // ✅ Write message to ChatMessage table
+  // Write message to ChatMessage table
   const chatTableName = process.env['CHAT_MESSAGE_TABLE_NAME'];
   if (!chatTableName) throw new Error("Missing CHAT_MESSAGE_TABLE_NAME");
 
@@ -45,31 +45,31 @@ export const handler: Schema["createMessage"]["functionHandler"] = async (event)
     Item: chatMessage
   }).promise();
 
-  // ✅ Upsert conversation summary correctly
+  // Upsert conversation summary
   const conversationTableName = process.env['CONVERSATION_TABLE_NAME'];
   if (!conversationTableName) throw new Error("Missing CONVERSATION_TABLE_NAME");
 
-await docClient.update({
-  TableName: conversationTableName,
-  Key: { id: conversationId }, // IMPORTANT: matches your schema's partition key
-  UpdateExpression: `
-    set participantA = :pa,
-        participantB = :pb,
-        lastMessage = :lm,
-        lastTimestamp = :lt,
-        createdAt = if_not_exists(createdAt, :createdAt),
-        updatedAt = :updatedAt
-  `,
-  ExpressionAttributeValues: {
-    ":pa": participantA,
-    ":pb": participantB,
-    ":lm": text,
-    ":lt": timestamp,
-    ":createdAt": timestamp,
-    ":updatedAt": timestamp
-  },
-  ReturnValues: "ALL_NEW"
-}).promise();
+  await docClient.update({
+    TableName: conversationTableName,
+    Key: { id: conversationId },
+    UpdateExpression: `
+      set participantA = :pa,
+          participantB = :pb,
+          lastMessage = :lm,
+          lastTimestamp = :lt,
+          createdAt = if_not_exists(createdAt, :createdAt),
+          updatedAt = :updatedAt
+    `,
+    ExpressionAttributeValues: {
+      ":pa": participantA,
+      ":pb": participantB,
+      ":lm": text,
+      ":lt": timestamp,
+      ":createdAt": timestamp,
+      ":updatedAt": timestamp
+    },
+    ReturnValues: "ALL_NEW"
+  }).promise();
 
   return toChatMessage(chatMessage);
 };

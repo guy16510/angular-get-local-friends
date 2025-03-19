@@ -2,7 +2,7 @@ import { DynamoDB } from 'aws-sdk';
 import { SurveyAnswers, AnimalProfile } from './types';
 import { calculatePersonalityTraits } from './traits-calculator';
 import { generateSelfProfile, generateSeekingProfile } from './profile-generator';
-import { getCognitoIdentityId } from '../../shared/utils/identity';
+import { getIdentityId } from '../../shared/utils/identity';
 import { logger } from './utils/logger';
 
 const docClient = new DynamoDB.DocumentClient();
@@ -15,7 +15,7 @@ export const handler = async (event: any) => {
     logger.info('Processing request', { event });
     
     // Extract user identity
-    const identityId = getCognitoIdentityId(event.identity);
+    const identityId = getIdentityId(event.identity);
     if (!identityId) {
       logger.error('No identity provided');
       return {
