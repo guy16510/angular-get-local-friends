@@ -69,10 +69,11 @@ export class ChatState {
   }
 
   @Action(LoadConversations)
-  loadConversations(ctx: StateContext<ChatStateModel>, action: LoadConversations) {
+  async loadConversations(ctx: StateContext<ChatStateModel>, action: LoadConversations) {
     ctx.patchState({ loading: true, error: null });
   
-    return this.chatService.listConversations().subscribe({
+    const obs = await this.chatService.listConversations();
+    return obs.subscribe({
       next: (conversations: Conversation[]) => {
         ctx.patchState({
           conversations,
@@ -80,7 +81,7 @@ export class ChatState {
           error: null
         });
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('[ChatState] LoadConversations failed:', err);
         ctx.patchState({
           loading: false,
@@ -91,14 +92,15 @@ export class ChatState {
   }
 
   @Action(LoadMessages)
-  loadMessages(ctx: StateContext<ChatStateModel>, action: LoadMessages) {
+  async loadMessages(ctx: StateContext<ChatStateModel>, action: LoadMessages) {
     const state = ctx.getState();
   
     // Split and normalize in case caller didn’t already do so
     const ids = action.conversationId.split('#');
     const conversationId = getNormalizedConversationId(ids[0], ids[1]);
   
-    return this.chatService.listMessagesByConversationId(conversationId).subscribe(msgs => {
+    const obs = await this.chatService.listMessagesByConversationId(conversationId);
+    return obs.subscribe((msgs: ChatMessage[]) => {
       ctx.patchState({
         messages: {
           ...state.messages,
@@ -124,8 +126,9 @@ export class ChatState {
   }
 
   @Action(SendMessage)
-  sendMessage(ctx: StateContext<ChatStateModel>, action: SendMessage) {
-    return this.chatService.sendMessage(action.recipientId, action.text).subscribe(msg => {
+  async sendMessage(ctx: StateContext<ChatStateModel>, action: SendMessage) {
+    const obs = await this.chatService.sendMessage(action.recipientId, action.text);
+    return obs.subscribe((msg: ChatMessage) => {
       const state = ctx.getState();
       const conversationId = [msg.senderId, msg.recipientId].sort().join('#');
       const updatedMsgs = [...(state.messages[conversationId] || []), msg];

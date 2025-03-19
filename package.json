@@ -27,6 +27,8 @@
     "@angular/platform-browser": "^19.2.0",
     "@angular/platform-browser-dynamic": "^19.2.0",
     "@angular/router": "^19.2.0",
+    "@aws-amplify/api": "^6.3.5",
+    "@aws-amplify/api-graphql": "^4.7.9",
     "@aws-amplify/ui-angular": "^5.0.37",
     "@aws-sdk/client-cognito-identity-provider": "^3.760.0",
     "@aws-sdk/client-dynamodb": "^3.767.0",
