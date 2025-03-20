@@ -38,7 +38,7 @@ export class FileService {
   async uploadFile(identityIdz: string, fileBlob: Blob): Promise<string> {
     const session = await fetchAuthSession();
     // Use the actual identity ID from the session
-    const identityId = (session.identityId || session.tokens?.idToken?.payload?.sub) || '';
+    const identityId = (session.tokens?.idToken?.payload?.sub) || '';
     debugger;
     const uploadPath = `protected/${identityId}/profile.webp`;
     try {

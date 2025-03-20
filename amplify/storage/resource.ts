@@ -8,14 +8,9 @@ export const storage = defineStorage({
   access: (allow) => ({
     // All authenticated users can read any file under "protected"
     'protected/*': [allow.authenticated.to(['read'])],
-    
-    // Standard Cognito sub-based path
+    // Authenticated users have full control over their own folders
     'protected/${cognito:sub}/*': [allow.authenticated.to(['read', 'write', 'delete'])],
-    
-    // Also allow sub-based access (which might be different from cognito:sub in some cases)
     'protected/${cognito-identity.amazonaws.com:sub}/*': [allow.authenticated.to(['read', 'write', 'delete'])],
-    
-    // User pool-based access
     'protected/${cognito:username}/*': [allow.authenticated.to(['read', 'write', 'delete'])]
   })
 });

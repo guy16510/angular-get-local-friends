@@ -12,6 +12,7 @@ import { getUserProfile } from './functions/get-user-profile/resource';
 import { getAnimalProfile } from './functions/get-animal-profile/resource';
 import { listMessagesByConversationId } from './functions/list-messages-by-conversation-id/resource';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as s3 from 'aws-cdk-lib/aws-s3';
 
 const backend = defineBackend({
   auth,
@@ -103,3 +104,20 @@ backend.listConversations.resources.lambda.addToRolePolicy(new iam.PolicyStateme
   actions: ['dynamodb:Query'],
   resources: [conversationTableArn, conversationIndexArn]
 }));
+
+
+/** 🔒 S3 Bucket Permissions */
+const bucketNameFromEnv = process.env['AMPLIFY_STORAGE_BUCKET_NAME'];
+const bucketResource = backend.storage.resources.bucket;
+if (bucketResource) {
+  const cfnBucket = bucketResource.node.defaultChild as s3.CfnBucket;
+  if (cfnBucket && cfnBucket.bucketName === bucketNameFromEnv) {
+    cfnBucket.addPropertyOverride("PublicAccessBlockConfiguration", {
+      BlockPublicPolicy: false,
+      BlockPublicAcls: true,
+      IgnorePublicAcls: true,
+      RestrictPublicBuckets: false,
+    });
+    console.log("Bucket policy override applied to bucket:", cfnBucket.bucketName);
+  }
+}
