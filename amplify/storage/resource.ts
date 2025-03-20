@@ -5,14 +5,17 @@ import { defineStorage } from '@aws-amplify/backend';
 const branch = process.env['AWS_BRANCH'] || 'default';
 
 export const storage = defineStorage({
+  // Mark this bucket as default if it's your primary storage resource.
   isDefault: true,
+  // Append the AWS branch to the bucket name.
   name: `userimages-${branch}`,
-  access: (access) => ({
-    // Any authenticated user can read any file under "protected"
-    'protected/*': [access.authenticated.to(['read'])],
-    // Only allow write/delete actions on files in the folder named after the user's Cognito sub.
-    // When a user uploads a file, it must be stored under:
-    //    protected/<cognito sub>/filename.ext
-    'protected/${cognito:sub}/*': [access.authenticated.to(['write', 'delete'])]
+  // Define custom file path access rules.
+  access: (allow) => ({
+    'protected/{entity_id}/*': [
+      // Only the user whose identity matches {entity_id} may write/delete.
+      allow.entity('identity').to(['read', 'write', 'delete']),
+      // Other authenticated users can only read.
+      allow.authenticated.to(['read'])
+    ]
   })
 });
