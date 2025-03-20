@@ -70,12 +70,22 @@ everyoneRole.addToPrincipalPolicy(new iam.PolicyStatement({
 
 everyoneRole.addToPrincipalPolicy(new iam.PolicyStatement({
   actions: ['s3:PutObject', 's3:DeleteObject'],
+  resources: [`${bucketArn}/protected/\${cognito:sub}/*`]
+}));
+
+everyoneRole.addToPrincipalPolicy(new iam.PolicyStatement({
+  actions: ['s3:PutObject', 's3:DeleteObject'],
   resources: [`${bucketArn}/protected/*`],
   conditions: {
     "StringLike": {
-      "s3:prefix": `protected/\${cognito:sub}/*`
+      "s3:prefix": "protected/\${cognito:sub}/*"
     }
   }
+}));
+
+everyoneRole.addToPrincipalPolicy(new iam.PolicyStatement({
+  actions: ['s3:PutObject', 's3:DeleteObject'],
+  resources: [`${bucketArn}/protected/\${aws:PrincipalTag/sub}/*`]
 }));
 
 /** 🔐 AppSync Scoped IAM Policy */
