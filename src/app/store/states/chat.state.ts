@@ -3,7 +3,9 @@ import { Injectable } from '@angular/core';
 import { ChatService } from '../../services/chat.service';
 import { AppendMessage, LoadConversations, LoadMessages, SendMessage } from '../actions/chat.actions';
 import { getNormalizedConversationId } from '../../utils/chat-utils';
-import { tap } from 'rxjs/internal/operators/tap';
+import { tap } from 'rxjs/operators';
+import { from, EMPTY, Observable } from 'rxjs';
+import { switchMap, catchError } from 'rxjs/operators';
 
 export interface ChatMessage {
   conversationId: string;
@@ -27,6 +29,7 @@ export interface ChatStateModel {
   messages: Record<string, ChatMessage[]>;
   loading: boolean;
   error: string | null;
+  lastFetched: number | null; // timestamp in milliseconds
 }
 
 @State<ChatStateModel>({
@@ -35,7 +38,8 @@ export interface ChatStateModel {
     conversations: [],
     messages: {},
     loading: false,
-    error: null
+    error: null,
+    lastFetched: null
   }
 })
 @Injectable()
@@ -70,26 +74,28 @@ export class ChatState {
   }
 
   @Action(LoadConversations)
-  async loadConversations(ctx: StateContext<ChatStateModel>, action: LoadConversations) {
+  loadConversations(ctx: StateContext<ChatStateModel>, action: LoadConversations) {
     ctx.patchState({ loading: true, error: null });
-  
-    const obs = await this.chatService.listConversations();
-    return obs.subscribe({
-      next: (conversations: Conversation[]) => {
+    return from(this.chatService.listConversations()).pipe(
+      switchMap((conversations$: Observable<Conversation[]>) => conversations$),
+      tap((conversations: Conversation[]) => {
+        const state = ctx.getState() as ChatStateModel;
         ctx.patchState({
           conversations,
           loading: false,
-          error: null
+          error: null,
+          lastFetched: Date.now()
         });
-      },
-      error: (err: any) => {
+      }),
+      catchError((err) => {
         console.error('[ChatState] LoadConversations failed:', err);
         ctx.patchState({
           loading: false,
           error: err?.message || 'Failed to load conversations'
         });
-      }
-    });
+        return EMPTY;
+      })
+    );
   }
 
   @Action(LoadMessages)
@@ -100,7 +106,7 @@ export class ChatState {
   
     return this.chatService.listMessagesByConversationId(conversationId).pipe(
       tap((msgs: ChatMessage[]) => {
-        const state = ctx.getState();
+        const state = ctx.getState() as ChatStateModel;
         ctx.patchState({
           messages: {
             ...state.messages,
@@ -113,7 +119,7 @@ export class ChatState {
 
   @Action(AppendMessage)
   appendMessage(ctx: StateContext<ChatStateModel>, action: AppendMessage) {
-    const state = ctx.getState();
+    const state = ctx.getState() as ChatStateModel;
     const msg = action.message;
     const conversationId = msg.conversationId;
     const updated = [...(state.messages[conversationId] || []), msg];
@@ -134,7 +140,7 @@ export class ChatState {
           console.error('Received undefined message');
           return;
         }
-        const state = ctx.getState();
+        const state = ctx.getState() as ChatStateModel;
         const conversationId = [msg.senderId, msg.recipientId].sort().join('#');
         const updatedMsgs = [...(state.messages[conversationId] || []), msg];
         ctx.patchState({

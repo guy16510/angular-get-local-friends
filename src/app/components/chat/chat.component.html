@@ -1,57 +1,49 @@
 <div class="chat-container">
-  <!-- Optional header if you want it at the top -->
-  <!--
-  <div class="chat-header">
-    <button mat-icon-button routerLink="/conversations">
-      <mat-icon>arrow_back</mat-icon>
-    </button>
-    <span class="recipient-name">{{ recipientId }}</span>
-  </div>
-  -->
-
+  <!-- Messages area -->
   <div class="chat-messages" #messagesContainer *ngIf="messages$ | async as messages">
-    <div
-      *ngFor="let msg of messages"
-      class="message-wrapper"
-      [ngClass]="{
+    <!-- Loading indicator -->
+    <app-loading *ngIf="loading$ | async; else messagesContent">
+    </app-loading>
+    <ng-template #messagesContent>
+      <!-- Error message -->
+      <ng-container *ngIf="error$ | async as error">
+        <div class="error-message">Error: {{ error }}</div>
+      </ng-container>
+      <!-- Message list -->
+      <div *ngFor="let msg of messages" class="message-wrapper" [ngClass]="{
         'mine': msg.senderId === currentUserId,
         'theirs': msg.senderId !== currentUserId
-      }"
-    >
-      <app-image-display
-        *ngIf="msg.senderId !== currentUserId"
-        [identityId]="msg.senderId"
-        class="avatar left-avatar"
-      ></app-image-display>
+      }">
+        <app-image-display
+          *ngIf="msg.senderId !== currentUserId"
+          [identityId]="msg.senderId"
+          class="avatar left-avatar">
+        </app-image-display>
 
-      <mat-card class="message-bubble">
-        <div class="text">{{ msg.text }}</div>
-        <div class="timestamp">{{ msg.timestamp | date: 'shortTime' }}</div>
-      </mat-card>
+        <mat-card class="message-bubble">
+          <div class="text">{{ msg.text }}</div>
+          <div class="timestamp">{{ msg.timestamp | date: 'shortTime' }}</div>
+        </mat-card>
 
-      <app-image-display
-        *ngIf="msg.senderId === currentUserId"
-        [identityId]="msg.senderId"
-        class="avatar right-avatar"
-      ></app-image-display>
-    </div>
+        <app-image-display
+          *ngIf="msg.senderId === currentUserId"
+          [identityId]="msg.senderId"
+          class="avatar right-avatar">
+        </app-image-display>
+      </div>
+    </ng-template>
   </div>
 
+  <!-- Message input -->
   <div class="chat-input">
     <mat-form-field class="message-field">
       <input
         matInput
         [(ngModel)]="newMessageText"
         placeholder="Type a message..."
-        (keydown.enter)="sendMessage()"
-      />
+        (keydown.enter)="sendMessage()" />
     </mat-form-field>
-    <button
-      mat-icon-button
-      color="primary"
-      (click)="sendMessage()"
-      [disabled]="!newMessageText.trim()"
-    >
+    <button mat-icon-button color="primary" (click)="sendMessage()" [disabled]="!newMessageText.trim()">
       <mat-icon>send</mat-icon>
     </button>
   </div>

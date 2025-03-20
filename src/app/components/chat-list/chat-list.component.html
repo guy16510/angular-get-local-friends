@@ -1,6 +1,9 @@
 <mat-card class="chat-list-card">
-  <mat-card-header>
+  <mat-card-header style="display: flex; justify-content: space-between; align-items: center;">
     <mat-card-title>Your Conversations</mat-card-title>
+    <button mat-icon-button color="primary" (click)="refreshConversations()" matTooltip="Refresh Conversations">
+      <mat-icon>refresh</mat-icon>
+    </button>
   </mat-card-header>
 
   <mat-card-content>
@@ -9,7 +12,6 @@
     <div *ngIf="error$ | async as err" class="error-msg">
       Error: {{ err }}
     </div>
-    <!-- <pre>{{conversations$ | async | json}}</pre> -->
     <ng-container *ngIf="conversations$ | async as conversations">
       <ng-container *ngIf="conversations.length > 0; else noChats">
         <mat-list>

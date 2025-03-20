@@ -12,24 +12,27 @@ import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../shared/material.module';
 import { getNormalizedConversationId } from '../../utils/chat-utils';
 import { ImageDisplayComponent } from '../image-display/image-display.component';
+import { LoadingComponent } from '../shared/loading/loading.component';
 
 @Component({
   selector: 'app-chat',
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, MaterialModule, ImageDisplayComponent]
+  imports: [CommonModule, FormsModule, MaterialModule, ImageDisplayComponent, LoadingComponent]
 })
 export class ChatComponent implements OnInit, OnDestroy {
   @ViewChild('messagesContainer') private messagesContainer!: ElementRef;
   private messagesSub: Subscription | null = null;
+  private sub: Subscription | null = null;
 
   conversationId!: string;
   recipientId!: string;
   messages$!: Observable<ChatMessage[]>;
+  loading$: Observable<boolean> = this.store.select(ChatState.getLoading);
+  error$: Observable<string | null> = this.store.select(ChatState.getError);
   newMessageText: string = '';
   currentUserId: string | null = null;
-  private sub: Subscription | null = null;
 
   constructor(
     private store: Store,

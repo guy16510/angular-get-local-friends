@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { Observable } from 'rxjs';
 import { LoadConversations } from '../../store/actions/chat.actions';
-import { ChatState } from '../../store/states/chat.state';
+import { ChatState, ChatStateModel } from '../../store/states/chat.state';
 import { Conversation } from '../../models/chat';
 import { MaterialModule } from '../../shared/material.module';
 import { CommonModule } from '@angular/common';
@@ -30,6 +30,22 @@ export class ChatListComponent implements OnInit {
   ngOnInit(): void {
     this.currentUserId = this.store.selectSnapshot(AuthState.identityId);
     if (this.currentUserId) {
+      const state = this.store.selectSnapshot((s: { chat: ChatStateModel }) => s.chat);
+      const lastFetched = state.lastFetched;
+      const now = Date.now();
+      const threshold = 300000; // 5 minutes in milliseconds
+
+      if (!lastFetched || (now - lastFetched) > threshold) {
+        this.store.dispatch(new LoadConversations(this.currentUserId));
+      } else {
+        console.log('Using cached conversations.');
+      }
+    }
+  }
+
+  refreshConversations(): void {
+    if (this.currentUserId) {
+      console.log('Refreshing conversations...');
       this.store.dispatch(new LoadConversations(this.currentUserId));
     }
   }
