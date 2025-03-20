@@ -104,20 +104,3 @@ backend.listConversations.resources.lambda.addToRolePolicy(new iam.PolicyStateme
   actions: ['dynamodb:Query'],
   resources: [conversationTableArn, conversationIndexArn]
 }));
-
-
-/** 🔒 S3 Bucket Permissions */
-const bucketNameFromEnv = process.env['AMPLIFY_STORAGE_BUCKET_NAME'];
-const bucketResource = backend.storage.resources.bucket;
-if (bucketResource) {
-  const cfnBucket = bucketResource.node.defaultChild as s3.CfnBucket;
-  if (cfnBucket && cfnBucket.bucketName === bucketNameFromEnv) {
-    cfnBucket.addPropertyOverride("PublicAccessBlockConfiguration", {
-      BlockPublicPolicy: false,
-      BlockPublicAcls: true,
-      IgnorePublicAcls: true,
-      RestrictPublicBuckets: false,
-    });
-    console.log("Bucket policy override applied to bucket:", cfnBucket.bucketName);
-  }
-}
