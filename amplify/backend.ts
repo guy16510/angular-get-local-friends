@@ -70,7 +70,7 @@ everyoneRole.addToPrincipalPolicy(new iam.PolicyStatement({
 
 everyoneRole.addToPrincipalPolicy(new iam.PolicyStatement({
   actions: ['s3:PutObject', 's3:DeleteObject'],
-  resources: [`${bucketArn}/protected/\${cognito-identity.amazonaws.com:sub}/*`],
+  resources: [`${bucketArn}/protected/\${cognito:sub}/*`]
 }));
 
 /** 🔐 AppSync Scoped IAM Policy */

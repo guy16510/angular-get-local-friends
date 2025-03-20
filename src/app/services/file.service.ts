@@ -37,6 +37,7 @@ export class FileService {
   async uploadFile(identityId: string, fileBlob: Blob): Promise<string> {
     const uploadPath = `protected/${identityId}/profile.webp`;
     try {
+      debugger;
       await uploadData({
         path: uploadPath,
         data: fileBlob,
