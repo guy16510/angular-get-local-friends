@@ -1,7 +1,6 @@
 import { defineBackend } from '@aws-amplify/backend';
 import { auth } from './auth/resource';
 import { data } from './data/resource';
-import { storage } from './storage/resource';
 import { findNearbyUsers } from './functions/find-nearby-users/resource';
 import { mutateUserProfile } from './functions/mutate-user-profile/resource';
 import { findPremiumMatches } from './functions/find-premium-matches/resource';
@@ -12,12 +11,10 @@ import { getUserProfile } from './functions/get-user-profile/resource';
 import { getAnimalProfile } from './functions/get-animal-profile/resource';
 import { listMessagesByConversationId } from './functions/list-messages-by-conversation-id/resource';
 import * as iam from 'aws-cdk-lib/aws-iam';
-import * as s3 from 'aws-cdk-lib/aws-s3';
 
 const backend = defineBackend({
   auth,
   data,
-  storage,
   findNearbyUsers,
   mutateUserProfile,
   findPremiumMatches,
@@ -64,11 +61,14 @@ const everyoneRole = iam.Role.fromRoleArn(
 
 const bucketArn = `arn:aws:s3:::${process.env['AMPLIFY_STORAGE_BUCKET_NAME']}`;
 
+// Allow the role to get any object under the protected folder.
 everyoneRole.addToPrincipalPolicy(new iam.PolicyStatement({
   actions: ['s3:GetObject'],
   resources: [`${bucketArn}/protected/*`]
 }));
 
+// Allow the role to put and delete objects under its own folder.
+// The resource ARN uses the Cognito sub variable for dynamic folder names.
 everyoneRole.addToPrincipalPolicy(new iam.PolicyStatement({
   actions: ['s3:PutObject', 's3:DeleteObject'],
   resources: [`${bucketArn}/protected/\${cognito:sub}/*`]
