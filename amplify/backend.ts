@@ -73,7 +73,7 @@ everyoneRole.addToPrincipalPolicy(new iam.PolicyStatement({
   resources: [`${bucketArn}/protected/*`],
   conditions: {
     "StringLike": {
-      "s3:prefix": `protected/\${cognito:username}/*`
+      "s3:prefix": `protected/\${cognito:sub}/*`
     }
   }
 }));
