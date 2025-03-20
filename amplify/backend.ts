@@ -1,6 +1,7 @@
 import { defineBackend } from '@aws-amplify/backend';
 import { auth } from './auth/resource';
 import { data } from './data/resource';
+import {storage} from './storage/resource';
 import { findNearbyUsers } from './functions/find-nearby-users/resource';
 import { mutateUserProfile } from './functions/mutate-user-profile/resource';
 import { findPremiumMatches } from './functions/find-premium-matches/resource';
@@ -15,6 +16,7 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 const backend = defineBackend({
   auth,
   data,
+  storage,
   findNearbyUsers,
   mutateUserProfile,
   findPremiumMatches,
