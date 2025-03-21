@@ -1,11 +1,22 @@
 // ===== amplify/functions/list-conversations/handler.ts =====
 import type { Schema } from '../../data/resource';
 import { getIdentityId } from '../../shared/utils/identity';
-import { toConversation } from '../../shared/mappers/conversationMapper';
+import { randomUUID } from 'crypto';
 
-export const handler: Schema["customListConversations"]["functionHandler"] = async (event:any, context:any) => {
+// Define strict return shape based on actual DB result structure
+type ConversationItem = {
+  id: string;
+  participantA: string;
+  participantB: string;
+  lastMessage: string;
+  lastTimestamp: string;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export const handler = async (event:any, context:any) => {
   const identityId = getIdentityId(event.identity);
-  if (!identityId) throw new Error("Unauthorized: No identity provided.");
+  if (!identityId) throw new Error('Unauthorized: No identity provided.');
 
   const limit = event.arguments?.limit ?? 50;
   const nextTokenA = event.arguments?.nextTokenA || undefined;
@@ -31,28 +42,30 @@ export const handler: Schema["customListConversations"]["functionHandler"] = asy
     })
   ]);
 
-  console.log('[listConversations] fetched A:', resultA?.items?.length || 0);
-  console.log('[listConversations] fetched B:', resultB?.items?.length || 0);
+  console.log('[listConversations] resultA items:', resultA?.items?.length ?? 0);
+  console.log('[listConversations] resultB items:', resultB?.items?.length ?? 0);
 
-  const all = [
+  const all: ConversationItem[] = [
     ...(resultA?.items || []),
     ...(resultB?.items || [])
   ];
 
-  const unique = new Map<string, any>();
+  const unique = new Map<string, ConversationItem>();
   for (const conv of all) {
-    unique.set(conv.id, conv); // dedupe by conversationId
+    unique.set(conv.id, conv);
   }
 
-  const conversations = Array.from(unique.values()).sort((a, b) =>
-    (b.lastTimestamp || '').localeCompare(a.lastTimestamp || '')
-  );
+  const conversations: (ConversationItem | null | undefined)[] = Array.from(unique.values())
+    .sort((a, b) =>
+      (b?.lastTimestamp ?? '').localeCompare(a?.lastTimestamp ?? '')
+    );
 
-  console.log('[listConversations] total unique conversations:', conversations.length);
+  console.log('[listConversations] unique sorted conversations:', conversations.length);
 
   return {
-    items: conversations.map(toConversation),
-    nextTokenA: resultA?.nextToken || null,
-    nextTokenB: resultB?.nextToken || null
+    id: `paginated-conv-${randomUUID()}`,
+    items: conversations,
+    nextTokenA: resultA?.nextToken ?? null,
+    nextTokenB: resultB?.nextToken ?? null
   };
 };

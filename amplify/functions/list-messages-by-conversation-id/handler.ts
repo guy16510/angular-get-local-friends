@@ -1,7 +1,7 @@
 import type { Schema } from '../../data/resource';
 import { getIdentityId } from '../../shared/utils/identity';
 
-export const handler: Schema['customListMessagesByConversationId']['functionHandler'] = async (event:any, context:any) => {
+export const handler = async (event:any, context:any) => {
   const { conversationId, limit = 20, nextToken } = event.arguments;
   const requesterId = getIdentityId(event.identity);
 
