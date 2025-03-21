@@ -3,8 +3,8 @@ export interface ChatMessage {
   conversationId: string;
   senderId: string;
   recipientId: string;
-  text: string;
   timestamp: string;
+  text?: string;
   type?: string;
   mediaUrl?: string;
   status?: string;

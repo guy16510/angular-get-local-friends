@@ -39,8 +39,11 @@ export const handler = async (event: any) => {
     }
 
     existingUserProfile = surveyResult.Items[0];
-    const rawAnswers = unwrapString(existingUserProfile.surveyAnswers);
-    surveyAnswers = JSON.parse(rawAnswers);
+    const rawAnswers =
+    typeof existingUserProfile.surveyAnswers === 'string'
+      ? existingUserProfile.surveyAnswers
+      : unwrapString(existingUserProfile.surveyAnswers);
+  surveyAnswers = JSON.parse(rawAnswers);
 
     if (!surveyAnswers) {
       logger.error('Survey answers are missing for user', { identityId, existingUserProfile });

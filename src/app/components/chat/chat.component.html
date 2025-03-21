@@ -1,16 +1,11 @@
 <div class="chat-container">
-  <!-- Loading indicator at the top -->
   <div class="loading-indicator" *ngIf="loading$ | async">
     <app-loading></app-loading>
   </div>
-
-  <!-- Messages area: shown only when not loading -->
   <div class="chat-messages" #messagesContainer *ngIf="!(loading$ | async)">
-    <!-- Error message -->
     <ng-container *ngIf="error$ | async as error">
       <div class="error-message">Error: {{ error }}</div>
     </ng-container>
-    <!-- Message list -->
     <div *ngFor="let msg of messages$ | async" class="message-wrapper" [ngClass]="{
       'mine': msg.senderId === currentUserId,
       'theirs': msg.senderId !== currentUserId
@@ -34,17 +29,16 @@
     </div>
   </div>
 
-  <!-- Message input -->
   <div class="chat-input">
     <div class="typing-indicator" *ngIf="isOtherUserTyping">
-      <!-- {{ otherUserName }} is typing... -->
     </div>
     <mat-form-field class="message-field">
       <input
         matInput
         [(ngModel)]="newMessageText"
         placeholder="Type a message..."
-        (keydown.enter)="sendMessage()" />
+        (click)="sendMessage()" 
+        [disabled]="!newMessage.trim()" />
     </mat-form-field>
     <button mat-icon-button color="primary" (click)="sendMessage()" [disabled]="!newMessageText.trim()">
       <mat-icon>send</mat-icon>

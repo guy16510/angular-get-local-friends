@@ -1,27 +1,39 @@
-// ===== amplify/functions/list-messages-by-conversation-id/handler.ts =====
-import type { Schema } from '../../data/resource';
-import { getIdentityId } from '../../shared/utils/identity';
+import { generateClient } from "aws-amplify/data";
+import type { Schema } from "../../data/resource";
+import { getIdentityId } from "../../shared/utils/identity";
 
-export const handler: Schema['customListMessagesByConversationId']['functionHandler'] = async (event:any, context:any) => {
+const client = generateClient<Schema>();
+
+export const handler = async (event:any) => {
+  const requesterId = getIdentityId(event.identity); // ✅ original defensive coding preserved
+
   const { conversationId, limit = 50, nextToken } = event.arguments;
-  const requesterId = getIdentityId(event.identity);
 
-  if (!conversationId) throw new Error('Missing conversationId');
-
-  const participants = conversationId.split('#');
-  if (!participants.includes(requesterId)) {
-    throw new Error('Unauthorized: You are not a participant in this conversation');
+  if (!requesterId) {
+    throw new Error("Unauthorized: missing requester ID");
   }
 
-  const result = await context.db.ChatMessage.query.conversationId({
-    conversationId,
-    limit,
-    nextToken,
-    sortDirection: 'ASC'
-  });
+  try {
+    const { data: messages, errors } = await client.models.ChatMessage.list({
+      filter: {
+        conversationId: { eq: conversationId },
+        or: [
+          { senderId: { eq: requesterId } },
+          { recipientId: { eq: requesterId } },
+        ],
+      },
+      limit,
+      nextToken,
+    });
 
-  console.log(`[listMessagesByConversationId] conversationId=${conversationId}, requesterId=${requesterId}, messages=${result.items.length}, nextToken=${result.nextToken}`);
+    if (errors) {
+      console.error("Errors fetching messages:", errors);
+      throw new Error(`Errors fetching messages: ${errors.map(e => e.message).join(", ")}`);
+    }
 
-  // Returning just the array of ChatMessage
-  return result.items || [];
+    return messages;
+  } catch (error) {
+    console.error("Unexpected error fetching messages:", error);
+    throw error;
+  }
 };

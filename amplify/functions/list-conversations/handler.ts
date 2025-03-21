@@ -1,49 +1,55 @@
-// ===== amplify/functions/list-conversations/handler.ts =====
+import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../../data/resource';
 import { getIdentityId } from '../../shared/utils/identity';
-import { toConversation } from '../../shared/mappers/conversationMapper';
 
-export const handler: Schema['customListConversations']['functionHandler'] = async (event:any, context:any) => {
-  const identityId = getIdentityId(event.identity);
-  if (!identityId) throw new Error('Unauthorized: No identity provided.');
+const client = generateClient<Schema>();
 
-  const limit = event.arguments?.limit ?? 50;
-  const nextTokenA = event.arguments?.nextTokenA || undefined;
-  const nextTokenB = event.arguments?.nextTokenB || undefined;
+export const handler = async (event: any) => {
+  const requesterId = getIdentityId(event.identity);
 
-  console.log('[listConversations] identityId:', identityId);
-  console.log('[listConversations] limit:', limit);
-  console.log('[listConversations] nextTokenA:', nextTokenA);
-  console.log('[listConversations] nextTokenB:', nextTokenB);
+  if (!requesterId) {
+    throw new Error('Unauthorized: missing requester ID');
+  }
 
-  const [resultA, resultB] = await Promise.all([
-    context.db.Conversation.query.participantA({
-      participantA: identityId,
-      sortDirection: 'DESC',
-      limit,
-      nextToken: nextTokenA
-    }),
-    context.db.Conversation.query.participantB({
-      participantB: identityId,
-      sortDirection: 'DESC',
-      limit,
-      nextToken: nextTokenB
-    })
-  ]);
+  const { limit = 20, nextTokenA, nextTokenB } = event.arguments;
 
-  const all = [
-    ...(resultA?.items || []),
-    ...(resultB?.items || [])
-  ];
-  
-  // THEN this works fine:
-  const uniqueMap = new Map<string, typeof all[number]>();
-  for (const conv of all) uniqueMap.set(conv.id, conv);
-  
-  const conversations = Array.from(uniqueMap.values()).sort((a, b) =>
-    (b.lastTimestamp ?? '').localeCompare(a.lastTimestamp ?? '')
-  );
+  try {
+    const [
+      { data: conversationsA, nextToken: newNextTokenA, errors: errorsA },
+      { data: conversationsB, nextToken: newNextTokenB, errors: errorsB },
+    ] = await Promise.all([
+      client.models.Conversation.list({
+        filter: { participantA: { eq: requesterId } },
+        limit,
+        nextToken: nextTokenA,
+      }),
+      client.models.Conversation.list({
+        filter: { participantB: { eq: requesterId } },
+        limit,
+        nextToken: nextTokenB,
+      }),
+    ]);
 
-  console.log(`[listConversations] total unique: ${conversations.length}`);
-  return conversations.map(toConversation);
+    if (errorsA?.length || errorsB?.length) {
+      console.error('Errors fetching conversations:', { errorsA, errorsB });
+      throw new Error('Error fetching conversations');
+    }
+
+    // Merge results from both queries
+    const combinedConversations = [...(conversationsA ?? []), ...(conversationsB ?? [])];
+
+    // Manually sort by lastTimestamp descending (newest first)
+    combinedConversations.sort(
+      (a, b) => new Date(b.lastTimestamp).getTime() - new Date(a.lastTimestamp).getTime()
+    );
+
+    return {
+      conversations: combinedConversations.slice(0, limit),
+      nextTokenA: newNextTokenA,
+      nextTokenB: newNextTokenB,
+    };
+  } catch (error) {
+    console.error('Unexpected error fetching conversations:', error);
+    throw error;
+  }
 };

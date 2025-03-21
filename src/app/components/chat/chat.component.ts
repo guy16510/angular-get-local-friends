@@ -14,6 +14,7 @@ import { getNormalizedConversationId } from '../../utils/chat-utils';
 import { ImageDisplayComponent } from '../image-display/image-display.component';
 import { LoadingComponent } from '../shared/loading/loading.component';
 
+
 @Component({
   selector: 'app-chat',
   templateUrl: './chat.component.html',
@@ -25,13 +26,14 @@ export class ChatComponent implements OnInit, OnDestroy {
   @ViewChild('messagesContainer') private messagesContainer!: ElementRef;
   private messagesSub: Subscription | null = null;
   private sub: Subscription | null = null;
+  newMessage: string = '';
 
   isOtherUserTyping: boolean = false; //TODO link up to api
   conversationId!: string;
   recipientId!: string;
   messages$!: Observable<ChatMessage[]>;
   loading$: Observable<boolean> = this.store.select(ChatState.getLoading);
-  error$: Observable<string | null> = this.store.select(ChatState.getError);
+  error$: Observable<string | null> = this.store.select(ChatState.getError);  
   newMessageText: string = '';
   currentUserId: string | null = null;
 
@@ -54,26 +56,23 @@ export class ChatComponent implements OnInit, OnDestroy {
     }
 
     this.store.dispatch(new LoadMessages(this.conversationId));
-    this.messages$ = this.store.select(state =>
-      ChatState.messagesForConversation(state.chat)(this.conversationId)
-    );
-
+    this.messages$ = this.store.select(state => ChatState.messagesForConversation(state.chat)(this.conversationId));
+    
     // Subscribe to messages$ changes to auto-scroll
     this.messagesSub = this.messages$.subscribe(() => {
       setTimeout(() => this.scrollToBottom(), 0);
     });
 
-    this.sub = this.chatService.subscribeToMessagesForConversation(this.conversationId).subscribe((message) => {
-      this.store.dispatch(new AppendMessage(message));
+    this.chatService.subscribeToMessagesForConversation(this.conversationId, (message: ChatMessage) => {
+      this.store.dispatch(new AppendMessage(this.conversationId, message));
     });
   }
 
-  sendMessage(): void {
-    if (!this.newMessageText.trim()) return;
-    this.store.dispatch(new SendMessage(this.recipientId, this.newMessageText));
-    this.newMessageText = '';
-  }
-
+    sendMessage() {
+      if (!this.newMessage.trim()) return;
+      this.store.dispatch(new SendMessage(this.conversationId, this.newMessage));
+      this.newMessage = '';
+    }
   private scrollToBottom() {
     if (this.messagesContainer) {
       const el = this.messagesContainer.nativeElement;
@@ -86,3 +85,4 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.messagesSub?.unsubscribe();
   }
 }
+

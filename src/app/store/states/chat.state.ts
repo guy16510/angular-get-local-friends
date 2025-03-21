@@ -1,159 +1,159 @@
-// @ts-nocheck
-import { State, Action, StateContext, Selector, Store } from '@ngxs/store';
-import { Injectable } from '@angular/core';
-import { ChatService } from '../../services/chat.service';
-import { AppendMessage, LoadConversations, LoadMessages, SendMessage, UpdatePresenceStatus, UpdateTypingStatus } from '../actions/chat.actions';
-import { appendPaginatedMessages, getNormalizedConversationId } from '../../utils/chat-utils';
-import { tap } from 'rxjs/operators';
-import { from, EMPTY, Observable } from 'rxjs';
-import { switchMap, catchError } from 'rxjs/operators';
-import { ChatStateModel, ChatMessage, Conversation } from '../../models/chat';
+// // @ts-nocheck
+// import { State, Action, StateContext, Selector, Store } from '@ngxs/store';
+// import { Injectable } from '@angular/core';
+// import { ChatService } from '../../services/chat.service';
+// import { AppendMessage, LoadConversations, LoadMessages, SendMessage} from '../actions/chat.actions';
+// import { appendPaginatedMessages, getNormalizedConversationId } from '../../utils/chat-utils';
+// import { tap } from 'rxjs/operators';
+// import { from, EMPTY, Observable } from 'rxjs';
+// import { switchMap, catchError } from 'rxjs/operators';
+// import { ChatStateModel, ChatMessage, Conversation } from '../../models/chat';
 
-export interface ChatMessage {
-  conversationId: string;
-  senderId: string;
-  recipientId: string;
-  text: string;
-  timestamp: string;
-}
+// export interface ChatMessage {
+//   conversationId: string;
+//   senderId: string;
+//   recipientId: string;
+//   text: string;
+//   timestamp: string;
+// }
 
-export interface Conversation {
-  conversationId: string;
-  id: string;
-  participantA: string;
-  participantB: string;
-  lastMessage: string;
-  lastTimestamp: string;
-}
+// export interface Conversation {
+//   conversationId: string;
+//   id: string;
+//   participantA: string;
+//   participantB: string;
+//   lastMessage: string;
+//   lastTimestamp: string;
+// }
 
-export interface ChatStateModel {
-  conversations: Conversation[];
-  messages: Record<string, ChatMessage[]>;
-  loading: boolean;
-  error: string | null;
-  lastFetched: number | null; // timestamp in milliseconds
-}
+// export interface ChatStateModel {
+//   conversations: Conversation[];
+//   messages: Record<string, ChatMessage[]>;
+//   loading: boolean;
+//   error: string | null;
+//   lastFetched: number | null; // timestamp in milliseconds
+// }
 
 
-@State<ChatStateModel>({
-  name: 'chat',
-  defaults: {
-    conversations: [],
-    messages: {},
-    typingStatus: {},
-    presence: {},
-    pagination: {},
-    loading: false,
-    error: null,
-    lastFetched: null
-  }
-})
-@Injectable()
-export class ChatState {
-  constructor(private chatService: ChatService, private store: Store) {}
+// @State<ChatStateModel>({
+//   name: 'chat',
+//   defaults: {
+//     conversations: [],
+//     messages: {},
+//     typingStatus: {},
+//     presence: {},
+//     pagination: {},
+//     loading: false,
+//     error: null,
+//     lastFetched: null
+//   }
+// })
+// @Injectable()
+// export class ChatState {
+//   constructor(private chatService: ChatService, private store: Store) {}
 
-  @Selector()
-  static messages(state: ChatStateModel) {
-    return state.messages;
-  }
+//     @Selector()
+//   static messages(state: ChatStateModel) {
+//     return state.messages;
+//   }
 
-  @Selector()
-  static getConversations(state: ChatStateModel) {
-    return state.conversations;
-  }
+//   @Selector()
+//   static getConversations(state: ChatStateModel) {
+//     return state.conversations;
+//   }
   
-  @Selector()
-  static getLoading(state: ChatStateModel) {
-    return state.loading;
-  }
+//   @Selector()
+//   static getLoading(state: ChatStateModel) {
+//     return state.loading;
+//   }
   
-  @Selector()
-  static getError(state: ChatStateModel) {
-    return state.error;
-  }
+//   @Selector()
+//   static getError(state: ChatStateModel) {
+//     return state.error;
+//   }
 
-  @Selector()
-  static messagesForConversation(state: ChatStateModel) {
-    return (conversationId: string) => state.messages[conversationId] || [];
-  }
+//   @Selector()
+//   static messagesForConversation(state: ChatStateModel) {
+//     return (conversationId: string) => state.messages[conversationId] || [];
+//   }
 
-  @Selector()
-  static nextTokenForConversation(state: ChatStateModel) {
-    return (conversationId: string) => state.pagination[conversationId] || null;
-  }
+//   @Selector()
+//   static nextTokenForConversation(state: ChatStateModel) {
+//     return (conversationId: string) => state.pagination[conversationId] || null;
+//   }
 
-  @Action(LoadConversations)
-  loadConversations(ctx: StateContext<ChatStateModel>) {
-    ctx.patchState({ loading: true, error: null });
-    return this.chatService.listConversations().pipe(
-      tap(conversations => ctx.patchState({ conversations, loading: false, lastFetched: Date.now() })),
-      catchError(err => {
-        ctx.patchState({ loading: false, error: err?.message || 'Load failed' });
-        return EMPTY;
-      })
-    );
-  }
+//   @Action(LoadConversations)
+//   loadConversations(ctx: StateContext<ChatStateModel>) {
+//     ctx.patchState({ loading: true, error: null });
+//     return this.chatService.listConversations().pipe(
+//       tap(conversations => ctx.patchState({ conversations, loading: false, lastFetched: Date.now() })),
+//       catchError(err => {
+//         ctx.patchState({ loading: false, error: err?.message || 'Load failed' });
+//         return EMPTY;
+//       })
+//     );
+//   }
 
-  @Action(LoadMessages)
-  loadMessages(ctx: StateContext<ChatStateModel>, { conversationId, limit, nextToken }: LoadMessages) {
-    return this.chatService.listMessagesByConversationId(conversationId, limit, nextToken).pipe(
-      tap(({ items, nextToken }) => {
-        const state = ctx.getState();
-        const existing = state.messages[conversationId] || [];
-        ctx.patchState({
-          messages: {
-            ...state.messages,
-            [conversationId]: appendPaginatedMessages(existing, items)
-          },
-          pagination: {
-            ...state.pagination,
-            [conversationId]: nextToken
-          }
-        });
-      })
-    );
-  }
+//   @Action(LoadMessages)
+//   loadMessages(ctx: StateContext<ChatStateModel>, { conversationId, limit, nextToken }: LoadMessages) {
+//     return this.chatService.listMessagesByConversationId(conversationId, limit, nextToken).pipe(
+//       tap(({ items, nextToken }) => {
+//         const state = ctx.getState();
+//         const existing = state.messages[conversationId] || [];
+//         ctx.patchState({
+//           messages: {
+//             ...state.messages,
+//             [conversationId]: appendPaginatedMessages(existing, items)
+//           },
+//           pagination: {
+//             ...state.pagination,
+//             [conversationId]: nextToken
+//           }
+//         });
+//       })
+//     );
+//   }
 
-  @Action(AppendMessage)
-  appendMessage(ctx: StateContext<ChatStateModel>, { message }: AppendMessage) {
-    const state = ctx.getState();
-    const existing = state.messages[message.conversationId] || [];
-    const isDuplicate = existing.some(m => m.id === message.id);
-    if (!isDuplicate) {
-      ctx.patchState({
-        messages: {
-          ...state.messages,
-          [message.conversationId]: [...existing, message]
-        }
-      });
-    }
-  }
+//   @Action(AppendMessage)
+//   appendMessage(ctx: StateContext<ChatStateModel>, { message }: AppendMessage) {
+//     const state = ctx.getState();
+//     const existing = state.messages[message.conversationId] || [];
+//     const isDuplicate = existing.some(m => m.id === message.id);
+//     if (!isDuplicate) {
+//       ctx.patchState({
+//         messages: {
+//           ...state.messages,
+//           [message.conversationId]: [...existing, message]
+//         }
+//       });
+//     }
+//   }
 
-  @Action(SendMessage)
-  sendMessage(ctx: StateContext<ChatStateModel>, { recipientId, text }: SendMessage) {
-    return this.chatService.sendMessage(recipientId, text).pipe(
-      tap(msg => this.store.dispatch(new AppendMessage(msg)))
-    );
-  }
+//   @Action(SendMessage)
+//   sendMessage(ctx: StateContext<ChatStateModel>, { recipientId, text }: SendMessage) {
+//     return this.chatService.sendMessage(recipientId, text).pipe(
+//       tap(msg => this.store.dispatch(new AppendMessage(msg)))
+//     );
+//   }
 
-  @Action(UpdateTypingStatus)
-  updateTyping(ctx: StateContext<ChatStateModel>, { conversationId, userId, isTyping }: UpdateTypingStatus) {
-    const state = ctx.getState();
-    const typingUsers = new Set(state.typingStatus[conversationId] || []);
-    isTyping ? typingUsers.add(userId) : typingUsers.delete(userId);
-    ctx.patchState({
-      typingStatus: { ...state.typingStatus, [conversationId]: Array.from(typingUsers) }
-    });
-  }
+//   @Action(UpdateTypingStatus)
+//   updateTyping(ctx: StateContext<ChatStateModel>, { conversationId, userId, isTyping }: UpdateTypingStatus) {
+//     const state = ctx.getState();
+//     const typingUsers = new Set(state.typingStatus[conversationId] || []);
+//     isTyping ? typingUsers.add(userId) : typingUsers.delete(userId);
+//     ctx.patchState({
+//       typingStatus: { ...state.typingStatus, [conversationId]: Array.from(typingUsers) }
+//     });
+//   }
 
-  @Action(UpdatePresenceStatus)
-  updatePresence(ctx: StateContext<ChatStateModel>, { userId, status }: UpdatePresenceStatus) {
-    const state = ctx.getState();
-    ctx.patchState({
-      presence: { ...state.presence, [userId]: status }
-    });
-  }
-}
+//   @Action(UpdatePresenceStatus)
+//   updatePresence(ctx: StateContext<ChatStateModel>, { userId, status }: UpdatePresenceStatus) {
+//     const state = ctx.getState();
+//     ctx.patchState({
+//       presence: { ...state.presence, [userId]: status }
+//     });
+//   }
+// }
 
 // @State<ChatStateModel>({
 //   name: 'chat',
@@ -276,3 +276,109 @@ export class ChatState {
 //     );
 //   }
 // }
+
+
+import { Injectable } from '@angular/core';
+import { State, Action, StateContext, Selector, Store } from '@ngxs/store';
+import { ChatService } from '../../services/chat.service';
+import { Conversation, ChatMessage } from '../../models/chat';
+import {
+  LoadConversations, LoadMessages, AddMessage,
+  AcknowledgeMessage, MarkMessageAsRead, SetTypingStatus
+} from '../actions/chat.actions';
+import { patch, append } from '@ngxs/store/operators';
+import { AuthState } from './auth.state';
+
+export interface ChatStateModel {
+  conversations: Conversation[];
+  messages: Record<string, ChatMessage[]>;
+  loading: boolean;
+  error?: string | null;
+  lastFetched?: number | null; // optional, if you're tracking lastFetched timestamps
+}
+
+@State<ChatStateModel>({
+  name: 'chat',
+  defaults: {
+    conversations: [],
+    messages: {},
+    loading: false,
+    error: null,
+    lastFetched: null
+  }
+})
+@Injectable()
+export class ChatState {
+  constructor(private chatService: ChatService, private store: Store) {}
+
+  @Selector()
+static getConversations(state: ChatStateModel): Conversation[] {
+  return state.conversations;
+}
+
+  @Selector()
+  static getLoading(state: ChatStateModel): boolean {
+    return state.loading;
+  }
+
+  @Selector()
+  static getError(state: ChatStateModel): string | null {
+    return state.error || null;
+  }
+
+  @Selector()
+  static messagesForConversation(state: ChatStateModel) {
+    return (conversationId: string) => state.messages[conversationId] || [];
+  }
+
+  @Selector()
+  static conversations(state: ChatStateModel): Conversation[] {
+    return state.conversations;
+  }
+
+  @Selector()
+  static messages(state: ChatStateModel): Record<string, ChatMessage[]> {
+    return state.messages;
+  }
+
+  @Action(LoadConversations)
+  async loadConversations(ctx: StateContext<ChatStateModel>, action: LoadConversations) {
+    ctx.patchState({ loading: true });
+    const conversations = await this.chatService.getConversations(action.limit);
+    ctx.patchState({ conversations, loading: false });
+  }
+
+  @Action(LoadMessages)
+  async loadMessages(ctx: StateContext<ChatStateModel>, { conversationId, limit }: LoadMessages) {
+    const messages = await this.chatService.getMessages(conversationId, limit);
+    ctx.setState(patch({
+      messages: patch({ [conversationId]: messages })
+    }));
+  }
+
+  @Action(AddMessage)
+  async addMessage(ctx: StateContext<ChatStateModel>, { conversationId, message }: AddMessage) {
+    const sentMessage = await this.chatService.sendMessage(conversationId, message.text!);
+    ctx.setState(patch({
+      messages: patch({ [conversationId]: append([sentMessage]) })
+    }));
+  }
+
+  @Action(AcknowledgeMessage)
+  async acknowledgeMessage(_: any, { messageId }: AcknowledgeMessage) {
+    await this.chatService.acknowledgeMessage(messageId);
+  }
+
+  @Action(MarkMessageAsRead)
+  async markMessageAsRead(_: any, { messageId, conversationId, userId }: MarkMessageAsRead) {
+    await this.chatService.markMessageAsRead(messageId, conversationId, userId);
+  }
+
+  @Action(SetTypingStatus)
+  async setTypingStatus(_: any, { conversationId, isTyping }: SetTypingStatus) {
+    const userId = this.store.selectSnapshot(AuthState.identityId);
+    if(userId){
+      await this.chatService.setTypingStatus(conversationId, userId, isTyping);
+    }
+  }
+}
