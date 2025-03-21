@@ -3,15 +3,21 @@
     <!-- LEFT COLUMN: USER INFO -->
     <section class="bio-info">
       <div class="about-section">
-        <h3 class="label">About</h3>
-        <h1 class="username">{{ profile.userName|| 'User' }}</h1>
-        <div class="meta">
-          <span *ngIf="profile.age">{{ profile.age }}</span>
-          <span *ngIf="profile.city"> | {{ profile.city }}</span>
+        <div class="about-text">
+          <h3 class="label">About</h3>
+          <h1 class="username">{{ profile.userName || 'User' }}</h1>
+          <div class="meta">
+            <span *ngIf="profile.age">{{ profile.age }}</span>
+            <span *ngIf="profile.city"> | {{ profile.city }}</span>
+          </div>
+          <p class="description">
+            {{ getBioFromSurvey(profile.surveyAnswers) }}
+          </p>
         </div>
-        <p class="description">
-          {{ getBioFromSurvey(profile.surveyAnswers) }}
-        </p>
+        <!-- Mobile: small profile image to the right of the about text -->
+        <div class="mobile-profile-photo">
+          <app-image-display [identityId]="identityId"></app-image-display>
+        </div>
       </div>
 
       <div class="likes-section" *ngIf="getLikesFromSurvey(profile.surveyAnswers).length">
@@ -37,7 +43,7 @@
       </div>
     </section>
 
-    <!-- RIGHT COLUMN: IMAGE -->
+    <!-- RIGHT COLUMN (Desktop only): IMAGE -->
     <section class="bio-image">
       <app-image-display [identityId]="identityId"></app-image-display>
     </section>

@@ -1,3 +1,4 @@
+// ===== amplify/data/resource.ts =====
 import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
 import { findNearbyUsers } from '../functions/find-nearby-users/resource';
 import { mutateUserProfile } from '../functions/mutate-user-profile/resource';
@@ -8,26 +9,50 @@ import { findPremiumMatches } from '../functions/find-premium-matches/resource';
 import { createMessage } from '../functions/create-message/resource';
 import { listConversations } from '../functions/list-conversations/resource';
 import { listMessagesByConversationId } from '../functions/list-messages-by-conversation-id/resource';
-import { identity } from 'rxjs';
+import { setTypingStatus } from '../functions/set-typing-status/resource';
+import { setUserPresence } from '../functions/set-user-presence/resource';
+import { acknowledgeMessage } from '../functions/acknowledge-message/resource';
+import { markMessageAsRead } from '../functions/mark-message-as-read/resource';
 
 /* --- Define Models --- */
 
-const ChatMessage = a.model({
-  id: a.string().required(),
+export const ChatMessage = a.model({
+  id: a.id().required(),
   conversationId: a.string().required(),
-  timestamp: a.datetime().required(),
   senderId: a.string().required(),
   recipientId: a.string().required(),
-  text: a.string().required(),
+  text: a.string(),
+  timestamp: a.datetime().required(),
+  type: a.string().default('text'),
+  mediaUrl: a.string(),
+  status: a.string().default('sent'),
   createdAt: a.datetime(),
   updatedAt: a.datetime(),
 })
-.secondaryIndexes(index => [
-  index('conversationId').sortKeys(['timestamp'])
-])
+.secondaryIndexes(index => [index('conversationId').sortKeys(['timestamp'])])
 .authorization(allow => [allow.authenticated()]);
 
-const Conversation = a.model({
+export const TypingStatus = a.model({
+  conversationId: a.string().required(),
+  userId: a.string().required(),
+  isTyping: a.boolean().required(),
+  updatedAt: a.datetime().required(),
+}).authorization(allow => [allow.authenticated().to(['create', 'update', 'read'])]);
+
+export const UserPresence = a.model({
+  userId: a.string().required(),
+  status: a.string().default('offline'),
+  lastSeen: a.datetime(),
+}).authorization(allow => [allow.authenticated().to(['create', 'update', 'read'])]);
+
+export const MessageReaction = a.model({
+  messageId: a.string().required(),
+  userId: a.string().required(),
+  emoji: a.string().required(),
+  createdAt: a.datetime().required(),
+}).authorization(allow => [allow.authenticated().to(['create', 'read'])]);
+
+export const Conversation = a.model({
   id: a.string().required(),
   participantA: a.string().required(),
   participantB: a.string().required(),
@@ -47,7 +72,7 @@ const Contact = a.model({
   name: a.string().required(),
   summary: a.string().required(),
   createdAt: a.datetime().required(),
-  ipAddress: a.string().required()
+  ipAddress: a.string().required(),
 }).authorization(allow => [
   allow.guest().to(['create']),
   allow.authenticated().to(['create']),
@@ -61,111 +86,111 @@ const NearbyUsersResponse = a.model({
   success: a.boolean().required(),
   error: a.string(),
   nearbyUsers: a.json().array(),
-  nextToken: a.string()
+  nextToken: a.string(),
 })
 .identifier(['id'])
 .authorization(allow => [allow.authenticated()]);
 
+const PaginatedChatMessages = a.customType({
+  items: a.ref('ChatMessage').array().required(),
+  nextToken: a.string()
+});
+
 /* --- Define Operations --- */
 
 const schema = a.schema({
-  findNearbyUsers: a
-    .query()
-    .arguments({
-      lat: a.float().required(),
-      lng: a.float().required(),
-      radius: a.float().required(),
-      nextToken: a.string()
-    })
+  findNearbyUsers: a.query()
+    .arguments({ lat: a.float().required(), lng: a.float().required(), radius: a.float().required(), nextToken: a.string() })
     .returns(a.ref('NearbyUsersResponse'))
     .handler(a.handler.function(findNearbyUsers))
     .authorization(allow => [allow.authenticated()]),
 
-  mutateUserProfile: a
-    .mutation()
-    .arguments({
-      action: a.string().required(),
-      payload: a.string().required()
-    })
+  mutateUserProfile: a.mutation()
+    .arguments({ action: a.string().required(), payload: a.string().required() })
     .returns(a.json())
     .handler(a.handler.function(mutateUserProfile))
     .authorization(allow => [allow.authenticated()]),
 
-  updateUserImages: a
-    .mutation()
-    .arguments({
-      images: a.string().array()
-    })
+  updateUserImages: a.mutation()
+    .arguments({ images: a.string().array() })
     .returns(a.string())
     .handler(a.handler.function(updateUserImages))
     .authorization(allow => [allow.authenticated()]),
 
-  fetchUserProfile: a
-    .query()
-    .arguments({
-      identityId: a.string().required()
-    })
+  fetchUserProfile: a.query()
+    .arguments({ identityId: a.string().required() })
     .returns(a.json())
     .handler(a.handler.function(getUserProfile))
     .authorization(allow => [allow.authenticated()]),
 
-  fetchAnimalProfile: a
-    .query()
+  fetchAnimalProfile: a.query()
     .arguments({})
     .returns(a.json())
     .handler(a.handler.function(getAnimalProfile))
     .authorization(allow => [allow.authenticated()]),
 
-  findPremiumMatches: a
-    .query()
-    .arguments({
-      lat: a.float().required(),
-      lng: a.float().required(),
-      radius: a.float().required(),
-      surveyFilter: a.json().required(),
-      nextToken: a.string()
-    })
+  findPremiumMatches: a.query()
+    .arguments({ lat: a.float().required(), lng: a.float().required(), radius: a.float().required(), surveyFilter: a.json().required(), nextToken: a.string() })
     .returns(a.string())
     .handler(a.handler.function(findPremiumMatches))
     .authorization(allow => [allow.authenticated()]),
 
-  createMessage: a
-    .mutation()
-    .arguments({ 
-      recipientId: a.string().required(),
-      text: a.string().required() 
-    })
+  createMessage: a.mutation()
+    .arguments({ recipientId: a.string().required(), text: a.string().required() })
     .returns(a.ref('ChatMessage'))
     .handler(a.handler.function(createMessage))
     .authorization(allow => [allow.authenticated()]),
 
-  onCreateMessage: a
-    .subscription()
+  onCreateMessage: a.subscription()
     .for(a.ref('createMessage'))
     .handler(a.handler.function(createMessage))
     .authorization(allow => [allow.authenticated()]),
 
-  customListConversations: a
-    .query()
+  customListConversations: a.query()
     .arguments({})
     .returns(a.ref('Conversation').array())
     .handler(a.handler.function(listConversations))
     .authorization(allow => [allow.authenticated()]),
 
-  customListMessagesByConversationId: a
-    .query()
-    .arguments({ 
-      conversationId: a.string().required() 
+  customListMessagesByConversationId: a.query()
+    .arguments({
+      conversationId: a.string().required(),
+      limit: a.integer(),
+      nextToken: a.string()
     })
-    .returns(a.ref('ChatMessage').array())
+    .returns(a.ref('PaginatedChatMessages'))
     .handler(a.handler.function(listMessagesByConversationId))
     .authorization(allow => [allow.authenticated()]),
 
-  // Models
+  setTypingStatus: a.mutation()
+    .arguments({ conversationId: a.string().required(), userId: a.string().required(), isTyping: a.boolean().required() })
+    .returns(a.ref('TypingStatus'))
+    .handler(a.handler.function(setTypingStatus))
+    .authorization(allow => [allow.authenticated()]),
+
+  setUserPresence: a.mutation()
+    .arguments({ userId: a.string().required(), status: a.string().required() })
+    .returns(a.ref('UserPresence'))
+    .handler(a.handler.function(setUserPresence))
+    .authorization(allow => [allow.authenticated()]),
+
+  acknowledgeMessage: a.mutation()
+    .arguments({ messageId: a.string().required() })
+    .returns(a.ref('ChatMessage'))
+    .handler(a.handler.function(acknowledgeMessage))
+    .authorization(allow => [allow.authenticated()]),
+
+  markMessageAsRead: a.mutation()
+    .arguments({ conversationId: a.string().required(), userId: a.string().required(), messageId: a.string().required() })
+    .returns(a.ref('ChatMessage'))
+    .handler(a.handler.function(markMessageAsRead))
+    .authorization(allow => [allow.authenticated()]),
+
   ChatMessage,
   Conversation,
   Contact,
   NearbyUsersResponse,
+  PaginatedChatMessages,
 });
 
 export type Schema = ClientSchema<typeof schema>;

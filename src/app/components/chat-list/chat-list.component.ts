@@ -36,7 +36,7 @@ export class ChatListComponent implements OnInit {
       const threshold = 300000; // 5 minutes in milliseconds
 
       if (!lastFetched || (now - lastFetched) > threshold) {
-        this.store.dispatch(new LoadConversations(this.currentUserId));
+        this.store.dispatch(new LoadConversations());
       } else {
         console.log('Using cached conversations.');
       }
@@ -46,7 +46,7 @@ export class ChatListComponent implements OnInit {
   refreshConversations(): void {
     if (this.currentUserId) {
       console.log('Refreshing conversations...');
-      this.store.dispatch(new LoadConversations(this.currentUserId));
+      this.store.dispatch(new LoadConversations());
     }
   }
 

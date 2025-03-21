@@ -4,7 +4,7 @@
   display: flex;
   justify-content: center;
   padding: 2rem;
-  margin-top:70px;
+  margin-top: 70px;
 
   .bio-layout {
     display: flex;
@@ -27,6 +27,17 @@
     flex: 1;
     padding: 2rem;
     min-width: 300px;
+
+    .about-section {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .about-text {
+      flex: 1;
+    }
 
     .label {
       font-weight: 600;
@@ -81,6 +92,42 @@
     }
   }
   
+  .bio-image {
+    flex: 1;
+    background: var(--bio-image-bg, #f8f8f8);
+    padding: 2rem;
+    display: block;
+
+    img {
+      width: 100%;
+      height: auto;
+      max-height: 700px;
+      object-fit: cover;
+      border-radius: 1rem;
+    }
+
+    @media (max-width: 768px) {
+      display: none;
+    }
+  }
+
+  .mobile-profile-photo {
+    display: none; // Hide by default on desktop
+    @media (max-width: 768px) {
+      display: block;
+      width: 80px;  // smaller size for mobile
+      height: 80px;
+      flex-shrink: 0;
+      // Optionally, add margin to separate from the text
+      margin-left: 1rem;
+
+      app-image-display {
+        width: 100%;
+        height: 100%;
+      }
+    }
+  }
+
   .message-button {
     margin-top: 1rem;
     padding: 0.75rem 1.5rem;
@@ -89,29 +136,5 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-  }
-
-  .bio-image {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex: 1;
-    background: var(--bio-image-bg, #f8f8f8);
-    padding: 2rem;
-    max-width: 100%;
-  
-    img {
-      width: 100%;
-      height: auto;
-      max-height: 700px;
-      object-fit: cover;
-      border-radius: 1rem;
-    }
-  
-    @media (max-width: 768px) {
-      img {
-        max-height: 400px;
-      }
-    }
   }
 }

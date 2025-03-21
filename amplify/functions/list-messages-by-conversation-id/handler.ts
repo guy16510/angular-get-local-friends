@@ -1,34 +1,28 @@
-import { DynamoDB } from 'aws-sdk';
-import { getIdentityId } from '../../shared/utils/identity'; // Import the function
+import type { Schema } from '../../data/resource';
+import { getIdentityId } from '../../shared/utils/identity';
 
-const docClient = new DynamoDB.DocumentClient();
-const TABLE_NAME = process.env['CHAT_MESSAGE_TABLE_NAME'] || ''; // Ensure this matches actual env var name
-
-export const handler = async (event: any) => {
-  const { conversationId, senderId } = event.arguments;
-
-  // Get the identityId from the event context (requester’s identity)
+export const handler: Schema['customListMessagesByConversationId']['functionHandler'] = async (event:any, context:any) => {
+  const { conversationId, limit = 20, nextToken } = event.arguments;
   const requesterId = getIdentityId(event.identity);
 
-  // Normalize the conversationId, including the requesterId as part of it
-  const normalizedConversationId = senderId && requesterId
-    ? [senderId, requesterId].sort().join('#')
-    : conversationId;
+  if (!conversationId) throw new Error('Missing conversationId');
 
-  // If the requester is part of the conversation, their identityId should be part of the normalized ID
-  if (!normalizedConversationId.includes(requesterId)) {
+  // Validate requester is part of the conversation
+  const participants = conversationId.split('#');
+  if (!participants.includes(requesterId)) {
     throw new Error('Unauthorized: You are not a participant in this conversation');
   }
 
-  const result = await docClient.query({
-    TableName: TABLE_NAME,
-    IndexName: 'chatMessagesByConversationIdAndTimestamp',
-    KeyConditionExpression: 'conversationId = :cid',
-    ExpressionAttributeValues: {
-      ':cid': normalizedConversationId,
-    },
-    ScanIndexForward: true
-  }).promise();
+  const result = await context.db.ChatMessage.query.conversationId({
+    conversationId,
+    limit,
+    nextToken,
+    sortDirection: 'ASC',
+    indexName: 'chatMessagesByConversationIdAndTimestamp'
+  });
 
-  return result.Items || [];
+  return {
+    items: result.items || [],
+    nextToken: result.nextToken || null
+  };
 };

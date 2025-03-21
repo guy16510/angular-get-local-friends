@@ -1,75 +1,49 @@
-import { DynamoDB } from 'aws-sdk';
+// ===== amplify/functions/create-message/handler.ts =====
 import type { Schema } from '../../data/resource';
 import { getIdentityId } from '../../shared/utils/identity';
 import { toChatMessage } from '../../shared/mappers/chatMessageMapper';
 
-const docClient = new DynamoDB.DocumentClient();
-
-export const handler: Schema["createMessage"]["functionHandler"] = async (event) => {
+export const handler: Schema['createMessage']['functionHandler'] = async (event, context: any) => {
   const { recipientId, text } = event.arguments;
 
-  // Retrieve the unique user identifier (sub) from the signed request
   const senderId = getIdentityId(event.identity);
-  if (!senderId) {
-    throw new Error("Unauthorized: Missing identity");
-  }
+  if (!senderId) throw new Error("Unauthorized: Missing identity");
 
-  if (!recipientId || !text) {
-    throw new Error("Missing recipientId or text");
-  }
+  if (!recipientId || !text) throw new Error("Missing recipientId or text");
 
-  // Compose conversationId consistently (sorted for uniqueness)
   const [participantA, participantB] = [senderId, recipientId].sort();
   const conversationId = `${participantA}#${participantB}`;
-
   const timestamp = new Date().toISOString();
   const messageId = `${conversationId}-${timestamp}`;
 
   const chatMessage = {
     id: messageId,
     conversationId,
-    timestamp,
     senderId,
     recipientId,
     text,
+    timestamp,
+    type: 'text',
+    status: 'sent',
     createdAt: timestamp,
     updatedAt: timestamp
   };
 
-  // Write message to ChatMessage table
-  const chatTableName = process.env['CHAT_MESSAGE_TABLE_NAME'];
-  if (!chatTableName) throw new Error("Missing CHAT_MESSAGE_TABLE_NAME");
+  // Create message
+  await context.db.ChatMessage.create(chatMessage);
 
-  await docClient.put({
-    TableName: chatTableName,
-    Item: chatMessage
-  }).promise();
+  // Update conversation summary (upsert)
+  const existing = await context.db.Conversation.get({ id: conversationId });
 
-  // Upsert conversation summary
-  const conversationTableName = process.env['CONVERSATION_TABLE_NAME'];
-  if (!conversationTableName) throw new Error("Missing CONVERSATION_TABLE_NAME");
-
-  await docClient.update({
-    TableName: conversationTableName,
-    Key: { id: conversationId },
-    UpdateExpression: `
-      set participantA = :pa,
-          participantB = :pb,
-          lastMessage = :lm,
-          lastTimestamp = :lt,
-          createdAt = if_not_exists(createdAt, :createdAt),
-          updatedAt = :updatedAt
-    `,
-    ExpressionAttributeValues: {
-      ":pa": participantA,
-      ":pb": participantB,
-      ":lm": text,
-      ":lt": timestamp,
-      ":createdAt": timestamp,
-      ":updatedAt": timestamp
-    },
-    ReturnValues: "ALL_NEW"
-  }).promise();
+  await context.db.Conversation.update({
+    id: conversationId,
+    participantA,
+    participantB,
+    lastMessage: text,
+    lastTimestamp: timestamp,
+    createdAt: existing?.createdAt || timestamp,
+    updatedAt: timestamp
+  });
 
   return toChatMessage(chatMessage);
-};
+}; 

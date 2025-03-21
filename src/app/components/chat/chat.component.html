@@ -36,6 +36,9 @@
 
   <!-- Message input -->
   <div class="chat-input">
+    <div class="typing-indicator" *ngIf="isOtherUserTyping">
+      <!-- {{ otherUserName }} is typing... -->
+    </div>
     <mat-form-field class="message-field">
       <input
         matInput

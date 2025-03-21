@@ -26,6 +26,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   private messagesSub: Subscription | null = null;
   private sub: Subscription | null = null;
 
+  isOtherUserTyping: boolean = false; //TODO link up to api
   conversationId!: string;
   recipientId!: string;
   messages$!: Observable<ChatMessage[]>;
