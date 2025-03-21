@@ -71,9 +71,13 @@ everyoneRole.addToPrincipalPolicy(new iam.PolicyStatement({
 
 // Allow the role to put and delete objects under its own folder.
 // The resource ARN uses the Cognito sub variable for dynamic folder names.
+// everyoneRole.addToPrincipalPolicy(new iam.PolicyStatement({
+//   actions: ['s3:PutObject', 's3:DeleteObject'],
+//   resources: [`${bucketArn}/protected/\${cognito:sub}/*`]
+// }));
 everyoneRole.addToPrincipalPolicy(new iam.PolicyStatement({
   actions: ['s3:PutObject', 's3:DeleteObject'],
-  resources: [`${bucketArn}/protected/\${cognito:sub}/*`]
+  resources: [`${bucketArn}/protected/*`]
 }));
 
 /** 🔐 AppSync Scoped IAM Policy */

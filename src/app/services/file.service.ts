@@ -42,12 +42,15 @@ export class FileService {
         data: fileBlob,
         options: { contentType: 'image/webp' },
       });
-
+      
+      // Clear the old cached image
+      localStorage.removeItem(`user-image-${identityId}`);
+      
       const urlResult = await getUrl({ path: uploadPath });
+      // fetchAndCache will now store the new image in the cache via cacheImage
       const base64 = await this.fetchAndCache(urlResult.url.toString(), identityId);
-
       console.log('✅ Uploaded and cached successfully:', uploadPath);
-
+      
       return base64;
     } catch (error: any) {
       throw new Error(`Failed to upload image: ${error.message || error}`);

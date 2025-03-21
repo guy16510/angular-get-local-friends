@@ -1,9 +1,9 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ViewChild } from '@angular/core';
 import { Store, Select } from '@ngxs/store';
 import { Observable } from 'rxjs';
 import { UserProfile } from '../../models/user-profile.model';
 import { UserProfileState } from '../../store/states/user-profile.state';
-import { LoadUserProfile, SubmitUserProfile } from '../../store/actions/user-profile.actions';
+import { LoadAnimalProfile, LoadUserProfile, SubmitUserProfile } from '../../store/actions/user-profile.actions';
 import { MaterialModule } from '../../shared/material.module';
 import { UploadComponent } from '../image-upload/image-upload.component';
 import { LoadingComponent } from '../shared/loading/loading.component';
@@ -26,6 +26,8 @@ export class MyProfileComponent implements OnInit {
   profileImage: string = '/assets/images/noImageUploaded.jpg';
   private store = inject(Store);
 
+  @ViewChild('uploadComponent') uploadComponent!: UploadComponent;
+
   constructor(private fileService: FileService) {}
   
   async ngOnInit(): Promise<void> {
@@ -37,9 +39,6 @@ export class MyProfileComponent implements OnInit {
     this.store.dispatch(new SubmitUserProfile(updatedProfile));
   }
 
-  
-  //TODO
-// add ability to update the user images.
   async loadUserProfile() {
     try {
       const identityId = this.store.selectSnapshot(AuthState.identityId) || '';
@@ -50,5 +49,19 @@ export class MyProfileComponent implements OnInit {
     } catch (error) {
       console.error(error);
     }
+  }
+
+  // Trigger the file input in the hidden upload component.
+  triggerEdit(): void {
+    this.uploadComponent.triggerFileInput();
+  }
+
+  // Update the profile image once the upload component notifies us.
+  onImageUpdated(newImage: string): void {
+    this.profileImage = newImage;
+  }
+
+  viewAnimalProfile(): void {
+    this.store.dispatch(new LoadAnimalProfile());
   }
 }

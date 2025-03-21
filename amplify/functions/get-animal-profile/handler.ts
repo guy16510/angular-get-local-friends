@@ -28,10 +28,7 @@ export const handler = async (event: any) => {
     let surveyAnswers: SurveyAnswers;
     let existingUserProfile: any = null;
     
-    if (event.body) {
-      // If this is an API Gateway event with a body
-      surveyAnswers = JSON.parse(event.body).answers;
-    } else if (event.surveyId) {
+    if (identityId) {
       // If this is a direct Lambda invocation with a surveyId
       // Using the GSI to query by identityId
       const surveyResult = await docClient.query({

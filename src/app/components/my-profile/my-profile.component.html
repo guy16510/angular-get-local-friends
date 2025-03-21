@@ -10,15 +10,22 @@
   <ng-container *ngIf="!(loading$ | async) && !(error$ | async)">
     <mat-card-content>
       <div class="profile-header">
-        <img
-          [src]="profileImage"
-          alt="Profile Picture"
-          class="profile-image"
-          (error)="profileImage = '/assets/images/noImageUploaded.jpg'"
-        />
+        <div class="profile-image-wrapper">
+          <img
+            [src]="profileImage"
+            alt="Profile Picture"
+            class="profile-image"
+            (error)="profileImage = '/assets/images/noImageUploaded.jpg'"
+          />
+          <mat-icon class="edit-icon" (click)="triggerEdit()">edit</mat-icon>
+        </div>
+        <button mat-raised-button color="accent" class="animal-profile-button" (click)="viewAnimalProfile()">
+          View Animal Profile
+        </button>
       </div>
 
-      <app-upload-image></app-upload-image>
+      <!-- Hidden Upload Component used only for file selection -->
+      <app-upload-image #uploadComponent (imageUpdated)="onImageUpdated($event)" style="display: none;"></app-upload-image>
 
       <div class="profile-details" *ngIf="userProfile$ | async as userProfile">
         <h2>Profile Information</h2>

@@ -50,4 +50,16 @@ export class UserProfileService {
       })
     );
   }
+
+  getAnimalProfile(): Observable<{ selfProfile: any; seekingProfile: any }> {
+    return from(client.queries.fetchAnimalProfile({})).pipe(
+      map(result => {
+        if (result.errors && result.errors.length) {
+          throw new Error('GraphQL error: ' + result.errors.join(', '));
+        }
+        // Expect the response to include selfProfile and seekingProfile fields.
+        return result.data as { selfProfile: any; seekingProfile: any };
+      })
+    );
+  }
 }

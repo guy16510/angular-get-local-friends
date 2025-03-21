@@ -8,6 +8,9 @@ import {
   LoadUserProfileFail,
   SubmitUserProfile,
   UpdateUserOnlineStatus,
+  LoadAnimalProfile,
+  LoadAnimalProfileFail,
+  LoadAnimalProfileSuccess,
   
 } from '../actions/user-profile.actions';
 import { tap, catchError } from 'rxjs/operators';
@@ -139,6 +142,43 @@ export class UserProfileState {
       catchError(err => {
         console.error('Online Ping failed:', err.message);
         return of(); // swallow errors silently
+      })
+    );
+  }
+  @Action(LoadAnimalProfile)
+  loadAnimalProfile(ctx: StateContext<UserProfileStateModel>) {
+    const identityId = this.store.selectSnapshot(AuthState.identityId);
+    if (!identityId) {
+      ctx.dispatch(new LoadAnimalProfileFail('Missing identityId'));
+      return of();
+    }
+  
+    ctx.patchState({ loading: true, error: null });
+    return this.userProfileService.getAnimalProfile().pipe(
+      tap((response) => {
+        // Retrieve the current profile (if any)
+        const currentProfile = ctx.getState().profile;
+        
+        // Build an updated profile ensuring all required fields are provided.
+        const updatedProfile: UserProfile = {
+          identityId: identityId,
+          locationLat: currentProfile?.locationLat ?? 0,        // Default to 0 if not set
+          locationLng: currentProfile?.locationLng ?? 0,        // Default to 0 if not set
+          userName: currentProfile?.userName ?? '',             // Default to empty string if not set
+          surveyAnswers: currentProfile?.surveyAnswers ?? [],   // Default to empty array if not set
+          lastOnlineAt: currentProfile?.lastOnlineAt,           // Preserve if already set (optional)
+          selfProfile: response.selfProfile,                    // From animal profile service
+          seekingProfile: response.seekingProfile,              // From animal profile service
+          animalProfileLoadedAt: new Date().toISOString()       // Current timestamp
+        };
+  
+        ctx.patchState({ profile: updatedProfile, loading: false, error: null });
+        ctx.dispatch(new LoadAnimalProfileSuccess(response));
+      }),
+      catchError(err => {
+        ctx.patchState({ loading: false, error: err.message || 'Unknown error' });
+        ctx.dispatch(new LoadAnimalProfileFail(err));
+        return of(err);
       })
     );
   }

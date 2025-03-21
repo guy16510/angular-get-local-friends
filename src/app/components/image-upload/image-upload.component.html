@@ -1,15 +1,8 @@
 <div class="upload-container">
-  <h2>Upload Your Images</h2>
-  <input type="file" (change)="onFileChange($event)" multiple accept="image/*" />
+  <!-- Hidden file input to be triggered by the pencil icon -->
+  <input #fileInput type="file" (change)="onFileChange($event)" accept="image/*" hidden />
+  <!-- You can keep this button for manual testing if needed -->
   <button mat-raised-button color="primary" (click)="upload()" [disabled]="!selectedFile">
     Upload
   </button>
-  <div *ngIf="uploadedUrls.length">
-    <h3>Uploaded Images</h3>
-    <mat-grid-list cols="3" rowHeight="100px" gutterSize="16px">
-      <mat-grid-tile *ngFor="let url of uploadedUrls">
-        <img [src]="url" alt="Uploaded Image" style="width: 100%; height: 100%; object-fit: cover;" />
-      </mat-grid-tile>
-    </mat-grid-list>
-  </div>
 </div>

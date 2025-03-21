@@ -147,11 +147,6 @@ This project is licensed under the MIT License.
     - add spirit animal that user is, and what they are looking for
 - add social share badge.
 
-- TimeStamp when they login. 
-    - to show last online?
+- add permisions back to S3.. 
+    - Can't get identity userid to have permissions to PUT.. Tried everything.
 
-
-
-- AMPLIFY
-    - update all chat to leverage permissions based on array of strings.
-        - I would add now, however, i'm working I will mess with it more then working on the overall functionality.

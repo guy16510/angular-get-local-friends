@@ -8,6 +8,9 @@ export interface UserProfile {
       answer: string;
   }[];
   lastOnlineAt?: string; 
+  selfProfile?: string;
+  seekingProfile?: string;
+  animalProfileLoadedAt?: string;
 }
 
 export interface UserProfileStateModel {

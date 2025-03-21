@@ -1,37 +1,37 @@
 <div class="chat-container">
-  <!-- Messages area -->
-  <div class="chat-messages" #messagesContainer *ngIf="messages$ | async as messages">
-    <!-- Loading indicator -->
-    <app-loading *ngIf="loading$ | async; else messagesContent">
-    </app-loading>
-    <ng-template #messagesContent>
-      <!-- Error message -->
-      <ng-container *ngIf="error$ | async as error">
-        <div class="error-message">Error: {{ error }}</div>
-      </ng-container>
-      <!-- Message list -->
-      <div *ngFor="let msg of messages" class="message-wrapper" [ngClass]="{
-        'mine': msg.senderId === currentUserId,
-        'theirs': msg.senderId !== currentUserId
-      }">
-        <app-image-display
-          *ngIf="msg.senderId !== currentUserId"
-          [identityId]="msg.senderId"
-          class="avatar left-avatar">
-        </app-image-display>
+  <!-- Loading indicator at the top -->
+  <div class="loading-indicator" *ngIf="loading$ | async">
+    <app-loading></app-loading>
+  </div>
 
-        <mat-card class="message-bubble">
-          <div class="text">{{ msg.text }}</div>
-          <div class="timestamp">{{ msg.timestamp | date: 'shortTime' }}</div>
-        </mat-card>
+  <!-- Messages area: shown only when not loading -->
+  <div class="chat-messages" #messagesContainer *ngIf="!(loading$ | async)">
+    <!-- Error message -->
+    <ng-container *ngIf="error$ | async as error">
+      <div class="error-message">Error: {{ error }}</div>
+    </ng-container>
+    <!-- Message list -->
+    <div *ngFor="let msg of messages$ | async" class="message-wrapper" [ngClass]="{
+      'mine': msg.senderId === currentUserId,
+      'theirs': msg.senderId !== currentUserId
+    }">
+      <app-image-display
+        *ngIf="msg.senderId !== currentUserId"
+        [identityId]="msg.senderId"
+        class="avatar left-avatar">
+      </app-image-display>
 
-        <app-image-display
-          *ngIf="msg.senderId === currentUserId"
-          [identityId]="msg.senderId"
-          class="avatar right-avatar">
-        </app-image-display>
-      </div>
-    </ng-template>
+      <mat-card class="message-bubble">
+        <div class="text">{{ msg.text }}</div>
+        <div class="timestamp">{{ msg.timestamp | date: 'shortTime' }}</div>
+      </mat-card>
+
+      <app-image-display
+        *ngIf="msg.senderId === currentUserId"
+        [identityId]="msg.senderId"
+        class="avatar right-avatar">
+      </app-image-display>
+    </div>
   </div>
 
   <!-- Message input -->

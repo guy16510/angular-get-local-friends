@@ -1,32 +1,20 @@
-import { Component } from '@angular/core';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { Component, Output, EventEmitter, ViewChild, ElementRef } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { FileService } from '../../services/file.service';
-import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatGridTile, MatGridList } from '@angular/material/grid-list';
-import { MatInputModule } from '@angular/material/input';
-import { CommonModule } from '@angular/common';
 import { Store } from '@ngxs/store';
 import { AuthState } from '../../store/states/auth.state';
 import { SetUserProfileImage } from '../../store/actions/auth.actions';
 
 @Component({
-    selector: 'app-upload-image',
-    templateUrl: './image-upload.component.html',
-    styleUrls: ['./image-upload.component.css'],
-    imports: [
-        CommonModule,
-        MatGridTile,
-        MatGridList,
-        MatFormFieldModule,
-        MatInputModule,
-        MatButtonModule,
-        MatSnackBarModule
-    ]
+  selector: 'app-upload-image',
+  templateUrl: './image-upload.component.html',
+  styleUrls: ['./image-upload.component.css']
 })
 export class UploadComponent {
+  @Output() imageUpdated = new EventEmitter<string>();
+  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
+
   selectedFile?: File;
-  uploadedUrls: string[] = []; // Initialize uploadedUrls as an empty array
 
   constructor(
     private fileService: FileService,
@@ -38,7 +26,13 @@ export class UploadComponent {
     const file: File = event.target.files[0];
     if (file) {
       this.selectedFile = file;
+      this.upload(); // Auto-trigger upload on file selection
     }
+  }
+
+  // This method lets the parent trigger the file input programmatically.
+  triggerFileInput(): void {
+    this.fileInput.nativeElement.click();
   }
 
   async upload(): Promise<void> {
@@ -55,10 +49,11 @@ export class UploadComponent {
   
     try {
       const webpBlob = await this.fileService.convertToWebP(this.selectedFile);
-      const uploadUrl = await this.fileService.uploadFile(identityId, webpBlob);
-  
-      this.store.dispatch(new SetUserProfileImage(uploadUrl));
+      const uploadResult = await this.fileService.uploadFile(identityId, webpBlob);
+      debugger;
+      this.store.dispatch(new SetUserProfileImage(uploadResult));
       this.snackBar.open('Profile image uploaded successfully!', 'Close', { duration: 3000 });
+      this.imageUpdated.emit(uploadResult);
     } catch (error: any) {
       console.error('Upload error:', error);
       this.snackBar.open(error.message || 'An error occurred during upload.', 'Close', { duration: 5000 });

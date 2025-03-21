@@ -24,3 +24,18 @@ export class UpdateUserOnlineStatus {
   static readonly type = '[UserProfile] Online Ping';
   constructor() {} // No args needed — identityId comes from AuthState
 }
+
+export class LoadAnimalProfile {
+  static readonly type = '[UserProfile] Load Animal Profile';
+  constructor() {}
+}
+
+export class LoadAnimalProfileSuccess {
+  static readonly type = '[UserProfile] Load Animal Profile Success';
+  constructor(public payload: { selfProfile: any; seekingProfile: any }) {}
+}
+
+export class LoadAnimalProfileFail {
+  static readonly type = '[UserProfile] Load Animal Profile Fail';
+  constructor(public error: any) {}
+}
