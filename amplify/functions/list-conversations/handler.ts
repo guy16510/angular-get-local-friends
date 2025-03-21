@@ -1,56 +1,65 @@
-// For amplify/functions/list-conversations/handler.ts
-import { generateClient } from '@aws-amplify/api';
-import type { Schema } from '../../data/resource';
+import { DynamoDB } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
 import { getIdentityId } from '../../shared/utils/identity';
+import { sanitizeBigInts } from '../../shared/utils/sanitize';
+
+const TABLE_NAME = process.env['AMPLIFY_CONVERSATION_TABLE_NAME']!;
+if (!TABLE_NAME) throw new Error("Missing environment variable: AMPLIFY_CONVERSATION_TABLE_NAME");
+
+const ddbClient = new DynamoDB({});
+const docClient = DynamoDBDocument.from(ddbClient);
 
 export const handler = async (event: any) => {
   const requesterId = getIdentityId(event.identity);
-  if (!requesterId) {
-    throw new Error('Unauthorized: missing requester ID');
-  }
+  if (!requesterId) throw new Error("Unauthorized: missing requester ID");
 
   const { limit = 20, nextTokenA, nextTokenB } = event.arguments;
 
   try {
-    // The client needs to be created inside the Lambda's environment
-    // In Gen 2, the Lambda gets proper credentials automatically when deployed
-    // No need for explicit configuration
-    const client = generateClient<Schema>({
-      authMode: 'userPool'
-    });
-
-    // Query using the filter – your schema's secondary indexes will be used automatically.
+    // Query the Conversation table using the secondary indexes for participantA and participantB
     const [resultA, resultB] = await Promise.all([
-      client.models.Conversation.list({
-        filter: { participantA: { eq: requesterId } },
-        limit,
-        nextToken: nextTokenA,
+      docClient.query({
+        TableName: TABLE_NAME,
+        IndexName: 'conversationsByParticipantAAndLastTimestamp',  // Ensure this matches the index name in your DynamoDB (from your schema)
+        KeyConditionExpression: 'participantA = :participant',
+        ExpressionAttributeValues: {
+          ':participant': requesterId,
+        },
+        ExclusiveStartKey: nextTokenA ? JSON.parse(nextTokenA) : undefined,
+        Limit: limit,
       }),
-      client.models.Conversation.list({
-        filter: { participantB: { eq: requesterId } },
-        limit,
-        nextToken: nextTokenB,
+      docClient.query({
+        TableName: TABLE_NAME,
+        IndexName: 'conversationsByParticipantBAndLastTimestamp',  // Ensure this matches the index name in your DynamoDB (from your schema)
+        KeyConditionExpression: 'participantB = :participant',
+        ExpressionAttributeValues: {
+          ':participant': requesterId,
+        },
+        ExclusiveStartKey: nextTokenB ? JSON.parse(nextTokenB) : undefined,
+        Limit: limit,
       }),
     ]);
 
-    if (resultA.errors || resultB.errors) {
-      console.error('Errors fetching conversations:', resultA.errors, resultB.errors);
-      throw new Error('Error fetching conversations');
-    }
-
-    // Merge results from both queries
-    const conversationsA = resultA.data ?? [];
-    const conversationsB = resultB.data ?? [];
+    const conversationsA = resultA.Items || [];
+    const conversationsB = resultB.Items || [];
     const combinedConversations = [...conversationsA, ...conversationsB];
 
-    // Re-sort by lastTimestamp
-    combinedConversations.sort(
-      (a, b) => new Date(b.lastTimestamp).getTime() - new Date(a.lastTimestamp).getTime()
+    // Since each query returns items sorted by lastTimestamp in ascending order (per your index),
+    // we manually sort the merged list descending (newest first).
+    combinedConversations.sort((a, b) =>
+      new Date(b['lastTimestamp']).getTime() - new Date(a['lastTimestamp']).getTime()
     );
 
-    return combinedConversations.slice(0, limit);
-  } catch (error) {
-    console.error('Unexpected error fetching conversations:', error);
-    throw error;
+    // Sanitize items (if needed) to handle BigInts
+    const sanitized = combinedConversations.map(item => sanitizeBigInts(item));
+
+    return {
+      conversations: sanitized.slice(0, limit),
+      nextTokenA: resultA.LastEvaluatedKey ? JSON.stringify(resultA.LastEvaluatedKey) : null,
+      nextTokenB: resultB.LastEvaluatedKey ? JSON.stringify(resultB.LastEvaluatedKey) : null,
+    };
+  } catch (err) {
+    console.error("[listConversations] Error:", err);
+    throw new Error("Internal server error");
   }
 };
