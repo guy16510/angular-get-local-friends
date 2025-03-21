@@ -44,10 +44,8 @@ export class ChatListComponent implements OnInit {
   }
 
   refreshConversations(): void {
-    if (this.currentUserId) {
-      console.log('Refreshing conversations...');
-      this.store.dispatch(new LoadConversations());
-    }
+    console.log('Refreshing conversations...');
+    this.store.dispatch(new LoadConversations());
   }
 
   openConversation(convo: Conversation): void {

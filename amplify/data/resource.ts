@@ -96,6 +96,12 @@ const PaginatedChatMessages = a.customType({
   nextToken: a.string()
 });
 
+const PaginatedConversations = a.customType({
+  items: a.ref('Conversation').array().required(),
+  nextTokenA: a.string(),
+  nextTokenB: a.string()
+});
+
 /* --- Define Operations --- */
 
 const schema = a.schema({
@@ -147,8 +153,12 @@ const schema = a.schema({
     .authorization(allow => [allow.authenticated()]),
 
   customListConversations: a.query()
-    .arguments({})
-    .returns(a.ref('Conversation').array())
+    .arguments({
+      limit: a.integer(),
+      nextTokenA: a.string(),
+      nextTokenB: a.string()
+    })
+    .returns(a.ref('PaginatedConversations'))
     .handler(a.handler.function(listConversations))
     .authorization(allow => [allow.authenticated()]),
 
@@ -191,6 +201,10 @@ const schema = a.schema({
   Contact,
   NearbyUsersResponse,
   PaginatedChatMessages,
+  PaginatedConversations,
+  TypingStatus,
+  UserPresence,
+  MessageReaction
 });
 
 export type Schema = ClientSchema<typeof schema>;
