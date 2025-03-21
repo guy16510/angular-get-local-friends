@@ -91,13 +91,13 @@ const NearbyUsersResponse = a.model({
 .identifier(['id'])
 .authorization(allow => [allow.authenticated()]);
 
-const PaginatedChatMessages = a.model({
+const PaginatedChatMessages = a.customType({
   id: a.id().required(), // dummy ID field (required for model)
   items: a.ref('ChatMessage').array().required(),
   nextToken: a.string()
 });
 
-const PaginatedConversations = a.model({
+const PaginatedConversations = a.customType({
   id: a.id().required(),
   items: a.ref('Conversation').array().required(),
   nextTokenA: a.string(),
