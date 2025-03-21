@@ -3,8 +3,8 @@ import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
 import { getIdentityId } from '../../shared/utils/identity';
 import { sanitizeBigInts } from '../../shared/utils/sanitize';
 
-const TABLE_NAME = process.env['AMPLIFY_CONVERSATION_TABLE_NAME']!;
-if (!TABLE_NAME) throw new Error("Missing environment variable: AMPLIFY_CONVERSATION_TABLE_NAME");
+const TABLE_NAME = process.env['CONVERSATION_TABLE_NAME']!;
+if (!TABLE_NAME) throw new Error("Missing environment variable: CONVERSATION_TABLE_NAME");
 
 const ddbClient = new DynamoDB({});
 const docClient = DynamoDBDocument.from(ddbClient);

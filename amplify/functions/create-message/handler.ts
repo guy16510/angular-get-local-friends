@@ -3,8 +3,8 @@ import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
 import { getIdentityId } from '../../shared/utils/identity';
 import { toChatMessage } from '../../shared/mappers/chatMessageMapper';
 
-const CHAT_MESSAGE_TABLE_NAME = process.env['CHAT_MESSAGE_TABLE_NAME'] || process.env['AMPLIFY_CHAT_MESSAGE_TABLE_NAME'];
-const CONVERSATION_TABLE_NAME = process.env['CONVERSATION_TABLE_NAME'] || process.env['AMPLIFY_CONVERSATION_TABLE_NAME'];
+const CHAT_MESSAGE_TABLE_NAME = process.env['CHAT_MESSAGE_TABLE_NAME'];
+const CONVERSATION_TABLE_NAME = process.env['CONVERSATION_TABLE_NAME'];
 
 if (!CHAT_MESSAGE_TABLE_NAME) throw new Error("Missing environment variable: CHAT_MESSAGE_TABLE_NAME");
 if (!CONVERSATION_TABLE_NAME) throw new Error("Missing environment variable: CONVERSATION_TABLE_NAME");
