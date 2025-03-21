@@ -11,10 +11,6 @@ import { listConversations } from './functions/list-conversations/resource';
 import { getUserProfile } from './functions/get-user-profile/resource';
 import { getAnimalProfile } from './functions/get-animal-profile/resource';
 import { listMessagesByConversationId } from './functions/list-messages-by-conversation-id/resource';
-import { setTypingStatus } from './functions/set-typing-status/resource';
-import { setUserPresence } from './functions/set-user-presence/resource';
-import { acknowledgeMessage } from './functions/acknowledge-message/resource';
-import { markMessageAsRead } from './functions/mark-message-as-read/resource';
 import * as iam from 'aws-cdk-lib/aws-iam';
 
 const backend = defineBackend({
@@ -29,14 +25,8 @@ const backend = defineBackend({
   listConversations,
   getUserProfile,
   getAnimalProfile,
-  listMessagesByConversationId,
-  setTypingStatus,
-  setUserPresence,
-  acknowledgeMessage,
-  markMessageAsRead,
+  listMessagesByConversationId
 });
-
-
 
 /** 🔐 User Profile Table (Geo-Enabled) — External DynamoDB Table */
 const userProfileTableArn = `arn:aws:dynamodb:us-east-1:${process.env['AWS_ACCOUNT_ID']}:table/${process.env['AMPLIFY_USER_PROFILE_TABLE_NAME']}`;
