@@ -1,12 +1,10 @@
-import { generateClient } from 'aws-amplify/data';
+// For amplify/functions/list-conversations/handler.ts
+import { generateClient } from '@aws-amplify/api';
 import type { Schema } from '../../data/resource';
 import { getIdentityId } from '../../shared/utils/identity';
 
-const client = generateClient<Schema>();
-
 export const handler = async (event: any) => {
   const requesterId = getIdentityId(event.identity);
-
   if (!requesterId) {
     throw new Error('Unauthorized: missing requester ID');
   }
@@ -14,10 +12,15 @@ export const handler = async (event: any) => {
   const { limit = 20, nextTokenA, nextTokenB } = event.arguments;
 
   try {
-    const [
-      { data: conversationsA, nextToken: newNextTokenA, errors: errorsA },
-      { data: conversationsB, nextToken: newNextTokenB, errors: errorsB },
-    ] = await Promise.all([
+    // The client needs to be created inside the Lambda's environment
+    // In Gen 2, the Lambda gets proper credentials automatically when deployed
+    // No need for explicit configuration
+    const client = generateClient<Schema>({
+      authMode: 'userPool'
+    });
+
+    // Query using the filter – your schema's secondary indexes will be used automatically.
+    const [resultA, resultB] = await Promise.all([
       client.models.Conversation.list({
         filter: { participantA: { eq: requesterId } },
         limit,
@@ -30,24 +33,22 @@ export const handler = async (event: any) => {
       }),
     ]);
 
-    if (errorsA?.length || errorsB?.length) {
-      console.error('Errors fetching conversations:', { errorsA, errorsB });
+    if (resultA.errors || resultB.errors) {
+      console.error('Errors fetching conversations:', resultA.errors, resultB.errors);
       throw new Error('Error fetching conversations');
     }
 
     // Merge results from both queries
-    const combinedConversations = [...(conversationsA ?? []), ...(conversationsB ?? [])];
+    const conversationsA = resultA.data ?? [];
+    const conversationsB = resultB.data ?? [];
+    const combinedConversations = [...conversationsA, ...conversationsB];
 
-    // Manually sort by lastTimestamp descending (newest first)
+    // Re-sort by lastTimestamp
     combinedConversations.sort(
       (a, b) => new Date(b.lastTimestamp).getTime() - new Date(a.lastTimestamp).getTime()
     );
 
-    return {
-      conversations: combinedConversations.slice(0, limit),
-      nextTokenA: newNextTokenA,
-      nextTokenB: newNextTokenB,
-    };
+    return combinedConversations.slice(0, limit);
   } catch (error) {
     console.error('Unexpected error fetching conversations:', error);
     throw error;

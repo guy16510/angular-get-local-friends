@@ -2,8 +2,6 @@ import { generateClient } from "aws-amplify/data";
 import type { Schema } from "../../data/resource";
 import { getIdentityId } from "../../shared/utils/identity";
 
-const client = generateClient<Schema>();
-
 export const handler = async (event:any) => {
   const requesterId = getIdentityId(event.identity); // ✅ original defensive coding preserved
 
@@ -14,6 +12,10 @@ export const handler = async (event:any) => {
   }
 
   try {
+   const client = generateClient<Schema>({
+      authMode: 'userPool'
+    });
+    
     const { data: messages, errors } = await client.models.ChatMessage.list({
       filter: {
         conversationId: { eq: conversationId },

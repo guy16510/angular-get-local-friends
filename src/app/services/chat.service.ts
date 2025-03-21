@@ -83,12 +83,19 @@ import { Schema } from '../../../amplify/data/resource';
 
 @Injectable({ providedIn: 'root' })
 export class ChatService {
-  private client = generateClient<Schema>();
+  private client = generateClient<Schema>({
+    authMode: 'userPool',
+  });
 
   async getConversations(limit: number): Promise<Conversation[]> {
     const res = await this.client.queries.customListConversations({ limit });
     return (res.data as Conversation[]) || [];
   }
+  // async getConversations(limit: number): Promise<Conversation[]> {
+  //   const res = await this.client.queries.customListConversations({ limit });
+  //   // No need to access 'data' since the Lambda returns the array directly
+  //   return res as Conversation[] || [];
+  // }
   
   async getMessages(conversationId: string, limit: number): Promise<ChatMessage[]> {
     const res = await this.client.queries.customListMessagesByConversationId({ conversationId, limit });
