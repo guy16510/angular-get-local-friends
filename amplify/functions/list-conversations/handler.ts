@@ -1,20 +1,9 @@
 // ===== amplify/functions/list-conversations/handler.ts =====
 import type { Schema } from '../../data/resource';
 import { getIdentityId } from '../../shared/utils/identity';
-import { randomUUID } from 'crypto';
+import { toConversation } from '../../shared/mappers/conversationMapper';
 
-// Define strict return shape based on actual DB result structure
-type ConversationItem = {
-  id: string;
-  participantA: string;
-  participantB: string;
-  lastMessage: string;
-  lastTimestamp: string;
-  createdAt?: string;
-  updatedAt?: string;
-};
-
-export const handler = async (event:any, context:any) => {
+export const handler: Schema['customListConversations']['functionHandler'] = async (event:any, context:any) => {
   const identityId = getIdentityId(event.identity);
   if (!identityId) throw new Error('Unauthorized: No identity provided.');
 
@@ -42,30 +31,19 @@ export const handler = async (event:any, context:any) => {
     })
   ]);
 
-  console.log('[listConversations] resultA items:', resultA?.items?.length ?? 0);
-  console.log('[listConversations] resultB items:', resultB?.items?.length ?? 0);
-
-  const all: ConversationItem[] = [
+  const all = [
     ...(resultA?.items || []),
     ...(resultB?.items || [])
   ];
+  
+  // THEN this works fine:
+  const uniqueMap = new Map<string, typeof all[number]>();
+  for (const conv of all) uniqueMap.set(conv.id, conv);
+  
+  const conversations = Array.from(uniqueMap.values()).sort((a, b) =>
+    (b.lastTimestamp ?? '').localeCompare(a.lastTimestamp ?? '')
+  );
 
-  const unique = new Map<string, ConversationItem>();
-  for (const conv of all) {
-    unique.set(conv.id, conv);
-  }
-
-  const conversations: (ConversationItem | null | undefined)[] = Array.from(unique.values())
-    .sort((a, b) =>
-      (b?.lastTimestamp ?? '').localeCompare(a?.lastTimestamp ?? '')
-    );
-
-  console.log('[listConversations] unique sorted conversations:', conversations.length);
-
-  return {
-    id: `paginated-conv-${randomUUID()}`,
-    items: conversations,
-    nextTokenA: resultA?.nextToken ?? null,
-    nextTokenB: resultB?.nextToken ?? null
-  };
+  console.log(`[listConversations] total unique: ${conversations.length}`);
+  return conversations.map(toConversation);
 };

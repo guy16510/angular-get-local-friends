@@ -1,13 +1,13 @@
+// ===== amplify/functions/list-messages-by-conversation-id/handler.ts =====
 import type { Schema } from '../../data/resource';
 import { getIdentityId } from '../../shared/utils/identity';
 
-export const handler = async (event:any, context:any) => {
-  const { conversationId, limit = 20, nextToken } = event.arguments;
+export const handler: Schema['customListMessagesByConversationId']['functionHandler'] = async (event:any, context:any) => {
+  const { conversationId, limit = 50, nextToken } = event.arguments;
   const requesterId = getIdentityId(event.identity);
 
   if (!conversationId) throw new Error('Missing conversationId');
 
-  // Validate requester is part of the conversation
   const participants = conversationId.split('#');
   if (!participants.includes(requesterId)) {
     throw new Error('Unauthorized: You are not a participant in this conversation');
@@ -17,12 +17,11 @@ export const handler = async (event:any, context:any) => {
     conversationId,
     limit,
     nextToken,
-    sortDirection: 'ASC',
-    indexName: 'chatMessagesByConversationIdAndTimestamp'
+    sortDirection: 'ASC'
   });
 
-  return {
-    items: result.items || [],
-    nextToken: result.nextToken || null
-  };
+  console.log(`[listMessagesByConversationId] conversationId=${conversationId}, requesterId=${requesterId}, messages=${result.items.length}, nextToken=${result.nextToken}`);
+
+  // Returning just the array of ChatMessage
+  return result.items || [];
 };

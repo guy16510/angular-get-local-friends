@@ -1,4 +1,3 @@
-// ===== amplify/data/resource.ts =====
 import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
 import { findNearbyUsers } from '../functions/find-nearby-users/resource';
 import { mutateUserProfile } from '../functions/mutate-user-profile/resource';
@@ -15,7 +14,6 @@ import { acknowledgeMessage } from '../functions/acknowledge-message/resource';
 import { markMessageAsRead } from '../functions/mark-message-as-read/resource';
 
 /* --- Define Models --- */
-
 export const ChatMessage = a.model({
   id: a.id().required(),
   conversationId: a.string().required(),
@@ -29,27 +27,27 @@ export const ChatMessage = a.model({
   createdAt: a.datetime(),
   updatedAt: a.datetime(),
 })
-.secondaryIndexes(index => [index('conversationId').sortKeys(['timestamp'])])
-.authorization(allow => [allow.authenticated()]);
+  .secondaryIndexes(index => [index('conversationId').sortKeys(['timestamp'])])
+  .authorization(allow => [allow.authenticated()]);
 
 export const TypingStatus = a.model({
   conversationId: a.string().required(),
   userId: a.string().required(),
   isTyping: a.boolean().required(),
-  updatedAt: a.datetime().required(),
+  updatedAt: a.datetime().required()
 }).authorization(allow => [allow.authenticated().to(['create', 'update', 'read'])]);
 
 export const UserPresence = a.model({
   userId: a.string().required(),
   status: a.string().default('offline'),
-  lastSeen: a.datetime(),
+  lastSeen: a.datetime()
 }).authorization(allow => [allow.authenticated().to(['create', 'update', 'read'])]);
 
 export const MessageReaction = a.model({
   messageId: a.string().required(),
   userId: a.string().required(),
   emoji: a.string().required(),
-  createdAt: a.datetime().required(),
+  createdAt: a.datetime().required()
 }).authorization(allow => [allow.authenticated().to(['create', 'read'])]);
 
 export const Conversation = a.model({
@@ -59,20 +57,20 @@ export const Conversation = a.model({
   lastMessage: a.string().required(),
   lastTimestamp: a.datetime().required(),
   createdAt: a.datetime(),
-  updatedAt: a.datetime(),
+  updatedAt: a.datetime()
 })
-.secondaryIndexes(index => [
-  index('participantA').sortKeys(['lastTimestamp']),
-  index('participantB').sortKeys(['lastTimestamp'])
-])
-.authorization(allow => [allow.authenticated()]);
+  .secondaryIndexes(index => [
+    index('participantA').sortKeys(['lastTimestamp']),
+    index('participantB').sortKeys(['lastTimestamp'])
+  ])
+  .authorization(allow => [allow.authenticated()]);
 
 const Contact = a.model({
   email: a.string().required(),
   name: a.string().required(),
   summary: a.string().required(),
   createdAt: a.datetime().required(),
-  ipAddress: a.string().required(),
+  ipAddress: a.string().required()
 }).authorization(allow => [
   allow.guest().to(['create']),
   allow.authenticated().to(['create']),
@@ -86,25 +84,12 @@ const NearbyUsersResponse = a.model({
   success: a.boolean().required(),
   error: a.string(),
   nearbyUsers: a.json().array(),
-  nextToken: a.string(),
-})
-.identifier(['id'])
-.authorization(allow => [allow.authenticated()]);
-
-const PaginatedChatMessages = a.customType({
-  id: a.id().required(), // dummy ID field (required for model)
-  items: a.ref('ChatMessage').array().required(),
   nextToken: a.string()
-});
+})
+  .identifier(['id'])
+  .authorization(allow => [allow.authenticated()]);
 
-const PaginatedConversations = a.customType({
-  id: a.id().required(),
-  items: a.ref('Conversation').array().required(),
-  nextTokenA: a.string(),
-  nextTokenB: a.string()
-});
 /* --- Define Operations --- */
-
 const schema = a.schema({
   findNearbyUsers: a.query()
     .arguments({ lat: a.float().required(), lng: a.float().required(), radius: a.float().required(), nextToken: a.string() })
@@ -153,24 +138,16 @@ const schema = a.schema({
     .handler(a.handler.function(createMessage))
     .authorization(allow => [allow.authenticated()]),
 
-  customListConversations: a.query()
-    .arguments({
-      limit: a.integer(),
-      nextTokenA: a.string(),
-      nextTokenB: a.string()
-    })
-    .returns(a.ref('PaginatedConversations'))
-    .handler(a.handler.function(listConversations))
+  customListMessagesByConversationId: a.query()
+    .arguments({ conversationId: a.string().required(), limit: a.integer(), nextToken: a.string() })
+    .returns(a.ref('ChatMessage').array()) // ✅ FIXED: array of model
+    .handler(a.handler.function(listMessagesByConversationId))
     .authorization(allow => [allow.authenticated()]),
 
-  customListMessagesByConversationId: a.query()
-    .arguments({
-      conversationId: a.string().required(),
-      limit: a.integer(),
-      nextToken: a.string()
-    })
-    .returns(a.ref('PaginatedChatMessages'))
-    .handler(a.handler.function(listMessagesByConversationId))
+  customListConversations: a.query()
+    .arguments({ limit: a.integer(), nextTokenA: a.string(), nextTokenB: a.string() })
+    .returns(a.ref('Conversation').array()) // ✅ FIXED: array of model
+    .handler(a.handler.function(listConversations))
     .authorization(allow => [allow.authenticated()]),
 
   setTypingStatus: a.mutation()
@@ -201,8 +178,6 @@ const schema = a.schema({
   Conversation,
   Contact,
   NearbyUsersResponse,
-  PaginatedChatMessages,
-  PaginatedConversations,
   TypingStatus,
   UserPresence,
   MessageReaction
@@ -214,8 +189,6 @@ export const data = defineData({
   schema,
   authorizationModes: {
     defaultAuthorizationMode: 'userPool',
-    apiKeyAuthorizationMode: {
-      expiresInDays: 30
-    }
+    apiKeyAuthorizationMode: { expiresInDays: 30 }
   }
 });
