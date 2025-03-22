@@ -156,6 +156,7 @@ const schema = a.schema({
     .authorization(allow => [allow.authenticated()]),
 
   onTypingStatus: a.subscription()
+    .arguments({ conversationId: a.string().required() })
     .for(a.ref('setTypingStatus'))
     .handler(a.handler.function(setTypingStatus))
     .authorization(allow => [allow.authenticated()]),

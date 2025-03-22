@@ -10,12 +10,9 @@ const client = generateClient<Schema>();
 @Injectable({ providedIn: 'root' })
 export class ChatService {
   sendMessage(recipientId: string, text: string): Observable<ChatMessage> {
-    return from(
-      client.mutations.createMessage({ recipientId, text })
-    ).pipe(
+    return from(client.mutations.createMessage({ recipientId, text })).pipe(
       map((result: any) => {
         console.log('createMessage result:', result);
-        // Ensure we return the chat message from the result
         return result?.data as ChatMessage;
       }),
       catchError(err => {
@@ -26,12 +23,8 @@ export class ChatService {
   }
 
   async listConversations(): Promise<Observable<Conversation[]>> {
-    return from(
-      client.queries.customListConversations({})
-    ).pipe(
-      map((res: any) => {
-        return res?.data || [];
-      }),
+    return from(client.queries.customListConversations({})).pipe(
+      map((res: any) => res?.data || []),
       catchError(err => {
         console.error('[ChatService] listConversations error:', err);
         return throwError(() => new Error('List conversations failed'));
@@ -40,9 +33,7 @@ export class ChatService {
   }
 
   listMessagesByConversationId(conversationId: string): Observable<any[]> {
-    return from(
-      client.queries.customListMessagesByConversationId({ conversationId })
-    ).pipe(
+    return from(client.queries.customListMessagesByConversationId({ conversationId })).pipe(
       map((result: any) => result?.data ?? []),
       catchError(err => {
         console.error('[ChatService] listMessages error:', err);
@@ -54,44 +45,44 @@ export class ChatService {
   async setTypingStatus(conversationId: string, userId: string, isTyping: boolean) {
     await client.mutations.setTypingStatus({ conversationId, userId, isTyping });
   }
-
   subscribeToTypingStatus(conversationId: string): Observable<{ conversationId: string; userId: string; isTyping: boolean }> {
-    return new Observable<{ conversationId: string; userId: string; isTyping: boolean }>((observer) => {
-      const subscription = client.subscriptions.onTypingStatus().subscribe({
-        next: (event: any) => {
-          const status = event?.data?.onTypingStatus;
-          if (status && status.conversationId === conversationId) {
-            observer.next(status);
+    return new Observable(observer => {
+      // Cast to any to bypass type restrictions.
+      const subscription = (client.subscriptions as any)
+        .onTypingStatus({ input: { conversationId } })
+        .subscribe({
+          next: (event: any) => {
+            const status = event?.data?.onTypingStatus;
+            if (status && status.conversationId === conversationId) {
+              observer.next(status);
+            }
+          },
+          error: (err: any) => {
+            console.error('[ChatService] subscribeToTypingStatus error:', err);
+            observer.error(err);
           }
-        },
-        error: (err: any) => {
-          console.error('[ChatService] subscribeToTypingStatus error:', err);
-          observer.error(err);
-        }
-      });
+        });
       return () => subscription.unsubscribe();
     });
   }
-  /**
-   * Subscribes to all new messages and filters only those for the given conversationId.
-   * Note: AppSync subscriptions often inherit authMode from schema — change only if you hit errors.
-   */
+
   subscribeToMessagesForConversation(conversationId: string): Observable<ChatMessage> {
     return new Observable<ChatMessage>((observer) => {
       const subscription = client.subscriptions.onCreateMessage().subscribe({
         next: (event: any) => {
+          console.log('onCreateMessage raw event:', event);
           const message = event?.data?.onCreateMessage;
-          if (message?.conversationId === conversationId) {
-            observer.next(message);
-          }
+          // Remove filter temporarily for testing
+          observer.next(message);
         },
         error: (err: any) => {
           console.error('[ChatService] subscribeToMessages error:', err);
           observer.error(err);
         }
       });
-
       return () => subscription.unsubscribe();
     });
   }
+  
+ 
 }

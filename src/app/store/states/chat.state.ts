@@ -30,7 +30,7 @@ export interface ChatStateModel {
   messages: Record<string, ChatMessage[]>;
   loading: boolean;
   error: string | null;
-  lastFetched: number | null; // timestamp in milliseconds
+  lastFetched: number | null;
 }
 
 @State<ChatStateModel>({
@@ -101,7 +101,6 @@ export class ChatState {
 
   @Action(LoadMessages)
   loadMessages(ctx: StateContext<ChatStateModel>, action: LoadMessages) {
-    // Normalize the conversationId
     const ids = action.conversationId.split('#');
     const conversationId = getNormalizedConversationId(ids[0], ids[1]);
   
@@ -122,13 +121,13 @@ export class ChatState {
   appendMessage(ctx: StateContext<ChatStateModel>, action: AppendMessage) {
     const state = ctx.getState() as ChatStateModel;
     const msg = action.message;
-    const conversationId = msg.conversationId;
-    const updated = [...(state.messages[conversationId] || []), msg];
-
+    const normalizedId = getNormalizedConversationId(msg.senderId, msg.recipientId);
+    const updated = [...(state.messages[normalizedId] || []), msg];
+  
     ctx.patchState({
       messages: {
         ...state.messages,
-        [conversationId]: updated
+        [normalizedId]: updated
       }
     });
   }
@@ -157,7 +156,7 @@ export class ChatState {
   @Action(SetTypingStatus)
   async setTypingStatus(_: any, { conversationId, isTyping }: SetTypingStatus) {
     const userId = this.store.selectSnapshot(AuthState.identityId);
-    if(userId){
+    if (userId) {
       await this.chatService.setTypingStatus(conversationId, userId, isTyping);
     }
   }

@@ -3,13 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Store } from '@ngxs/store';
 import { Observable, Subject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-import {
-  AppendMessage,
-  LoadMessages,
-  SendMessage,
-  SetTypingStatus,
-  // Remove unused message actions if not needed
-} from '../../store/actions/chat.actions';
+import { AppendMessage, LoadMessages, SendMessage, SetTypingStatus } from '../../store/actions/chat.actions';
 import { ChatService } from '../../services/chat.service';
 import { ChatMessage } from '../../models/chat';
 import { ChatState } from '../../store/states/chat.state';
@@ -31,14 +25,11 @@ import { LoadingComponent } from '../shared/loading/loading.component';
 export class ChatComponent implements OnInit, OnDestroy {
   @ViewChild('messagesContainer') private messagesContainer!: ElementRef;
   private messagesSub: Subscription | null = null;
-  // Removed the messages subscription to avoid errors
-  // private sub: Subscription | null = null;
   private typingSubject: Subject<boolean> = new Subject<boolean>();
   private typingStatusSub: Subscription | null = null;
 
   newMessageText: string = '';
-  isOtherUserTyping: boolean = false; // Flag to show if the other user is typing
-
+  isOtherUserTyping: boolean = false;
   conversationId!: string;
   recipientId!: string;
   messages$!: Observable<ChatMessage[]>;
@@ -64,7 +55,6 @@ export class ChatComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Dispatch action to load messages
     this.store.dispatch(new LoadMessages(this.conversationId));
     this.messages$ = this.store.select(state =>
       ChatState.messagesForConversation(state.chat)(this.conversationId)
@@ -76,37 +66,35 @@ export class ChatComponent implements OnInit, OnDestroy {
     });
 
     // Subscribe to typing status updates.
-    this.typingStatusSub = this.chatService.subscribeToTypingStatus(this.conversationId)
-      .subscribe((statusUpdate: { userId: string; isTyping: boolean }) => {
-        // Only update if the update comes from a user other than the current user.
-        if (statusUpdate.userId !== this.currentUserId) {
-          this.isOtherUserTyping = statusUpdate.isTyping;
+    this.typingStatusSub = this.chatService
+      .subscribeToTypingStatus(this.conversationId)
+      .subscribe((statusUpdate: { conversationId: string; userId: string; isTyping: boolean }) => {
+        if (statusUpdate.userId === this.currentUserId) {
+          console.log('Ignoring self typing status update:', statusUpdate);
+          return;
         }
+        console.log('Received typing status update from other user:', statusUpdate);
+        this.isOtherUserTyping = statusUpdate.isTyping;
       });
 
-    // Set up our own typing detection (for our own status) with debounce.
-    this.typingSubject
-      .pipe(debounceTime(500))
-      .subscribe((isTyping: boolean) => {
-        this.store.dispatch(new SetTypingStatus(this.conversationId, isTyping));
-      });
+    // Detect and debounce our own typing.
+    this.typingSubject.pipe(debounceTime(500)).subscribe((isTyping: boolean) => {
+      this.store.dispatch(new SetTypingStatus(this.conversationId, isTyping));
+    });
   }
 
   sendMessage(): void {
     if (!this.newMessageText.trim()) return;
     this.store.dispatch(new SendMessage(this.recipientId, this.newMessageText));
     this.newMessageText = '';
-    // Reset typing status when message is sent.
     this.typingSubject.next(false);
   }
 
   onInputChange(): void {
-    // Notify that the current user is typing.
     this.typingSubject.next(true);
   }
 
   onInputBlur(): void {
-    // Reset typing status when input loses focus.
     this.typingSubject.next(false);
   }
 
@@ -120,7 +108,5 @@ export class ChatComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.messagesSub?.unsubscribe();
     this.typingStatusSub?.unsubscribe();
-    // Unsubscribe from our own typing subject if needed.
-    // (No need to unsubscribe from subjects if they complete, but if you convert to subscription, do so.)
   }
 }

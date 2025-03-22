@@ -35,9 +35,7 @@
   </div>
 
   <div class="typing-area" *ngIf="isOtherUserTyping">
-    <!-- Display the other user's avatar (assumes otherUserId is defined in your component) -->
     <app-image-display [identityId]="recipientId" class="avatar typing-avatar"></app-image-display>
-    <!-- Animated typing indicator next to the avatar -->
     <div class="typing-indicator-content">
       <div class="dots">
         <span></span><span></span><span></span>
@@ -47,12 +45,6 @@
 
   <!-- Message input -->
   <div class="chat-input">
-    <!-- <div class="typing-indicator" *ngIf="isOtherUserTyping"> -->
-      <!-- <div class="typing-indicator" *ngIf="true">
-        <div class="dots">
-          <span></span><span></span><span></span>
-        </div>
-    </div> -->
     <mat-form-field class="message-field">
       <input
         matInput
