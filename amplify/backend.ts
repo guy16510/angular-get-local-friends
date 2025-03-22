@@ -1,7 +1,7 @@
 import { defineBackend } from '@aws-amplify/backend';
 import { auth } from './auth/resource';
 import { data } from './data/resource';
-import {storage} from './storage/resource';
+import { storage } from './storage/resource';
 import { findNearbyUsers } from './functions/find-nearby-users/resource';
 import { mutateUserProfile } from './functions/mutate-user-profile/resource';
 import { findPremiumMatches } from './functions/find-premium-matches/resource';
@@ -11,6 +11,7 @@ import { listConversations } from './functions/list-conversations/resource';
 import { getUserProfile } from './functions/get-user-profile/resource';
 import { getAnimalProfile } from './functions/get-animal-profile/resource';
 import { listMessagesByConversationId } from './functions/list-messages-by-conversation-id/resource';
+import { setTypingStatus } from './functions/set-typing-status/resource';
 import * as iam from 'aws-cdk-lib/aws-iam';
 
 const backend = defineBackend({
@@ -25,7 +26,8 @@ const backend = defineBackend({
   listConversations,
   getUserProfile,
   getAnimalProfile,
-  listMessagesByConversationId
+  listMessagesByConversationId,
+  setTypingStatus
 });
 
 /** 🔐 User Profile Table (Geo-Enabled) — External DynamoDB Table */
@@ -69,12 +71,6 @@ everyoneRole.addToPrincipalPolicy(new iam.PolicyStatement({
   resources: [`${bucketArn}/protected/*`]
 }));
 
-// Allow the role to put and delete objects under its own folder.
-// The resource ARN uses the Cognito sub variable for dynamic folder names.
-// everyoneRole.addToPrincipalPolicy(new iam.PolicyStatement({
-//   actions: ['s3:PutObject', 's3:DeleteObject'],
-//   resources: [`${bucketArn}/protected/\${cognito:sub}/*`]
-// }));
 everyoneRole.addToPrincipalPolicy(new iam.PolicyStatement({
   actions: ['s3:PutObject', 's3:DeleteObject'],
   resources: [`${bucketArn}/protected/*`]
@@ -109,4 +105,11 @@ backend.listMessagesByConversationId.resources.lambda.addToRolePolicy(new iam.Po
 backend.listConversations.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
   actions: ['dynamodb:Query'],
   resources: [conversationTableArn, conversationIndexArn]
+}));
+
+/** 🔐 TypingStatus Table Permissions */
+const typingStatusTableArn = `arn:aws:dynamodb:us-east-1:${process.env['AWS_ACCOUNT_ID']}:table/${process.env['AMPLIFY_TYPING_STATUS_TABLE_NAME']}`;
+backend.setTypingStatus.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
+  actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem'],
+  resources: [typingStatusTableArn]
 }));

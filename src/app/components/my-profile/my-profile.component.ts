@@ -22,57 +22,17 @@ export class MyProfileComponent implements OnInit {
   @Select(UserProfileState.profile) userProfile$!: Observable<UserProfile | null>;
   @Select(UserProfileState.loading) loading$!: Observable<boolean>;
   @Select(UserProfileState.error) error$!: Observable<string | null>;
-  @Select(UserProfileState.getSeekingProfile) seekingProfile$!: Observable<string | null>;
-  @Select(UserProfileState.getSelfProfile) selfProfile$!: Observable<string | null>;
 
   profileImage: string = '/assets/images/noImageUploaded.jpg';
-  objectKeys = Object.keys; // Expose Object.keys for the template
-
-  // Parsed profile properties (if the API returns JSON strings)
-  parsedSelfProfile: any = null;
-  parsedSeekingProfile: any = null;
-
   private store = inject(Store);
 
   @ViewChild('uploadComponent') uploadComponent!: UploadComponent;
 
   constructor(private fileService: FileService) {}
-
+  
   async ngOnInit(): Promise<void> {
     this.store.dispatch(new LoadUserProfile());
     await this.loadUserProfile();
-
-    // Subscribe to userProfile and parse animal profile JSON if needed
-    this.userProfile$.subscribe(userProfile => {
-      if (userProfile) {
-        // For selfProfile
-        if (userProfile.selfProfile) {
-          if (typeof userProfile.selfProfile === 'string') {
-            try {
-              this.parsedSelfProfile = JSON.parse(userProfile.selfProfile);
-            } catch (e) {
-              console.error("Error parsing selfProfile", e);
-              this.parsedSelfProfile = null;
-            }
-          } else {
-            this.parsedSelfProfile = userProfile.selfProfile;
-          }
-        }
-        // For seekingProfile
-        if (userProfile.seekingProfile) {
-          if (typeof userProfile.seekingProfile === 'string') {
-            try {
-              this.parsedSeekingProfile = JSON.parse(userProfile.seekingProfile);
-            } catch (e) {
-              console.error("Error parsing seekingProfile", e);
-              this.parsedSeekingProfile = null;
-            }
-          } else {
-            this.parsedSeekingProfile = userProfile.seekingProfile;
-          }
-        }
-      }
-    });
   }
 
   onSubmit(updatedProfile: UserProfile): void {
