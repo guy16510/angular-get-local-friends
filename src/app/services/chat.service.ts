@@ -127,10 +127,7 @@ export class ChatService {
   async setTypingStatus(conversationId: string, userId: string, isTyping: boolean) {
     await this.client.mutations.setTypingStatus({ conversationId, userId, isTyping });
   }
-  
-  async setUserPresence(userId: string, status: string) {
-    await this.client.mutations.setUserPresence({ userId, status });
-  }
+
 
   async acknowledgeMessage(messageId: string) {
     await this.client.mutations.acknowledgeMessage({ messageId });

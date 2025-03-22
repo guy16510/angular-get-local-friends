@@ -46,6 +46,15 @@ export class UserProfileState {
   }
 
   @Selector()
+  static getSelfProfile(state: UserProfileStateModel) {
+    return state?.profile?.selfProfile;
+  }
+  @Selector()
+  static getSeekingProfile(state: UserProfileStateModel) {
+    return state?.profile?.seekingProfile;
+  }
+
+  @Selector()
   static error(state: UserProfileStateModel) {
     return state.error;
   }

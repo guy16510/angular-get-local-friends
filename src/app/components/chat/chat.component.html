@@ -31,14 +31,16 @@
 
   <div class="chat-input">
     <div class="typing-indicator" *ngIf="isOtherUserTyping">
+      <!-- You can extend this area to show when the other user is typing -->
     </div>
     <mat-form-field class="message-field">
       <input
         matInput
         [(ngModel)]="newMessageText"
         placeholder="Type a message..."
-        (click)="sendMessage()" 
-        [disabled]="!newMessage.trim()" />
+        (input)="onInputChange()"
+        (blur)="onInputBlur()"
+        />
     </mat-form-field>
     <button mat-icon-button color="primary" (click)="sendMessage()" [disabled]="!newMessageText.trim()">
       <mat-icon>send</mat-icon>

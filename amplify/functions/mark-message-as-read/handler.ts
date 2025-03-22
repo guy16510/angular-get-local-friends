@@ -1,26 +1,77 @@
+// mark-messages-as-read/handler.ts
+import type { Schema } from '../../data/resource';
 import { getIdentityId } from '../../shared/utils/identity';
+import { DynamoDB } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
+import { sanitizeBigInts } from '../../shared/utils/sanitize';
 
-export const handler = async (event: any, context: any) => {
-  const { conversationId, messageId } = event.arguments;
-  const userId = getIdentityId(event.identity);
+const CHAT_MESSAGE_TABLE = process.env['AMPLIFY_CHAT_MESSAGE_TABLE_NAME']!;
+if (!CHAT_MESSAGE_TABLE) throw new Error("Missing environment variable: AMPLIFY_CHAT_MESSAGE_TABLE_NAME");
 
-  if (!conversationId || !messageId) throw new Error("Missing parameters");
+const CONVERSATION_TABLE = process.env['AMPLIFY_CONVERSATION_TABLE_NAME']!;
+if (!CONVERSATION_TABLE) throw new Error("Missing environment variable: AMPLIFY_CONVERSATION_TABLE_NAME");
 
-  const message = await context.db.ChatMessage.get({ id: messageId });
-  if (!message) throw new Error("Message not found");
+const ddbClient = new DynamoDB({});
+const docClient = DynamoDBDocument.from(ddbClient);
 
-  await context.db.ChatMessage.update({
-    id: messageId,
-    status: "seen"
-  });
+export const handler = async (event: any) => {
+  const { conversationId, messageId, userId: passedUserId } = event.arguments;
+  // Use the passed userId or fallback to the identity from the event.
+  const userId = passedUserId || getIdentityId(event.identity);
+  
+  if (!conversationId || !messageId || !userId) {
+    console.error("Missing parameters", { conversationId, messageId, userId });
+    throw new Error("Missing parameters");
+  }
 
-  const conversation = await context.db.Conversation.get({ id: conversationId });
-  if (!conversation) throw new Error("Conversation not found");
+  try {
+    // Retrieve the message
+    const messageResult = await docClient.get({
+      TableName: CHAT_MESSAGE_TABLE,
+      Key: { id: messageId }
+    });
+    const message = messageResult.Item;
+    if (!message) {
+      console.error("Message not found", { messageId });
+      throw new Error("Message not found");
+    }
 
-  const updateFields: any = { id: conversationId };
-  updateFields[`lastSeenBy_${userId}`] = messageId;
+    // Update the message status to "seen"
+    await docClient.update({
+      TableName: CHAT_MESSAGE_TABLE,
+      Key: { id: messageId },
+      UpdateExpression: "SET #s = :s",
+      ExpressionAttributeNames: { "#s": "status" },
+      ExpressionAttributeValues: { ":s": "seen" },
+      ReturnValues: "ALL_NEW"
+    });
 
-  await context.db.Conversation.update(updateFields);
+    // Retrieve the conversation
+    const conversationResult = await docClient.get({
+      TableName: CONVERSATION_TABLE,
+      Key: { id: conversationId }
+    });
+    const conversation = conversationResult.Item;
+    if (!conversation) {
+      console.error("Conversation not found", { conversationId });
+      throw new Error("Conversation not found");
+    }
 
-  return { conversationId, userId, messageId };
+    // Update the conversation with the last seen message for the user.
+    // We'll dynamically update the attribute named "lastSeenBy_{userId}"
+    const attributeName = `lastSeenBy_${userId}`;
+    await docClient.update({
+      TableName: CONVERSATION_TABLE,
+      Key: { id: conversationId },
+      UpdateExpression: `SET #attr = :val`,
+      ExpressionAttributeNames: { "#attr": attributeName },
+      ExpressionAttributeValues: { ":val": messageId },
+      ReturnValues: "ALL_NEW"
+    });
+
+    return { conversationId, userId, messageId };
+  } catch (err) {
+    console.error(`[markMessageAsRead] Error:`, err);
+    throw new Error("Internal server error");
+  }
 };

@@ -7,13 +7,16 @@ backend:
         - export AWS_ACCOUNT_ID=438347844807
         - |
           if [[ "$AWS_BRANCH" == "develop" ]]; then
+            export AMPLIFY_TYPING_STATUS_TABLE_NAME="TypingStatus-slzhpdj7ifgljk54sxgaj62qeu-NONE"
             export AMPLIFY_USER_PROFILE_TABLE_NAME="UserProfile-dev"
             export AMPLIFY_STORAGE_BUCKET_NAME="amplify-dkrmsanbniimt-dev-userimagesdevelopbucket4-ywhknwbaftox"
             export AMPLIFY_EVERYONE_ROLE_ARN="arn:aws:iam::438347844807:role/amplify-dkrmsanbniimt-dev-amplifyAuthEVERYONEdevelo-zsnlJdljcJae"
             export AMPLIFY_CHAT_MESSAGE_TABLE_NAME="ChatMessage-slzhpdj7ifgljk54sxgaj62qeu-NONE"
             export AMPLIFY_CONVERSATION_TABLE_NAME="Conversation-slzhpdj7ifgljk54sxgaj62qeu-NONE"
-            export AMPLIFY_GRAPHQL_API_ID="slzhpdj7ifgljk54sxgaj62qeu"  # ← NEW LINE
+            export AMPLIFY_GRAPHQL_API_ID="slzhpdj7ifgljk54sxgaj62qeu"
+
           elif [[ "$AWS_BRANCH" == "main" ]]; then
+            export AMPLIFY_TYPING_STATUS_TABLE_NAME=""
             export AMPLIFY_USER_PROFILE_TABLE_NAME="UserProfile-prod"
             export AMPLIFY_STORAGE_BUCKET_NAME="amplify-dkrmsanbniimt-main-userimagesmainbucket4-xyz123abc"
             export AMPLIFY_EVERYONE_ROLE_ARN="arn:aws:iam::438347844807:role/amplify-<your-main-role-name>"
@@ -21,6 +24,7 @@ backend:
             export AMPLIFY_CONVERSATION_TABLE_NAME=""
             export AMPLIFY_GRAPHQL_API_ID="PUT-YOUR-MAIN-ID-HERE"  # ← ADD THIS TOO
           else
+            export AMPLIFY_TYPING_STATUS_TABLE_NAME="TypingStatus-slzhpdj7ifgljk54sxgaj62qeu-NONE"
             export AMPLIFY_USER_PROFILE_TABLE_NAME="UserProfile-dev"
             export AMPLIFY_STORAGE_BUCKET_NAME="amplify-dkrmsanbniimt-dev-userimagesdevelopbucket4-ywhknwbaftox"
             export AMPLIFY_EVERYONE_ROLE_ARN="arn:aws:iam::438347844807:role/amplify-<your-default-role-name>"
@@ -29,6 +33,7 @@ backend:
             export AMPLIFY_GRAPHQL_API_ID="slzhpdj7ifgljk54sxgaj62qeu"
           fi
 
+        - 'echo "Using DynamoDB Table: $AMPLIFY_TYPING_STATUS_TABLE_NAME"'
         - 'echo "Using DynamoDB Table: $AMPLIFY_USER_PROFILE_TABLE_NAME"'
         - 'echo "Using S3 Bucket: $AMPLIFY_STORAGE_BUCKET_NAME"'
         - 'echo "Using Everyone Role ARN: $AMPLIFY_EVERYONE_ROLE_ARN"'

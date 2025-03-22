@@ -40,3 +40,26 @@ mat-card-content {
   font-weight: bold;
   color: #333;
 }
+
+
+.profile-content {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  margin-top: 1.5rem;
+}
+
+.profile-info,
+.animal-profile {
+  flex: 1 1 300px; /* Grow and shrink with a min width of 300px */
+}
+
+/* Optional: Add padding and border to separate columns visually */
+.profile-info {
+  padding-right: 1rem;
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.animal-profile {
+  padding-left: 1rem;
+}

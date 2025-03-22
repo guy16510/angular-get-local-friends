@@ -14,7 +14,6 @@ import { withNgxsStoragePlugin } from '@ngxs/storage-plugin';
 import { ChatState } from './store/states/chat.state';
 import { SearchState } from './store/states/search.state';
 import { GeolocationState } from './store/states/geolocation.state';
-import { UserPresenceState } from './store/states/user-presence.state';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -27,8 +26,7 @@ export const appConfig: ApplicationConfig = {
         UserProfileState, 
         ChatState,
         SearchState,
-        GeolocationState,
-        UserPresenceState
+        GeolocationState
       ],
       withNgxsReduxDevtoolsPlugin({ name: 'GetLocalFriends' }),
       withNgxsStoragePlugin({ keys: ['search'] }),

@@ -27,35 +27,69 @@
       <!-- Hidden Upload Component used only for file selection -->
       <app-upload-image #uploadComponent (imageUpdated)="onImageUpdated($event)" style="display: none;"></app-upload-image>
 
-      <div class="profile-details" *ngIf="userProfile$ | async as userProfile">
-        <h2>Profile Information</h2>
-        <mat-list>
-          <mat-list-item *ngIf="userProfile.userName">
-            <mat-icon>account_circle</mat-icon>
-            <strong>User Name:</strong> {{ userProfile.userName }}
-          </mat-list-item>
-          <mat-list-item *ngIf="userProfile.locationLat">
-            <mat-icon>location_on</mat-icon>
-            <strong>Latitude:</strong> {{ userProfile.locationLat }}
-          </mat-list-item>
-          <mat-list-item *ngIf="userProfile.locationLng">
-            <mat-icon>location_on</mat-icon>
-            <strong>Longitude:</strong> {{ userProfile.locationLng }}
-          </mat-list-item>
-          <mat-list-item *ngIf="userProfile.lastOnlineAt">
-            <mat-icon>schedule</mat-icon>
-            <strong>Last Online:</strong> {{ userProfile.lastOnlineAt }}
-          </mat-list-item>
-          <mat-list-item *ngIf="userProfile.surveyAnswers?.length">
-            <mat-icon>assignment</mat-icon>
-            <strong>Survey Answers:</strong>
+      <div class="profile-content">
+        <!-- Left Column: Profile Information -->
+        <div class="profile-info">
+          <h2>Profile Information</h2>
+          <mat-list *ngIf="userProfile$ | async as userProfile">
+            <mat-list-item *ngIf="userProfile.userName">
+              <mat-icon>account_circle</mat-icon>
+              <strong>User Name:</strong> {{ userProfile.userName }}
+            </mat-list-item>
+            <mat-list-item *ngIf="userProfile.locationLat">
+              <mat-icon>location_on</mat-icon>
+              <strong>Latitude:</strong> {{ userProfile.locationLat }}
+            </mat-list-item>
+            <mat-list-item *ngIf="userProfile.locationLng">
+              <mat-icon>location_on</mat-icon>
+              <strong>Longitude:</strong> {{ userProfile.locationLng }}
+            </mat-list-item>
+            <mat-list-item *ngIf="userProfile.lastOnlineAt">
+              <mat-icon>schedule</mat-icon>
+              <strong>Last Online:</strong> {{ userProfile.lastOnlineAt }}
+            </mat-list-item>
+            <mat-list-item *ngIf="userProfile.surveyAnswers?.length">
+              <mat-icon>assignment</mat-icon>
+              <strong>Survey Answers:</strong>
+              <ul>
+                <li *ngFor="let ans of userProfile.surveyAnswers">
+                  Q{{ ans.questionId }}: {{ ans.answer }}
+                </li>
+              </ul>
+            </mat-list-item>
+          </mat-list>
+        </div>
+
+        <!-- Right Column: Animal Data -->
+        <div class="animal-profile" *ngIf="parsedSelfProfile || parsedSeekingProfile">
+          <h2>Animal Profile</h2>
+          <!-- Self Profile Section -->
+          <div *ngIf="parsedSelfProfile">
+            <h3>Self Profile</h3>
+            <p><strong>Animal:</strong> {{ parsedSelfProfile.animal }}</p>
+            <p><strong>Adjective:</strong> {{ parsedSelfProfile.adjective }}</p>
+            <p><strong>Traits:</strong></p>
             <ul>
-              <li *ngFor="let ans of userProfile.surveyAnswers">
-                Q{{ ans.questionId }}: {{ ans.answer }}
+              <li *ngFor="let key of objectKeys(parsedSelfProfile.traits)">
+                {{ key }}: {{ parsedSelfProfile.traits[key] }}
               </li>
             </ul>
-          </mat-list-item>
-        </mat-list>
+            <p><strong>Description:</strong> {{ parsedSelfProfile.fullDescription }}</p>
+          </div>
+          <!-- Seeking Profile Section -->
+          <div *ngIf="parsedSeekingProfile">
+            <h3>Seeking Profile</h3>
+            <p><strong>Animal:</strong> {{ parsedSeekingProfile.animal }}</p>
+            <p><strong>Adjective:</strong> {{ parsedSeekingProfile.adjective }}</p>
+            <p><strong>Traits:</strong></p>
+            <ul>
+              <li *ngFor="let key of objectKeys(parsedSeekingProfile.traits)">
+                {{ key }}: {{ parsedSeekingProfile.traits[key] }}
+              </li>
+            </ul>
+            <p><strong>Description:</strong> {{ parsedSeekingProfile.fullDescription }}</p>
+          </div>
+        </div>
       </div>
 
       <mat-card class="location-card" *ngIf="!(userProfile$ | async)">

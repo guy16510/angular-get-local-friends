@@ -9,7 +9,6 @@ import { createMessage } from '../functions/create-message/resource';
 import { listConversations } from '../functions/list-conversations/resource';
 import { listMessagesByConversationId } from '../functions/list-messages-by-conversation-id/resource';
 import { setTypingStatus } from '../functions/set-typing-status/resource';
-import { setUserPresence } from '../functions/set-user-presence/resource';
 import { acknowledgeMessage } from '../functions/acknowledge-message/resource';
 import { markMessageAsRead } from '../functions/mark-message-as-read/resource';
 
@@ -154,12 +153,6 @@ const schema = a.schema({
     .arguments({ conversationId: a.string().required(), userId: a.string().required(), isTyping: a.boolean().required() })
     .returns(a.ref('TypingStatus'))
     .handler(a.handler.function(setTypingStatus))
-    .authorization(allow => [allow.authenticated()]),
-
-  setUserPresence: a.mutation()
-    .arguments({ userId: a.string().required(), status: a.string().required() })
-    .returns(a.ref('UserPresence'))
-    .handler(a.handler.function(setUserPresence))
     .authorization(allow => [allow.authenticated()]),
 
   acknowledgeMessage: a.mutation()
