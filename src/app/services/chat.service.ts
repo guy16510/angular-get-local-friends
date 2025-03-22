@@ -45,11 +45,12 @@ export class ChatService {
   async setTypingStatus(conversationId: string, userId: string, isTyping: boolean) {
     await client.mutations.setTypingStatus({ conversationId, userId, isTyping });
   }
+  
   subscribeToTypingStatus(conversationId: string): Observable<{ conversationId: string; userId: string; isTyping: boolean }> {
     return new Observable(observer => {
-      // Cast to any to bypass type restrictions.
+      // Cast to any so you can pass the conversationId as an argument.
       const subscription = (client.subscriptions as any)
-        .onTypingStatus({ input: { conversationId } })
+        .onTypingStatus({ conversationId }) // this should add the variable to the subscription query
         .subscribe({
           next: (event: any) => {
             const status = event?.data?.onTypingStatus;

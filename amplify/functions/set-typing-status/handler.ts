@@ -1,4 +1,3 @@
-// set-typing-status/handler.ts
 import type { Schema } from '../../data/resource';
 import { getIdentityId } from '../../shared/utils/identity';
 import { DynamoDB } from '@aws-sdk/client-dynamodb';
@@ -19,28 +18,30 @@ export const handler: Schema["setTypingStatus"]["functionHandler"] = async (even
     throw new Error("Missing conversationId");
   }
 
+  // Ensure isTyping is a boolean. Default to false if not provided.
+  const validIsTyping: boolean = (typeof isTyping === 'boolean') ? isTyping : false;
+
   const now = new Date().toISOString();
-  // TTL: set for 5 minutes (300 seconds) from now.
-  const ttl = Math.floor(Date.now() / 1000) + (5 * 60);
+  // TTL: set for 1 minutes (300 seconds) from now.
+  const ttl = Math.floor(Date.now() / 1000) + (1 * 60);
   // Create a composite id from conversationId and userId
   const id = `${conversationId}#${userId}`;
 
   try {
-    // Put the item including the generated "id" and createdAt timestamp.
     await docClient.put({
       TableName: TYPING_STATUS_TABLE,
       Item: {
         id,
         conversationId,
         userId,
-        isTyping,
+        isTyping: validIsTyping,
         updatedAt: now,
         createdAt: now,
         ttl,
       },
     });
 
-    return { id, conversationId, userId, isTyping, updatedAt: now, createdAt: now };
+    return { id, conversationId, userId, isTyping: validIsTyping, updatedAt: now, createdAt: now };
   } catch (err) {
     console.error(`[setTypingStatus] Error:`, err);
     throw new Error("Internal server error");

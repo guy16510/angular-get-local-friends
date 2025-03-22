@@ -60,7 +60,7 @@ export class FileService {
   async getUserImage(identityId: string): Promise<string | null> {
     const cachedImage = this.getCachedImage(identityId);
     if (cachedImage) {
-      console.log('✅ Using cached image for:', identityId);
+      // console.log('✅ Using cached image for:', identityId);
       return cachedImage;
     }
 
