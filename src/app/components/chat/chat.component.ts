@@ -2,7 +2,14 @@ import { Component, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/co
 import { ActivatedRoute } from '@angular/router';
 import { Store } from '@ngxs/store';
 import { Observable, Subject, Subscription } from 'rxjs';
-import { AppendMessage, LoadMessages, SendMessage, SetTypingStatus } from '../../store/actions/chat.actions';
+import { debounceTime } from 'rxjs/operators';
+import {
+  AppendMessage,
+  LoadMessages,
+  SendMessage,
+  SetTypingStatus,
+  // Remove unused message actions if not needed
+} from '../../store/actions/chat.actions';
 import { ChatService } from '../../services/chat.service';
 import { ChatMessage } from '../../models/chat';
 import { ChatState } from '../../store/states/chat.state';
@@ -13,8 +20,6 @@ import { MaterialModule } from '../../shared/material.module';
 import { getNormalizedConversationId } from '../../utils/chat-utils';
 import { ImageDisplayComponent } from '../image-display/image-display.component';
 import { LoadingComponent } from '../shared/loading/loading.component';
-import { debounceTime } from 'rxjs/operators';
-
 
 @Component({
   selector: 'app-chat',
@@ -26,18 +31,19 @@ import { debounceTime } from 'rxjs/operators';
 export class ChatComponent implements OnInit, OnDestroy {
   @ViewChild('messagesContainer') private messagesContainer!: ElementRef;
   private messagesSub: Subscription | null = null;
-  private sub: Subscription | null = null;
+  // Removed the messages subscription to avoid errors
+  // private sub: Subscription | null = null;
   private typingSubject: Subject<boolean> = new Subject<boolean>();
-  private typingSubscription: Subscription | null = null;
-  isOtherUserTyping: boolean = false; // Extend with real-time logic if needed.
-  
+  private typingStatusSub: Subscription | null = null;
+
+  newMessageText: string = '';
+  isOtherUserTyping: boolean = false; // Flag to show if the other user is typing
 
   conversationId!: string;
   recipientId!: string;
   messages$!: Observable<ChatMessage[]>;
   loading$: Observable<boolean> = this.store.select(ChatState.getLoading);
   error$: Observable<string | null> = this.store.select(ChatState.getError);
-  newMessageText: string = '';
   currentUserId: string | null = null;
 
   constructor(
@@ -58,21 +64,28 @@ export class ChatComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Dispatch action to load messages
     this.store.dispatch(new LoadMessages(this.conversationId));
     this.messages$ = this.store.select(state =>
       ChatState.messagesForConversation(state.chat)(this.conversationId)
     );
 
-    // Subscribe to messages$ changes to auto-scroll
+    // Auto-scroll when messages arrive.
     this.messagesSub = this.messages$.subscribe(() => {
       setTimeout(() => this.scrollToBottom(), 0);
     });
 
-    this.sub = this.chatService.subscribeToMessagesForConversation(this.conversationId).subscribe((message) => {
-      this.store.dispatch(new AppendMessage(message));
-    });
+    // Subscribe to typing status updates.
+    this.typingStatusSub = this.chatService.subscribeToTypingStatus(this.conversationId)
+      .subscribe((statusUpdate: { userId: string; isTyping: boolean }) => {
+        // Only update if the update comes from a user other than the current user.
+        if (statusUpdate.userId !== this.currentUserId) {
+          this.isOtherUserTyping = statusUpdate.isTyping;
+        }
+      });
 
-    this.typingSubscription = this.typingSubject
+    // Set up our own typing detection (for our own status) with debounce.
+    this.typingSubject
       .pipe(debounceTime(500))
       .subscribe((isTyping: boolean) => {
         this.store.dispatch(new SetTypingStatus(this.conversationId, isTyping));
@@ -83,19 +96,21 @@ export class ChatComponent implements OnInit, OnDestroy {
     if (!this.newMessageText.trim()) return;
     this.store.dispatch(new SendMessage(this.recipientId, this.newMessageText));
     this.newMessageText = '';
-  }
-
-  onInputChange() {
-    // User is typing—set typing status to true.
-    this.typingSubject.next(true);
-  }
-
-  onInputBlur() {
-    // Input loses focus—reset typing status.
+    // Reset typing status when message is sent.
     this.typingSubject.next(false);
   }
 
-  private scrollToBottom() {
+  onInputChange(): void {
+    // Notify that the current user is typing.
+    this.typingSubject.next(true);
+  }
+
+  onInputBlur(): void {
+    // Reset typing status when input loses focus.
+    this.typingSubject.next(false);
+  }
+
+  private scrollToBottom(): void {
     if (this.messagesContainer) {
       const el = this.messagesContainer.nativeElement;
       el.scrollTop = el.scrollHeight;
@@ -103,10 +118,9 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.sub?.unsubscribe();
     this.messagesSub?.unsubscribe();
-    if (this.typingSubscription) {
-      this.typingSubscription.unsubscribe();
-    }
+    this.typingStatusSub?.unsubscribe();
+    // Unsubscribe from our own typing subject if needed.
+    // (No need to unsubscribe from subjects if they complete, but if you convert to subscription, do so.)
   }
 }

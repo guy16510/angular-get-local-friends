@@ -155,6 +155,11 @@ const schema = a.schema({
     .handler(a.handler.function(setTypingStatus))
     .authorization(allow => [allow.authenticated()]),
 
+  onTypingStatus: a.subscription()
+    .for(a.ref('setTypingStatus'))
+    .handler(a.handler.function(setTypingStatus))
+    .authorization(allow => [allow.authenticated()]),
+    
   acknowledgeMessage: a.mutation()
     .arguments({ messageId: a.string().required() })
     .returns(a.ref('ChatMessage'))

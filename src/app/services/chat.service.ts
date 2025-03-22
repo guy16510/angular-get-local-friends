@@ -55,6 +55,23 @@ export class ChatService {
     await client.mutations.setTypingStatus({ conversationId, userId, isTyping });
   }
 
+  subscribeToTypingStatus(conversationId: string): Observable<{ conversationId: string; userId: string; isTyping: boolean }> {
+    return new Observable<{ conversationId: string; userId: string; isTyping: boolean }>((observer) => {
+      const subscription = client.subscriptions.onTypingStatus().subscribe({
+        next: (event: any) => {
+          const status = event?.data?.onTypingStatus;
+          if (status && status.conversationId === conversationId) {
+            observer.next(status);
+          }
+        },
+        error: (err: any) => {
+          console.error('[ChatService] subscribeToTypingStatus error:', err);
+          observer.error(err);
+        }
+      });
+      return () => subscription.unsubscribe();
+    });
+  }
   /**
    * Subscribes to all new messages and filters only those for the given conversationId.
    * Note: AppSync subscriptions often inherit authMode from schema — change only if you hit errors.
