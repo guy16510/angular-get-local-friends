@@ -10,7 +10,7 @@ if (!TYPING_STATUS_TABLE) throw new Error("Missing environment variable: AMPLIFY
 const ddbClient = new DynamoDB({});
 const docClient = DynamoDBDocument.from(ddbClient);
 
-export const handler = async (event: any) => {
+export const handler: Schema["setTypingStatus"]["functionHandler"] = async (event: any) => {
   const { conversationId, isTyping } = event.arguments;
   const userId = getIdentityId(event.identity);
 
@@ -20,23 +20,27 @@ export const handler = async (event: any) => {
   }
 
   const now = new Date().toISOString();
-  // Set TTL for 5 minutes from now (adjust the minutes as needed)
+  // TTL: set for 5 minutes (300 seconds) from now.
   const ttl = Math.floor(Date.now() / 1000) + (5 * 60);
+  // Create a composite id from conversationId and userId
+  const id = `${conversationId}#${userId}`;
 
   try {
-    // Put will create or replace the existing record
+    // Put the item including the generated "id" and createdAt timestamp.
     await docClient.put({
       TableName: TYPING_STATUS_TABLE,
       Item: {
+        id,
         conversationId,
         userId,
         isTyping,
         updatedAt: now,
+        createdAt: now,
         ttl,
       },
     });
 
-    return { conversationId, userId, isTyping };
+    return { id, conversationId, userId, isTyping, updatedAt: now, createdAt: now };
   } catch (err) {
     console.error(`[setTypingStatus] Error:`, err);
     throw new Error("Internal server error");
