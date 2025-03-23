@@ -66,8 +66,8 @@ mat-card-content {
 }
 
 .animal-card img {
-  width: 150px;
-  height: 150px;
+  width: 250px;
+  height: 250px;
   object-fit: contain;
   margin-bottom: 15px;
 }
@@ -75,6 +75,19 @@ mat-card-content {
 .animal-card h3 {
   color: var(--label-color);
   margin-bottom: 10px;
+}
+
+.animal-card-container {
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-top: 24px;
+}
+
+.animal-card-container .animal-card {
+  width: 48%;
+  min-width: 300px;
 }
 
 .user-details {
@@ -132,4 +145,51 @@ mat-card-content {
 .dark-theme .map-placeholder {
   background-color: rgba(255,255,255,0.05);
   color: #ccc;
+}
+
+.deep-insights-section {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
+.insights-card {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.insights-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+
+.insight-item {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 1.2rem;
+}
+
+.insight-icon {
+  margin-right: 0.75rem;
+  color: #3f51b5;
+  font-size: 24px;
+  margin-top: 3px;
+}
+
+.insight-content strong {
+  display: block;
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: #222;
+}
+
+.insight-content p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #555;
+  line-height: 1.5;
 }

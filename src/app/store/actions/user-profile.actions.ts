@@ -2,7 +2,7 @@ import { UserProfile } from '../../models/user-profile.model';
 
 export class LoadUserProfile {
   static readonly type = '[UserProfile] Load';
-  constructor() {}
+  constructor(public identityId?: string) {}
 }
 
 export class SubmitUserProfile {

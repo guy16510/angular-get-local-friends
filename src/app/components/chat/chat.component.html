@@ -1,15 +1,21 @@
 <div class="chat-container">
-  <!-- Loading indicator at the top -->
+  <!-- Loading -->
   <div class="loading-indicator" *ngIf="loading$ | async">
     <app-loading></app-loading>
   </div>
 
-  <!-- Messages area: shown only when not loading -->
-  <div class="chat-messages" #messagesContainer *ngIf="!(loading$ | async)">
-    <!-- Error message -->
+  <!-- Chat messages area -->
+  <div
+    class="chat-messages"
+    [style.paddingBottom.px]="isOtherUserTyping ? 80 : 16"
+    #messagesContainer
+    *ngIf="!(loading$ | async)"
+  >
+    <!-- Error -->
     <ng-container *ngIf="error$ | async as error">
       <div class="error-message">Error: {{ error }}</div>
     </ng-container>
+
     <!-- Message list -->
     <div *ngFor="let msg of messages$ | async" class="message-wrapper" [ngClass]="{
       'mine': msg.senderId === currentUserId,
@@ -18,12 +24,19 @@
       <app-image-display
         *ngIf="msg.senderId !== currentUserId"
         [identityId]="msg.senderId"
-        class="avatar left-avatar">
+        class="avatar left-avatar"
+        (click)="openUserProfile(msg.senderId)"
+        style="cursor: pointer;">
       </app-image-display>
 
       <mat-card class="message-bubble">
         <div class="text">{{ msg.text }}</div>
-        <div class="timestamp">{{ msg.timestamp | date: 'shortTime' }}</div>
+        <div class="wrapper">
+          <div class="recipientUserName" *ngIf="msg.senderId !== currentUserId">
+            {{ recipientUserName$ | async  }}&nbsp;&nbsp;&nbsp;
+          </div>
+          <div class="timestamp">{{ msg.timestamp | date: 'shortTime' }}</div>
+        </div>
       </mat-card>
 
       <app-image-display
@@ -32,28 +45,27 @@
         class="avatar right-avatar">
       </app-image-display>
     </div>
-  </div>
 
-  <div class="typing-area" *ngIf="isOtherUserTyping">
-    <app-image-display [identityId]="recipientId" class="avatar typing-avatar"></app-image-display>
-    <div class="typing-indicator-content">
-      <div class="dots">
-        <span></span><span></span><span></span>
+    <!-- Typing indicator -->
+    <div class="typing-area-wrapper">
+      <div class="typing-area" *ngIf="isOtherUserTyping">
+        <app-image-display [identityId]="recipientId" class="avatar typing-avatar"></app-image-display>
+        <div class="typing-indicator-content">
+          <div class="dots"><span></span><span></span><span></span></div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Message input -->
+  <!-- Chat input -->
   <div class="chat-input">
     <mat-form-field class="message-field">
       <input
         matInput
         [(ngModel)]="newMessageText"
         placeholder="Type a message..."
-        (keydown.enter)="sendMessage()" 
+        (keydown.enter)="sendMessage()"
         (input)="onInputChange()"
-        (blur)="onInputBlur()"
-        />
+        (blur)="onInputBlur()" />
     </mat-form-field>
     <button mat-icon-button color="primary" (click)="sendMessage()" [disabled]="!newMessageText.trim()">
       <mat-icon>send</mat-icon>

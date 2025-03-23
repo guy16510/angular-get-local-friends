@@ -63,12 +63,20 @@
   .text {
     font-size: 14px;
   }
-  .timestamp {
-    font-size: 11px;
-    opacity: 0.7;
-    margin-top: 4px;
-    text-align: right;
+  .wrapper{
+    width: 100%;
+    .timestamp {
+      font-size: 11px;
+      opacity: 0.7;
+      float:right;
+    }
+    .recipientUserName{
+      font-size: 11px;
+      opacity: 0.7;
+      float:left;
+    }
   }
+
 }
 
 /* "Mine" bubble uses accent color */
@@ -152,3 +160,4 @@
     transform: translateY(-8px);
   }
 }
+

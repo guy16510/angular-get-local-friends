@@ -1,8 +1,8 @@
 import { Component, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router, ParamMap } from '@angular/router';
 import { Store } from '@ngxs/store';
-import { Observable, Subject, Subscription } from 'rxjs';
-import { debounceTime, takeUntil } from 'rxjs/operators';
+import { Observable, Subject, Subscription, of } from 'rxjs';
+import { debounceTime, takeUntil, map, switchMap } from 'rxjs/operators';
 import { AppendMessage, LoadMessages, SendMessage, SetTypingStatus } from '../../store/actions/chat.actions';
 import { ChatService } from '../../services/chat.service';
 import { ChatMessage } from '../../models/chat';
@@ -14,6 +14,8 @@ import { MaterialModule } from '../../shared/material.module';
 import { getNormalizedConversationId } from '../../utils/chat-utils';
 import { ImageDisplayComponent } from '../image-display/image-display.component';
 import { LoadingComponent } from '../shared/loading/loading.component';
+import { UserProfileState } from '../../store/states/user-profile.state';
+import { LoadUserProfile } from '../../store/actions/user-profile.actions';
 
 @Component({
   selector: 'app-chat',
@@ -38,90 +40,89 @@ export class ChatComponent implements OnInit, OnDestroy {
   loading$: Observable<boolean> = this.store.select(ChatState.getLoading);
   error$: Observable<string | null> = this.store.select(ChatState.getError);
   currentUserId: string | null = null;
+  recipientUserName$!: Observable<string | null>;
+
+  private lastMessageCount: number = 0;
 
   constructor(
     private store: Store,
     private chatService: ChatService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
-    this.recipientId = this.route.snapshot.paramMap.get('recipientId') || '';
+    this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe((params: ParamMap) => {
+      this.recipientId = params.get('recipientId') || '';
+      this.initializeConversation();
+    });
+  }
+
+  initializeConversation(): void {
     this.currentUserId = this.store.selectSnapshot(AuthState.identityId);
-    
-    if (!this.currentUserId) {
-      console.error('User not authenticated');
+    if (!this.currentUserId || !this.recipientId) {
+      console.error('Missing current or recipient identityId');
       return;
     }
-    
+  
     this.conversationId = getNormalizedConversationId(this.currentUserId, this.recipientId);
-
-    if (!this.conversationId || !this.recipientId) {
-      console.error('Missing conversationId or recipientId');
-      return;
-    }
-
+    if (!this.conversationId) return;
+  
     console.log(`[ChatComponent] Initializing chat for conversation: ${this.conversationId}`);
-    
-    // Load initial messages
     this.store.dispatch(new LoadMessages(this.conversationId));
-    
-    // Get messages from store
+  
+    const recipientUserName = this.store.selectSnapshot(UserProfileState.getUserNameById)(this.recipientId);
+    if (!recipientUserName) {
+      this.store.dispatch(new LoadUserProfile(this.recipientId));
+    }
+  
     this.messages$ = this.store.select(state =>
       ChatState.messagesForConversation(state.chat)(this.conversationId)
     );
-
-    // Auto-scroll when messages arrive
-    this.messageStoreSubscription = this.messages$.subscribe(() => {
-      setTimeout(() => this.scrollToBottom(), 0);
+  
+    this.messageStoreSubscription = this.messages$.subscribe((messages) => {
+      const currentCount = messages?.length ?? 0;
+      if (currentCount > this.lastMessageCount) {
+        setTimeout(() => this.scrollToBottom(), 0);
+      }
+      this.lastMessageCount = currentCount;
     });
-
-    // Subscribe to real-time messages for this conversation
-    console.log(`[ChatComponent] Setting up message subscription for conversation: ${this.conversationId}`);
+  
     this.messageSubscription = this.chatService
       .subscribeToMessagesForConversation(this.conversationId)
       .subscribe({
         next: (message: ChatMessage) => {
-          console.log('[ChatComponent] Received new message via subscription:', message);
-          if (message) {
-            // Dispatch to store to update UI
-            this.store.dispatch(new AppendMessage(message));
-          }
+          if (message) this.store.dispatch(new AppendMessage(message));
         },
-        error: (err) => {
-          console.error('[ChatComponent] Message subscription error:', err);
-        }
+        error: (err) => console.error('[ChatComponent] Message subscription error:', err)
       });
-
-    // Subscribe to typing status updates
+  
     this.typingStatusSubscription = this.chatService
       .subscribeToTypingStatus(this.conversationId)
       .subscribe({
-        next: (statusUpdate: { conversationId: string; userId: string; isTyping: boolean }) => {
-          if (statusUpdate.userId === this.currentUserId) {
-            console.log('[ChatComponent] Ignoring self typing status update:', statusUpdate);
-            return;
+        next: ({ userId, isTyping }) => {
+          if (userId !== this.currentUserId) {
+            this.isOtherUserTyping = isTyping;
+            if (!isTyping) setTimeout(() => this.scrollToBottom(), 0);
           }
-          console.log('[ChatComponent] Received typing status update from other user:', statusUpdate);
-          this.isOtherUserTyping = statusUpdate.isTyping;
         },
-        error: (err) => {
-          console.error('[ChatComponent] Typing status subscription error:', err);
-        }
+        error: (err) => console.error('[ChatComponent] Typing status subscription error:', err)
       });
-
-    // Detect and debounce our own typing
+  
     this.typingSubject.pipe(
       debounceTime(500),
       takeUntil(this.destroy$)
     ).subscribe((isTyping: boolean) => {
       this.store.dispatch(new SetTypingStatus(this.conversationId, isTyping));
     });
+  
+    this.recipientUserName$ = this.store.select(UserProfileState.getUserNameById).pipe(
+      map(selector => selector?.(this.recipientId) || null)
+    );
   }
 
   sendMessage(): void {
     if (!this.newMessageText.trim()) return;
-    console.log(`[ChatComponent] Sending message to ${this.recipientId}: ${this.newMessageText}`);
     this.store.dispatch(new SendMessage(this.recipientId, this.newMessageText));
     this.newMessageText = '';
     this.typingSubject.next(false);
@@ -136,27 +137,25 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   private scrollToBottom(): void {
-    if (this.messagesContainer) {
-      const el = this.messagesContainer.nativeElement;
-      el.scrollTop = el.scrollHeight;
+    if (this.messagesContainer?.nativeElement) {
+      this.messagesContainer.nativeElement.scrollTop = this.messagesContainer.nativeElement.scrollHeight;
     }
   }
 
   ngOnDestroy(): void {
-    console.log('[ChatComponent] Cleaning up subscriptions');
     this.destroy$.next();
     this.destroy$.complete();
-    
-    if (this.messageSubscription) {
-      this.messageSubscription.unsubscribe();
-    }
-    
-    if (this.messageStoreSubscription) {
-      this.messageStoreSubscription.unsubscribe();
-    }
-    
-    if (this.typingStatusSubscription) {
-      this.typingStatusSubscription.unsubscribe();
-    }
+    this.messageSubscription?.unsubscribe();
+    this.messageStoreSubscription?.unsubscribe();
+    this.typingStatusSubscription?.unsubscribe();
   }
+
+  openUserProfile(userId: string): void {
+    this.router.navigate(['/user-bio', userId]);
+  }
+
+  getUserNameForMessage(senderId: string): string {
+    return this.store.selectSnapshot(UserProfileState.getUserNameById)?.(senderId) || 'Friend';
+  }
+  
 }

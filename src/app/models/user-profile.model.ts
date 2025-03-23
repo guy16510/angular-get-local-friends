@@ -12,6 +12,14 @@ export interface AnimalProfile {
   fullDescription: string;
 }
 
+export interface DeepProfileInsights {
+  personalityNarrative: string;
+  socialRole: string;
+  friendshipNeeds: string;
+  potentialGrowthPath: string;
+  compatibilityTip: string;
+}
+
 export interface UserProfile {
   identityId: string;
   locationLat: number;
@@ -22,12 +30,14 @@ export interface UserProfile {
     answer: string;
   }[];
   lastOnlineAt?: string;
-  selfProfile?: AnimalProfile;      // Corrected to AnimalProfile
-  seekingProfile?: AnimalProfile;   // Corrected to AnimalProfile
+  selfProfile?: AnimalProfile;
+  seekingProfile?: AnimalProfile;
+  deepInsights?: DeepProfileInsights;
   animalProfileLoadedAt?: string;
 }
+
 export interface UserProfileStateModel {
-    profile: UserProfile | null;
-    loading: boolean;
-    error: string | null;
+  profile: UserProfile | null;
+  loading: boolean;
+  error: string | null;
 }

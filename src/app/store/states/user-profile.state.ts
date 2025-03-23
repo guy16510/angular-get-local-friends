@@ -10,8 +10,7 @@ import {
   UpdateUserOnlineStatus,
   LoadAnimalProfile,
   LoadAnimalProfileFail,
-  LoadAnimalProfileSuccess,
-  
+  LoadAnimalProfileSuccess
 } from '../actions/user-profile.actions';
 import { tap, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
@@ -19,6 +18,7 @@ import { AuthState } from './auth.state';
 
 export interface UserProfileStateModel {
   profile: UserProfile | null;
+  profilesById: { [key: string]: UserProfile };
   loading: boolean;
   error: string | null;
 }
@@ -27,13 +27,14 @@ export interface UserProfileStateModel {
   name: 'userProfile',
   defaults: {
     profile: null,
+    profilesById: {},
     loading: false,
     error: null
   }
 })
 @Injectable()
 export class UserProfileState {
-  constructor(private userProfileService: UserProfileService, private store: Store) { }
+  constructor(private userProfileService: UserProfileService, private store: Store) {}
 
   @Selector()
   static profile(state: UserProfileStateModel) {
@@ -49,9 +50,15 @@ export class UserProfileState {
   static getSelfProfile(state: UserProfileStateModel) {
     return state?.profile?.selfProfile;
   }
+
   @Selector()
   static getSeekingProfile(state: UserProfileStateModel) {
     return state?.profile?.seekingProfile;
+  }
+
+  @Selector()
+  static getDeepInsights(state: UserProfileStateModel) {
+    return state?.profile?.deepInsights;
   }
 
   @Selector()
@@ -59,10 +66,15 @@ export class UserProfileState {
     return state.error;
   }
 
+  @Selector()
+  static getUserNameById(state: UserProfileStateModel) {
+    return (identityId: string) => state.profilesById[identityId]?.userName || null;
+  }
+
   @Action(LoadUserProfile)
-  loadUserProfile(ctx: StateContext<UserProfileStateModel>) {
+  loadUserProfile(ctx: StateContext<UserProfileStateModel>, action: LoadUserProfile) {
     ctx.patchState({ loading: true, error: null });
-    const identityId = this.store.selectSnapshot(AuthState.identityId);
+    const identityId = action.identityId || this.store.selectSnapshot(AuthState.identityId);
     if (!identityId) {
       ctx.dispatch(new LoadUserProfileFail('Missing identityId'));
       return of();
@@ -105,8 +117,13 @@ export class UserProfileState {
       }
     }
 
+    const state = ctx.getState();
     ctx.patchState({
       profile: parsedProfile,
+      profilesById: {
+        ...state.profilesById,
+        [parsedProfile.identityId]: parsedProfile
+      },
       loading: false,
       error: null
     });
@@ -125,9 +142,12 @@ export class UserProfileState {
     ctx.patchState({ loading: true });
     return this.userProfileService.submitUserProfile(action.payload).pipe(
       tap((response) => {
-        debugger;
         ctx.patchState({
           profile: response,
+          profilesById: {
+            ...ctx.getState().profilesById,
+            [response.identityId]: response
+          },
           loading: false,
           error: null
         });
@@ -138,22 +158,21 @@ export class UserProfileState {
       })
     );
   }
+
   @Action(UpdateUserOnlineStatus)
   updateUserOnlineStatus(ctx: StateContext<UserProfileStateModel>) {
     const identityId = this.store.selectSnapshot(AuthState.identityId);
     if (!identityId) return of();
 
     return this.userProfileService.onlinePing(identityId).pipe(
-      tap(() => {
-        // optional: patch lastPing timestamp if you want
-        // ctx.patchState({ lastPing: new Date().toISOString() });
-      }),
+      tap(() => {}),
       catchError(err => {
         console.error('Online Ping failed:', err.message);
-        return of(); // swallow errors silently
+        return of();
       })
     );
   }
+
   @Action(LoadAnimalProfile)
   loadAnimalProfile(ctx: StateContext<UserProfileStateModel>) {
     const identityId = this.store.selectSnapshot(AuthState.identityId);
@@ -161,27 +180,34 @@ export class UserProfileState {
       ctx.dispatch(new LoadAnimalProfileFail('Missing identityId'));
       return of();
     }
-  
+
     ctx.patchState({ loading: true, error: null });
     return this.userProfileService.getAnimalProfile().pipe(
       tap((response) => {
-        // Retrieve the current profile (if any)
         const currentProfile = ctx.getState().profile;
-        
-        // Build an updated profile ensuring all required fields are provided.
+
         const updatedProfile: UserProfile = {
           identityId: identityId,
-          locationLat: currentProfile?.locationLat ?? 0,        // Default to 0 if not set
-          locationLng: currentProfile?.locationLng ?? 0,        // Default to 0 if not set
-          userName: currentProfile?.userName ?? '',             // Default to empty string if not set
-          surveyAnswers: currentProfile?.surveyAnswers ?? [],   // Default to empty array if not set
-          lastOnlineAt: currentProfile?.lastOnlineAt,           // Preserve if already set (optional)
-          selfProfile: response.selfProfile,                    // From animal profile service
-          seekingProfile: response.seekingProfile,              // From animal profile service
-          animalProfileLoadedAt: new Date().toISOString()       // Current timestamp
+          locationLat: currentProfile?.locationLat ?? 0,
+          locationLng: currentProfile?.locationLng ?? 0,
+          userName: currentProfile?.userName ?? '',
+          surveyAnswers: currentProfile?.surveyAnswers ?? [],
+          lastOnlineAt: currentProfile?.lastOnlineAt,
+          selfProfile: response.selfProfile,
+          seekingProfile: response.seekingProfile,
+          deepInsights: response.deepInsights,
+          animalProfileLoadedAt: new Date().toISOString()
         };
-  
-        ctx.patchState({ profile: updatedProfile, loading: false, error: null });
+
+        ctx.patchState({
+          profile: updatedProfile,
+          profilesById: {
+            ...ctx.getState().profilesById,
+            [identityId]: updatedProfile
+          },
+          loading: false,
+          error: null
+        });
         ctx.dispatch(new LoadAnimalProfileSuccess(response));
       }),
       catchError(err => {

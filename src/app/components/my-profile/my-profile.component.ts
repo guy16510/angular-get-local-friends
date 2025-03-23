@@ -29,7 +29,7 @@ export class MyProfileComponent implements OnInit {
   @ViewChild('uploadComponent') uploadComponent!: UploadComponent;
 
   constructor(private fileService: FileService) {}
-  
+
   async ngOnInit(): Promise<void> {
     this.store.dispatch(new LoadUserProfile());
     await this.loadUserProfile();
@@ -45,23 +45,36 @@ export class MyProfileComponent implements OnInit {
       const imgSrc = await this.fileService.getUserImage(identityId);
       if (imgSrc) {
         this.profileImage = imgSrc;
+      } else {
+        this.profileImage = '/assets/images/noImageUploaded.jpg';
       }
     } catch (error) {
       console.error(error);
+      this.profileImage = '/assets/images/noImageUploaded.jpg';
     }
   }
 
-  // Trigger the file input in the hidden upload component.
   triggerEdit(): void {
     this.uploadComponent.triggerFileInput();
   }
 
-  // Update the profile image once the upload component notifies us.
   onImageUpdated(newImage: string): void {
     this.profileImage = newImage;
   }
 
   viewAnimalProfile(): void {
     this.store.dispatch(new LoadAnimalProfile());
+  }
+
+  getDeepInsights(userProfile: UserProfile | null) {
+    return userProfile?.deepInsights ?? null;
+  }
+
+  getSelfAnimalImage(userProfile: UserProfile | null): string | null {
+    return userProfile?.selfProfile?.animal ? `/assets/images/animal/male/${userProfile.selfProfile.animal.toLowerCase()}.png` : null;
+  }
+
+  getSeekingAnimalImage(userProfile: UserProfile | null): string | null {
+    return userProfile?.seekingProfile?.animal ? `/assets/images/animal/male/${userProfile.seekingProfile.animal.toLowerCase()}.png` : null;
   }
 }
