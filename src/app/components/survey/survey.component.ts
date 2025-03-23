@@ -1,4 +1,3 @@
-// survey.component.ts
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { SURVEY_QUESTIONS, SurveyQuestion } from '../../data/surveyQuestions';

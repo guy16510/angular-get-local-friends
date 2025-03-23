@@ -63,24 +63,6 @@ function shuffleArray<T>(array: T[]): T[] {
     return newArray;
 }
 
-function generateAdditionalDetails(answers: SurveyAnswers): string {
-    const details: string[] = [];
-
-    if (answers[5]) {
-        const age = Array.isArray(answers[5]) ? answers[5].join(', ') : typeof answers[5] === 'object' ? JSON.stringify(answers[5]) : String(answers[5]);
-        details.push(`Age range: ${age}`);
-    }
-    if (Array.isArray(answers[16])) {
-        details.push(`Interests: ${answers[16].join(', ')}`);
-    } else if (answers[16]) {
-        details.push(`Interests: ${typeof answers[16] === 'object' ? JSON.stringify(answers[16]) : String(answers[16])}`);
-    }
-    if (answers[18]) {
-        details.push(`Enjoys: ${typeof answers[18] === 'object' ? JSON.stringify(answers[18]) : String(answers[18])}`);
-    }
-    return details.join('\n');
-}
-
 export function generateSelfProfile(traits: Traits, answers: SurveyAnswers): AnimalProfile {
     const cacheKey = `self_${JSON.stringify(traits)}_${JSON.stringify(answers)}`;
     const cachedProfile = profileCache.get(cacheKey);
@@ -92,8 +74,7 @@ export function generateSelfProfile(traits: Traits, answers: SurveyAnswers): Ani
     const suitableAdjectives = findSuitableAdjectives(traits);
     const adjective = suitableAdjectives[0];
     const animalCharacteristic = getAnimalCharacteristics(matchingAnimal.name);
-    const additionalDetails = generateAdditionalDetails(answers);
-    const fullDescription = `You are a ${adjective} ${matchingAnimal.name}!\n\n${animalCharacteristic}\n\n${additionalDetails}`;
+    const fullDescription = `You are a ${adjective} ${matchingAnimal.name}!\n\n${animalCharacteristic}`;
     const profile: AnimalProfile = {
         animal: matchingAnimal.name,
         adjective,
