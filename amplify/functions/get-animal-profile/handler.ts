@@ -18,7 +18,11 @@ export const handler = async (event: any) => {
     const identityId = getIdentityId(event.identity);
     if (!identityId) {
       logger.error('No identity provided');
-      return { statusCode: 401, body: JSON.stringify({ message: 'Unauthorized: No identity provided.' }) };
+      return {
+        statusCode: 401,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: 'Unauthorized: No identity provided.' })
+      };
     }
 
     let surveyAnswers: SurveyAnswers;
@@ -35,19 +39,27 @@ export const handler = async (event: any) => {
 
     if (!surveyResult.Items || surveyResult.Items.length === 0) {
       logger.error('Survey not found for identity', { identityId });
-      return { statusCode: 404, body: JSON.stringify({ message: 'Survey not found for user' }) };
+      return {
+        statusCode: 404,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: 'Survey not found for user' })
+      };
     }
 
     existingUserProfile = surveyResult.Items[0];
     const rawAnswers =
-    typeof existingUserProfile.surveyAnswers === 'string'
-      ? existingUserProfile.surveyAnswers
-      : unwrapString(existingUserProfile.surveyAnswers);
-  surveyAnswers = JSON.parse(rawAnswers);
+      typeof existingUserProfile.surveyAnswers === 'string'
+        ? existingUserProfile.surveyAnswers
+        : unwrapString(existingUserProfile.surveyAnswers);
+    surveyAnswers = JSON.parse(rawAnswers);
 
     if (!surveyAnswers) {
       logger.error('Survey answers are missing for user', { identityId, existingUserProfile });
-      return { statusCode: 400, body: JSON.stringify({ message: 'Survey answers not found in user profile.' }) };
+      return {
+        statusCode: 400,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: 'Survey answers not found in user profile.' })
+      };
     }
 
     logger.info('Survey answers retrieved', { surveyAnswers });
@@ -56,21 +68,23 @@ export const handler = async (event: any) => {
       validateSurveyAnswers(surveyAnswers);
     } catch (error: any) {
       logger.error('Invalid survey data', { error: error.message });
-      return { statusCode: 400, body: JSON.stringify({ message: error.message }) };
+      return {
+        statusCode: 400,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: error.message })
+      };
     }
 
     const traits = calculatePersonalityTraits(surveyAnswers);
     const selfProfile = generateSelfProfile(traits, surveyAnswers);
     const seekingProfile = generateSeekingProfile(traits, surveyAnswers);
 
-    let userProfile = existingUserProfile;
-
     const updatedUserProfile = {
-      ...userProfile,
+      ...existingUserProfile,
       updatedAt: new Date().toISOString(),
       selfProfile,
       seekingProfile,
-      animalCreatedAt: new Date().toISOString(),
+      animalCreatedAt: new Date().toISOString()
     };
 
     await docClient.put({
@@ -82,11 +96,16 @@ export const handler = async (event: any) => {
 
     return {
       statusCode: 200,
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ selfProfile, seekingProfile })
     };
   } catch (error: any) {
     logger.error('Error processing request', { error: error.message });
-    return { statusCode: 500, body: JSON.stringify({ message: 'Internal server error' }) };
+    return {
+      statusCode: 500,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: 'Internal server error' })
+    };
   }
 };
 

@@ -75,6 +75,9 @@
   <ng-container *ngIf="error$ | async as error">
     <p class="error">{{ error }}</p>
   </ng-container>
+  <button mat-raised-button color="accent" class="animal-profile-button" (click)="viewAnimalProfile()">
+    View Animal Profile
+  </button>
   
   <ng-container *ngIf="(userProfile$ | async) as userProfile">
     <ng-container *ngIf="!(loading$ | async) && !(error$ | async)">
@@ -121,7 +124,6 @@
     </div>
   </ng-container>
 </ng-container>
-
 </mat-card>
 
 <app-upload-image #uploadComponent (imageUpdated)="onImageUpdated($event)" style="display: none;"></app-upload-image>
