@@ -46,7 +46,9 @@ export const handler = async (event: any): Promise<HandlerResponse> => {
       updatedAt: new Date().toISOString(),
       animalCreatedAt: new Date().toISOString(),
       selfProfile,
-      seekingProfile
+      seekingProfile,
+      deepInsights,
+      traits
     };
 
     await docClient.put({

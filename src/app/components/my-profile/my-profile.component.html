@@ -75,12 +75,33 @@
   <ng-container *ngIf="error$ | async as error">
     <p class="error">{{ error }}</p>
   </ng-container>
-  <button mat-raised-button color="accent" class="animal-profile-button" (click)="viewAnimalProfile()">
-    View Animal Profile
-  </button>
+
   
   <ng-container *ngIf="(userProfile$ | async) as userProfile">
     <ng-container *ngIf="!(loading$ | async) && !(error$ | async)">
+
+
+
+    <div class="user-details">
+      <h2>{{ userProfile.userName }}</h2>
+      <div class="location">
+        <mat-icon>location_on</mat-icon>
+        <span>{{ userProfile.locationLat | number:'1.2-2' }}, {{ userProfile.locationLng | number:'1.2-2' }}</span>
+      </div>
+      <button mat-raised-button color="accent" (click)="triggerEdit()">
+        Change Profile Image
+      </button>
+    </div>
+
+    <img
+      class="profile-image"
+      [src]="profileImage"
+      (error)="profileImage = '/assets/images/noImageUploaded.jpg'"
+    />
+
+    <button mat-raised-button color="accent" class="animal-profile-button" (click)="viewAnimalProfile()">
+      Fetch Animal Profile
+    </button>
 
     <div class="animal-profile-section">
       <div class="animal-card">
@@ -102,22 +123,6 @@
       </div>
     </div>
 
-    <div class="user-details">
-      <h2>{{ userProfile.userName }}</h2>
-      <div class="location">
-        <mat-icon>location_on</mat-icon>
-        <span>{{ userProfile.locationLat | number:'1.2-2' }}, {{ userProfile.locationLng | number:'1.2-2' }}</span>
-      </div>
-      <button mat-raised-button color="accent" (click)="triggerEdit()">
-        Change Profile Image
-      </button>
-    </div>
-
-    <img
-      class="profile-image"
-      [src]="profileImage"
-      (error)="profileImage = '/assets/images/noImageUploaded.jpg'"
-    />
 
     <div class="map-placeholder">
       <p>Map placeholder - Nearby connections coming soon!</p>
