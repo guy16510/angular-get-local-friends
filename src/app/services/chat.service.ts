@@ -53,9 +53,8 @@ export class ChatService {
         .onTypingStatus({ conversationId }) // this should add the variable to the subscription query
         .subscribe({
           next: (event: any) => {
-            const status = event?.data?.onTypingStatus;
-            if (status && status.conversationId === conversationId) {
-              observer.next(status);
+            if(event){
+              observer.next(event);
             }
           },
           error: (err: any) => {
@@ -69,21 +68,21 @@ export class ChatService {
 
   subscribeToMessagesForConversation(conversationId: string): Observable<ChatMessage> {
     return new Observable<ChatMessage>((observer) => {
-      const subscription = client.subscriptions.onCreateMessage().subscribe({
-        next: (event: any) => {
-          console.log('onCreateMessage raw event:', event);
-          const message = event?.data?.onCreateMessage;
-          // Remove filter temporarily for testing
-          observer.next(message);
-        },
-        error: (err: any) => {
-          console.error('[ChatService] subscribeToMessages error:', err);
-          observer.error(err);
-        }
-      });
+      const subscription = client.subscriptions.onCreateMessage()
+        .subscribe({
+          next: (event: any) => {
+            const message = event?.data?.onCreateMessage;
+            if (message && message.conversationId === conversationId) {
+              observer.next(message);
+            }
+          },
+          error: (err: any) => {
+            console.error('[ChatService] subscribeToMessages error:', err);
+            observer.error(err);
+          }
+        });
+      
       return () => subscription.unsubscribe();
     });
   }
-  
- 
 }
