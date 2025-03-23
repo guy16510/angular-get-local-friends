@@ -75,12 +75,12 @@ export class ChatState {
   }
 
   @Action(LoadConversations)
+  @Action(LoadConversations)
   loadConversations(ctx: StateContext<ChatStateModel>, action: LoadConversations) {
     ctx.patchState({ loading: true, error: null });
-    return from(this.chatService.listConversations()).pipe(
-      switchMap((conversations$: Observable<Conversation[]>) => conversations$),
+  
+    return this.chatService.listConversations().pipe(
       tap((conversations: Conversation[]) => {
-        const state = ctx.getState() as ChatStateModel;
         ctx.patchState({
           conversations,
           loading: false,

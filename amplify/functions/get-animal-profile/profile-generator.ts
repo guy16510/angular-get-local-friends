@@ -106,24 +106,21 @@ function shuffleArray<T>(array: T[]): T[] {
  */
 function generateAdditionalDetails(answers: SurveyAnswers): string {
     const details: string[] = [];
-    
-    // Add age range if provided
+  
     if (answers[5]) {
-        details.push(`Age range: ${answers[5]}`);
+      details.push(`Age range: ${answers[5]}`);
     }
-    
-    // Add interests if provided
-    if (answers[16] && Array.isArray(answers[16]) && answers[16].length > 0) {
-        details.push(`Interests: ${answers[16].join(', ')}`);
+  
+    if (Array.isArray(answers[16])) {
+      details.push(`Interests: ${answers[16].join(', ')}`);
     }
-    
-    // Add preferred activities
+  
     if (answers[18]) {
-        details.push(`Enjoys: ${answers[18]}`);
+      details.push(`Enjoys: ${answers[18]}`);
     }
-    
+  
     return details.join('\n');
-}
+  }
 
 /**
  * Generate self profile based on calculated traits and survey answers

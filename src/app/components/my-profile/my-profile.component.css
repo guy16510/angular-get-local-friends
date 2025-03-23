@@ -46,6 +46,7 @@ mat-card-content {
   margin: 30px auto;
   background-color: var(--bio-layout-bg);
   box-shadow: var(--mdc-elevated-card-container-elevation);
+  margin-top: 70px;
 }
 
 .animal-profile-section {
