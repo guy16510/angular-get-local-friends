@@ -1,4 +1,4 @@
-<mat-card class="profile-container mat-elevation-z4">
+<!-- <mat-card class="profile-container mat-elevation-z4">
   <ng-container *ngIf="loading$ | async">
     <app-loading></app-loading>
   </ng-container>
@@ -23,10 +23,7 @@
           View Animal Profile
         </button>
       </div>
-
-      <!-- Hidden Upload Component used only for file selection -->
       <app-upload-image #uploadComponent (imageUpdated)="onImageUpdated($event)" style="display: none;"></app-upload-image>
-
       <div class="profile-details" *ngIf="userProfile$ | async as userProfile">
         <h2>Profile Information</h2>
         <mat-list>
@@ -67,4 +64,64 @@
       </mat-card>
     </mat-card-content>
   </ng-container>
+</mat-card> -->
+
+<mat-card class="profile-container mat-elevation-z6">
+
+  <ng-container *ngIf="loading$ | async">
+    <app-loading></app-loading>
+  </ng-container>
+  
+  <ng-container *ngIf="error$ | async as error">
+    <p class="error">{{ error }}</p>
+  </ng-container>
+  
+  <ng-container *ngIf="(userProfile$ | async) as userProfile">
+    <ng-container *ngIf="!(loading$ | async) && !(error$ | async)">
+
+    <div class="animal-profile-section">
+      <div class="animal-card">
+        <img
+          [src]="'/assets/images/animal/male/' + userProfile.selfProfile?.animal?.toLowerCase() + '.png'"
+          alt="{{ userProfile.selfProfile?.animal }}"
+        />
+        <h3>You are a {{userProfile.selfProfile?.adjective}} {{ userProfile.selfProfile?.animal }}</h3>
+        <p>{{ userProfile.selfProfile?.fullDescription }}</p>
+      </div>
+
+      <div class="animal-card">
+        <img
+          [src]="'/assets/images/animal/male/' + userProfile.seekingProfile?.animal?.toLowerCase() + '.png'"
+          alt="{{ userProfile.seekingProfile?.animal }}"
+        />
+        <h3>Looking for a {{userProfile.seekingProfile?.adjective}} {{ userProfile.seekingProfile?.animal }}</h3>
+        <p>{{ userProfile.seekingProfile?.fullDescription }}</p>
+      </div>
+    </div>
+
+    <div class="user-details">
+      <h2>{{ userProfile.userName }}</h2>
+      <div class="location">
+        <mat-icon>location_on</mat-icon>
+        <span>{{ userProfile.locationLat | number:'1.2-2' }}, {{ userProfile.locationLng | number:'1.2-2' }}</span>
+      </div>
+      <button mat-raised-button color="accent" (click)="triggerEdit()">
+        Change Profile Image
+      </button>
+    </div>
+
+    <img
+      class="profile-image"
+      [src]="profileImage"
+      (error)="profileImage = '/assets/images/noImageUploaded.jpg'"
+    />
+
+    <div class="map-placeholder">
+      <p>Map placeholder - Nearby connections coming soon!</p>
+    </div>
+  </ng-container>
+</ng-container>
+
 </mat-card>
+
+<app-upload-image #uploadComponent (imageUpdated)="onImageUpdated($event)" style="display: none;"></app-upload-image>

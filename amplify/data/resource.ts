@@ -132,10 +132,6 @@ const schema = a.schema({
     .handler(a.handler.function(createMessage))
     .authorization(allow => [allow.authenticated()]),
 
-  onCreateMessage: a.subscription()
-    .for(a.ref('createMessage'))
-    .authorization(allow => [allow.authenticated()]),
-
   customListMessagesByConversationId: a.query()
     .arguments({ conversationId: a.string().required(), limit: a.integer(), nextToken: a.string() })
     .returns(a.ref('ChatMessage').array()) // ✅ FIXED: array of model
