@@ -47,9 +47,6 @@ span#logoText {
 }
 
 .nav-links a {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
   text-decoration: none;
   font-size: 1rem;
   color: inherit;
@@ -94,12 +91,9 @@ span#logoText {
 /* Desktop Dropdown */
 @media (min-width: 769px) {
   .profile-dropdown {
-    background-color: rgba(217, 217, 217, 0.8);
-    color: #000000;
     position: absolute;
     right: 0;
     top: 40px;
-    width: 150px !important;
     border-radius: 8px;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
     overflow: hidden;
