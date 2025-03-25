@@ -29,11 +29,11 @@ export const auth = defineAuth({
   userAttributes: {
     nickname: {
       mutable: true,
-      required: true,
+      required: false,
     },
     birthdate: {
       mutable: true,
-      required: true,
+      required: false,
     },
     gender: {
       mutable: true,
