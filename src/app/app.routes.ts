@@ -54,6 +54,26 @@ export const routes: Routes = [
     loadComponent: () => import('./components/user-bio/user-bio.component').then(m => m.UserBioComponent)
   },
   {
+    path: 'legal',
+    loadComponent: () => import('./components/legal-pages/legal/legal.component').then(m => m.LegalComponent)
+  },
+  {
+    path: 'safety',
+    loadComponent: () => import('./components/legal-pages/safety/safety.component').then(m => m.SafetyComponent)
+  },
+  {
+    path: 'terms',
+    loadComponent: () => import('./components/legal-pages/terms/terms.component').then(m => m.TermsComponent)
+  },
+  {
+    path: 'privacy',
+    loadComponent: () => import('./components/legal-pages/privacy/privacy.component').then(m => m.PrivacyComponent)
+  },
+  {
+    path: 'cookie-policy',
+    loadComponent: () => import('./components/legal-pages/cookie-policy/cookie-policy.component').then(m => m.CookiePolicyComponent)
+  },
+  {
     path: '**',
     redirectTo: '404'
   }

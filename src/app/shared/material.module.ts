@@ -14,8 +14,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { MatSelectModule } from '@angular/material/select';
-
-
+import { MatMenuModule } from '@angular/material/menu';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
   exports: [
@@ -32,7 +32,9 @@ import { MatSelectModule } from '@angular/material/select';
     MatSliderModule,
     MatProgressBarModule,
     MatGridListModule,
-    MatSelectModule
+    MatSelectModule,
+    MatMenuModule,
+    FormsModule
   ]
 })
 export class MaterialModule {}

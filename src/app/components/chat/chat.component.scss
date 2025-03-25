@@ -45,38 +45,45 @@
 
 /* Avatars on each side */
 .avatar {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  display: block;
+  min-height: 44px;
   margin: 0 8px;
 }
 
 /* The message bubble itself */
 .message-bubble {
-  max-width: 60%;
-  padding: 8px 12px;
-  border-radius: 12px;
-  margin: 0 8px;
+  max-width: 75%;
   background-color: var(--mdc-elevated-card-container-color);
-  color: inherit;
-
-  .text {
-    font-size: 14px;
-  }
-  .wrapper{
-    width: 100%;
-    .timestamp {
-      font-size: 11px;
-      opacity: 0.7;
-      float:right;
-    }
-    .recipientUserName{
-      font-size: 11px;
-      opacity: 0.7;
-      float:left;
-    }
-  }
-
+  border-radius: 16px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: var(--mdc-elevated-card-container-elevation);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.message-wrapper.mine .message-bubble {
+  background-color: var(--theme-accent);
+  color: var(--theme-accent-contrast);
+}
+.message-bubble .recipientUserName {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--label-color);
+}
+.message-bubble .text {
+  font-size: 15px;
+  line-height: 1.4;
+}
+.message-bubble .timestamp {
+  font-size: 11px;
+  opacity: 0.6;
+  text-align: right;
 }
 
 /* "Mine" bubble uses accent color */
@@ -123,9 +130,10 @@
 }
 
 .typing-avatar {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
+  object-fit: cover;
   margin-right: 8px;
 }
 
@@ -159,5 +167,26 @@
   40% {
     transform: translateY(-8px);
   }
+}
+
+@media (max-width: 600px) {
+  .message-bubble {
+    max-width: 85%;
+    padding: 10px 14px;
+  }
+
+  .message-bubble .text {
+    font-size: 12px;
+  }
+
+  // .chat-input {
+  //   flex-direction: column;
+  //   align-items: stretch;
+  // }
+
+  // .chat-input .message-field {
+  //   margin-right: 0;
+  //   margin-bottom: 8px;
+  // }
 }
 

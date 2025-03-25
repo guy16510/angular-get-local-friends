@@ -339,3 +339,17 @@ footer {
   background-color: #1e1e1e !important;
   color: #fff !important;
 }
+
+.container{
+  padding-top:80px;
+  justify-content: center;
+  align-items: center;
+  margin: auto;
+  width: 80%;
+}
+
+.container mat-card-title{
+  font-size: 30px;
+  text-align: center;
+  padding-bottom: 2rem;
+}

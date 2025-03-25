@@ -115,8 +115,8 @@
     display: none; // Hide by default on desktop
     @media (max-width: 768px) {
       display: block;
-      width: 80px;  // smaller size for mobile
-      height: 80px;
+      width: 50%; // smaller size for mobile
+      height: auto;
       flex-shrink: 0;
       // Optionally, add margin to separate from the text
       margin-left: 1rem;

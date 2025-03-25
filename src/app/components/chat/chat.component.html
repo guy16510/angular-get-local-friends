@@ -30,13 +30,16 @@
       </app-image-display>
 
       <mat-card class="message-bubble">
-        <div class="text">{{ msg.text }}</div>
-        <div class="wrapper">
-          <div class="recipientUserName" *ngIf="msg.senderId !== currentUserId">
-            {{ recipientUserName$ | async  }}&nbsp;&nbsp;&nbsp;
-          </div>
-          <div class="timestamp">{{ msg.timestamp | date: 'shortTime' }}</div>
+        <div 
+          class="recipientUserName" 
+          *ngIf="msg.senderId !== currentUserId"
+          (click)="openUserProfile(msg.senderId)"
+          style="cursor: pointer;"
+          >
+          {{ recipientUserName$ | async }}
         </div>
+        <div class="text">{{ msg.text }}</div>
+        <div class="timestamp">{{ msg.timestamp | date: 'shortTime' }}</div>
       </mat-card>
 
       <app-image-display

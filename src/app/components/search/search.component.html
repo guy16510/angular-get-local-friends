@@ -1,56 +1,66 @@
 <main class="search-container">
-  <mat-card class="search-card">
-    <mat-card-title>Find Friends Nearby</mat-card-title>
-    <mat-card-content>
-      <div class="search-controls">
-        <span class="location-info">Search near: <strong>{{city}}</strong></span>
-        <mat-form-field class="radius-field" appearance="outline">
-          <mat-label>Radius</mat-label>
+  <div class="search-header">
+    <h1 class="header-title">Find Friends Nearby</h1>
+    <p class="header-subtitle">Discover people around you in an instant.</p>
+  </div>
+
+  <mat-card class="search-card modern-card">
+    <div class="search-form">
+      <div class="form-field">
+        <mat-form-field appearance="outline" class="radius-field">
+          <mat-label>Radius (mi)</mat-label>
           <mat-select [(ngModel)]="radius" name="radius">
-            <mat-option *ngFor="let option of radiusOptions" [value]="option">{{ option }} mi</mat-option>
+            <mat-option *ngFor="let option of radiusOptions" [value]="option">
+              {{ option }}
+            </mat-option>
           </mat-select>
         </mat-form-field>
-
-        <button mat-raised-button color="accent" (click)="usePreciseLocation()">Precise Location</button>
-        <button mat-raised-button color="primary" (click)="searchUsers()" [disabled]="loading$ | async">Search</button>
       </div>
-    </mat-card-content>
+      <div class="form-actions">
+        <button mat-raised-button color="accent" (click)="usePreciseLocation()">
+          Use Precise Location
+        </button>
+        <button mat-raised-button color="primary" (click)="searchUsers()" [disabled]="loading$ | async">
+          Search
+        </button>
+      </div>
+      <div class="location-info" *ngIf="city">
+        Searching near: <strong>{{ city }}</strong>
+      </div>
+    </div>
   </mat-card>
 
   <app-loading *ngIf="loading$ | async"></app-loading>
 
   <ng-container *ngIf="(nearbyUsers$ | async) as users">
-    <mat-card *ngIf="users.length > 0">
-      <mat-card-content>
-        <mat-grid-list cols="3" rowHeight="1:1.2" gutterSize="12px">
-          <mat-grid-tile *ngFor="let user of users">
-            <mat-card class="user-card" [routerLink]="['/user-bio', user.identityId]">
-              <app-image-display [identityId]="user.identityId"></app-image-display>
+    <div *ngIf="users.length > 0" class="users-section">
+      <h2 class="section-title">Nearby Users</h2>
+      <mat-grid-list [cols]="cols" rowHeight="1:1.2" gutterSize="16px">
+        <mat-grid-tile *ngFor="let user of users">
+          <mat-card class="user-card modern-card" [routerLink]="['/user-bio', user.identityId]">
+            <app-image-display style="cursor:pointer" [identityId]="user.identityId"></app-image-display>
+            <div class="user-info">
+              <h3 style="cursor:pointer">{{ user.userName }}</h3>
+              <p>{{ user.distance }} miles away</p>
+              <p class="last-online" *ngIf="!isOnline(user.lastOnlineAt)">
+                Last seen: {{ user.lastOnlineAt | date:'short' }}
+              </p>
               <span class="online-dot" *ngIf="isOnline(user.lastOnlineAt)"></span>
-              <span *ngIf="!isOnline(user.lastOnlineAt)">Last seen {{ user.lastOnlineAt | date:'short' }}</span>
-              <mat-card-content>
-                <p>{{ user.userName }}</p>
-                <p>{{ user.distance }}</p>
-              </mat-card-content>
-            </mat-card>
-          </mat-grid-tile>
-        </mat-grid-list>
-
-        <div class="navigation-buttons">
-          <button mat-stroked-button
-                  (click)="previousPage()"
-                  [disabled]="currentPage === 0"
-                  [ngClass]="{ 'disabled-btn': currentPage === 0 }">
-            Previous
-          </button>
-          <button mat-stroked-button
-                  (click)="nextPage()"
-                  [disabled]="!hasMoreResults"
-                  [ngClass]="{ 'disabled-btn': !hasMoreResults }">
-            Next
-          </button>
-        </div>
-      </mat-card-content>
-    </mat-card>
+            </div>
+          </mat-card>
+        </mat-grid-tile>
+      </mat-grid-list>
+      <div class="navigation-buttons">
+        <button mat-stroked-button (click)="previousPage()" [disabled]="currentPage === 0" [ngClass]="{'disabled-btn': currentPage === 0}">
+          Previous
+        </button>
+        <button mat-stroked-button (click)="nextPage()" [disabled]="!hasMoreResults" [ngClass]="{'disabled-btn': !hasMoreResults}">
+          Next
+        </button>
+      </div>
+    </div>
+    <div *ngIf="users.length === 0" class="no-results">
+      <p>No users found. Try adjusting your search parameters.</p>
+    </div>
   </ng-container>
 </main>
