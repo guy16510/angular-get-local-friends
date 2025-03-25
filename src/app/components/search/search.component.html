@@ -38,9 +38,9 @@
       <mat-grid-list [cols]="cols" rowHeight="1:1.2" gutterSize="16px">
         <mat-grid-tile *ngFor="let user of users">
           <mat-card class="user-card modern-card" [routerLink]="['/user-bio', user.identityId]">
-            <app-image-display [identityId]="user.identityId"></app-image-display>
+            <app-image-display style="cursor:pointer" [identityId]="user.identityId"></app-image-display>
             <div class="user-info">
-              <h3>{{ user.userName }}</h3>
+              <h3 style="cursor:pointer">{{ user.userName }}</h3>
               <p>{{ user.distance }} miles away</p>
               <p class="last-online" *ngIf="!isOnline(user.lastOnlineAt)">
                 Last seen: {{ user.lastOnlineAt | date:'short' }}

@@ -5,7 +5,7 @@ import { MaterialModule } from '../../../shared/material.module';
   selector: 'app-cookie-policy',
   imports: [MaterialModule],
   templateUrl: './cookie-policy.component.html',
-  styleUrl: './cookie-policy.component.css'
+  styleUrl: './cookie-policy.component.scss'
 })
 export class CookiePolicyComponent {
 

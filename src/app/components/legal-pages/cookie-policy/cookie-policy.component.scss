@@ -1,0 +1,25 @@
+.cookie-policy-container {
+    mat-card {
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      hyphens: auto;
+    }
+  
+    mat-card-content,
+    mat-list-item {
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      white-space: normal;
+    }
+  
+    p, h2, a {
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+  
+    a {
+      display: inline-block;
+      max-width: 100%;
+      text-overflow: ellipsis;
+    }
+  }

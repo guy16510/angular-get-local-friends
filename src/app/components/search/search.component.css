@@ -67,7 +67,7 @@
 .location-info {
   text-align: center;
   font-size: 0.9rem;
-  color: #444;
+  /* color: #444; */
 }
 
 /* Responsive grid for user cards */
@@ -88,21 +88,31 @@
   font-size: 1.2rem;
   color: var(--theme-primary);
 }
+
 .user-info p {
   margin: 0;
   font-size: 0.9rem;
-  color: #555;
+  /* color: #555; */
 }
-.last-online {
+
+.dark-theme .user-info p {
+  /* color: white !important; */
+}
+
+.dark-theme .last-online{
+  /* color: white !important; */
+}
+
+.light-theme .last-online {
   font-size: 0.8rem;
-  color: #999;
+  /* color: #999; */
 }
 
 /* Reserve space for images to prevent layout shifts */
 app-image-display {
   display: block;
   width: 100%;
-  aspect-ratio: 1 / 1;
+  /* aspect-ratio: 1 / 1; */
   border-radius: 8px;
   margin-bottom: 10px;
 }
