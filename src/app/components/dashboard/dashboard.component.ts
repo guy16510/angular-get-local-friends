@@ -40,7 +40,7 @@ interface QuestionInsight {
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss'],
+  styleUrls: ['./dashboard.component.css'],
   imports: [MaterialModule, CommonModule, ChartD3Component]
 })
 
