@@ -10,7 +10,11 @@ import { Store } from '@ngxs/store';
 import { UpdateUserOnlineStatus } from './store/actions/user-profile.actions';
 import { AuthState } from './store/states/auth.state';
 
+// Amplify.configure(outputs);
+outputs.auth.oauth.domain = 'dev-getlocalfriends-auth.auth.us-east-1.amazoncognito.com';
+
 Amplify.configure(outputs);
+
 
 @Component({
     selector: 'app-root',
