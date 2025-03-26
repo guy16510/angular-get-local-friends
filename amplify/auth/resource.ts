@@ -12,12 +12,14 @@ export const auth = defineAuth({
       callbackUrls: [
         'http://localhost:4200/myProfile',
         'https://dev.getlocalfriends.com/myProfile',
-        'https://getlocalfriends.com/myProfile'
+        'https://getlocalfriends.com/myProfile',
+        'https://getlocalfriends-auth.auth.us-east-1.amazoncognito.com/oauth2/idpresponse',
       ],
       logoutUrls: [
         'http://localhost:4200/',
         'https://dev.getlocalfriends.com/',
-        'https://getlocalfriends.com/'
+        'https://getlocalfriends.com/',
+        'https://getlocalfriends-auth.auth.us-east-1.amazoncognito.com/logout',
       ],
     },
   },
@@ -33,7 +35,7 @@ export const auth = defineAuth({
     },
     birthdate: {
       mutable: true,
-      required: false,
+      required: true,
     },
     gender: {
       mutable: true,
