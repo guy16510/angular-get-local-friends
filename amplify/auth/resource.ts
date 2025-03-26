@@ -16,6 +16,7 @@ export const auth = defineAuth({
       },
       callbackUrls: [
         'http://localhost:4200/myProfile',
+        'http://192.168.2.15:4200/myProfile',
         'https://dev.getlocalfriends.com/myProfile',
         'https://getlocalfriends.com/myProfile',
         'https://getlocalfriends-auth.auth.us-east-1.amazoncognito.com/oauth2/idpresponse',
@@ -23,6 +24,7 @@ export const auth = defineAuth({
       ],
       logoutUrls: [
         'http://localhost:4200/',
+        'http://192.168.2.15:4200/',
         'https://dev.getlocalfriends.com/',
         'https://getlocalfriends.com/',
         'https://getlocalfriends-auth.auth.us-east-1.amazoncognito.com/logout',
