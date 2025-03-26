@@ -76,7 +76,7 @@ export const routes: Routes = [
   },
   {
     path: 'animal/:slug',
-    component: AnimalShareComponent,
+    loadComponent:() => import('./components/animal-share/animal-share.component').then(m => m.AnimalShareComponent)
   },
   {
     path: '**',
