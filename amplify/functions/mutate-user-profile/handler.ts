@@ -12,6 +12,36 @@ geoConfig.hashKeyLength = 5;
 
 const geoTableManager = new ddbGeo.GeoDataManager(geoConfig);
 
+function extractProfileAttributes(surveyAnswers: any[]) {
+  const get = (id: number) => surveyAnswers.find(q => q.id === id)?.answer;
+
+  const ageRange = get(1);
+  const desiredFriendAgeRanges = get(2);
+  const gender = get(3);
+  const genderFriendPreference = get(4);
+  const hasKids = get(5) === 'Yes' || get(5) === 'Expecting';
+  const wantsFriendsWithKids = get(6) === 'Yes';
+  const childAgeGroups = get(7);
+  const wantsSimilarChildAges = get(8) === true || get(8) === 'true';
+
+  return {
+    ageRange,
+    desiredFriendAgeRanges,
+    gender,
+    genderFriendPreference,
+    hasKids,
+    wantsFriendsWithKids,
+    childAgeGroups,
+    wantsSimilarChildAges,
+  };
+}
+
+function addIf<T>(obj: Record<string, any>, key: string, value: T | undefined, transformer: (v: T) => any) {
+  if (value !== undefined) {
+    obj[key] = transformer(value);
+  }
+}
+
 export const handler: Schema["mutateUserProfile"]["functionHandler"] = async (event) => {
   const { action, payload: payloadStr } = event.arguments;
 
@@ -35,30 +65,37 @@ export const handler: Schema["mutateUserProfile"]["functionHandler"] = async (ev
   const now = new Date().toISOString();
 
   if (['create', 'update'].includes(action)) {
-    if (typeof locationLat !== 'number' || typeof locationLng !== 'number') {
+    if (typeof locationLat !== "number" || typeof locationLng !== "number") {
       throw new Error("locationLat and locationLng are required and must be numbers");
     }
 
-    // Compute the range key based on the unique userId
     const rangeKey = `geo#${userId}`;
+    const traits = extractProfileAttributes(surveyAnswers);
+
+    const item: Record<string, any> = {
+      identityId: { S: userId },
+      userName: { S: userName },
+      surveyAnswers: { S: JSON.stringify(surveyAnswers) },
+      images: { S: JSON.stringify(images) },
+      hasKids: { BOOL: traits.hasKids },
+      wantsFriendsWithKids: { BOOL: traits.wantsFriendsWithKids },
+      wantsSimilarChildAges: { BOOL: traits.wantsSimilarChildAges },
+      createdAt: { S: now },
+      updatedAt: { S: now },
+    };
+
+    addIf(item, 'ageRange', traits.ageRange, v => ({ S: v }));
+    addIf(item, 'desiredFriendAgeRanges', traits.desiredFriendAgeRanges, v => ({ S: JSON.stringify(v) }));
+    addIf(item, 'gender', traits.gender, v => ({ S: v }));
+    addIf(item, 'genderFriendPreference', traits.genderFriendPreference, v => ({ S: v }));
+    addIf(item, 'childAgeGroups', traits.childAgeGroups, v => ({ S: JSON.stringify(v) }));
 
     await geoTableManager.putPoint({
       RangeKeyValue: { S: rangeKey },
       GeoPoint: { latitude: locationLat, longitude: locationLng },
       PutItemInput: {
-        Item: {
-          identityId: { S: userId },
-          userName: { S: userName },
-          surveyAnswers: { S: JSON.stringify(surveyAnswers) },
-          images: { S: JSON.stringify(images) },
-          locationLat: { N: locationLat.toString() },
-          locationLng: { N: locationLng.toString() },
-          createdAt: { S: now },
-          updatedAt: { S: now },
-          lastUpdated: { S: now },
-          lastOnlineAt: { S: now }
-        }
-      }
+        Item: item,
+      },
     });
 
     console.log(`✅ [mutateUserProfile] ${action} successful for ${userId}`);

@@ -1,4 +1,4 @@
-import 'aws-amplify/auth/enable-oauth-listener';
+// import 'aws-amplify/auth/enable-oauth-listener';
 import { Component, OnInit, inject, ViewChild } from '@angular/core';
 import { Store, Select } from '@ngxs/store';
 import { Observable } from 'rxjs';
@@ -12,6 +12,7 @@ import { CommonModule } from '@angular/common';
 import { AuthState } from '../../store/states/auth.state';
 import { FileService } from '../../services/file.service';
 import { CheckAuth } from '../../store/actions/auth.actions';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-my-profile',
@@ -30,7 +31,7 @@ export class MyProfileComponent implements OnInit {
 
   @ViewChild('uploadComponent') uploadComponent!: UploadComponent;
 
-  constructor(private fileService: FileService) {}
+  constructor(private fileService: FileService, private router: Router) {}
 
   async ngOnInit(): Promise<void> {
     await this.store.dispatch(new CheckAuth());
@@ -80,5 +81,9 @@ export class MyProfileComponent implements OnInit {
 
   getSeekingAnimalImage(userProfile: UserProfile | null): string | null {
     return userProfile?.seekingProfile?.animal ? `/assets/images/animal/male/${userProfile.seekingProfile.animal.toLowerCase()}.png` : null;
+  }
+
+  completeSurvey(){
+    this.router.navigate(['/survey']);
   }
 }

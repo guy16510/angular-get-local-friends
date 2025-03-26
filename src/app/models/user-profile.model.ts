@@ -25,10 +25,24 @@ export interface UserProfile {
   locationLat: number;
   locationLng: number;
   userName: string;
+
+  // New extracted traits
+  ageRange?: string;
+  desiredFriendAgeRanges?: string[];
+  gender?: string;
+  genderFriendPreference?: string;
+  hasKids?: boolean;
+  wantsFriendsWithKids?: boolean;
+  childAgeGroups?: string[];
+  wantsSimilarChildAges?: boolean;
+
+  // Raw answers (for recomputation)
   surveyAnswers: {
     questionId: number;
-    answer: string;
+    answer: string | string[] | boolean;
   }[];
+
+  // Profile metadata
   lastOnlineAt?: string;
   selfProfile?: AnimalProfile;
   seekingProfile?: AnimalProfile;

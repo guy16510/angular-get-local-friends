@@ -23,7 +23,7 @@
 
 mat-card-content {
   padding: 20px;
-}
+}*/
 
 .location-card {
   width: 100%;
@@ -32,12 +32,15 @@ mat-card-content {
   margin-bottom: 15px;
   text-align: center;
 }
+.location-card p {
+  padding: 1rem;
+}
 
 .location-text {
   font-size: 1.2rem;
   font-weight: bold;
   color: #333;
-} */
+}
 
 .profile-container {
   padding: 30px;

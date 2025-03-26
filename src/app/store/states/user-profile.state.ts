@@ -101,6 +101,7 @@ export class UserProfileState {
       parsedProfile = {};
     }
 
+    if(parsedProfile){
     if (typeof parsedProfile.surveyAnswers === 'string') {
       try {
         parsedProfile.surveyAnswers = JSON.parse(parsedProfile.surveyAnswers);
@@ -127,6 +128,15 @@ export class UserProfileState {
       loading: false,
       error: null
     });
+  } else {
+    const state = ctx.getState();
+    ctx.patchState({
+      profile: state.profile,
+      profilesById: state.profilesById,
+      loading: false,
+      error: null
+    });
+  }
   }
 
   @Action(LoadUserProfileFail)

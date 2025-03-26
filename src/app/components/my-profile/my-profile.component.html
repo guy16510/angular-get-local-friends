@@ -167,6 +167,15 @@
       </div>
     </ng-container>
   </ng-container>
+
+  <ng-container *ngIf="!(userProfile$ | async)">
+    <div class="location-card">
+      <h2>You're So Close!!</h2>
+      <p>Please complete the survey to be matched with other people locally in your area.</p>
+      <p><button mat-raised-button color="primary" (click)="completeSurvey()">Complete Survey</button>
+      </p>
+    </div>
+  </ng-container>
 </mat-card>
 
 <app-upload-image #uploadComponent (imageUpdated)="onImageUpdated($event)" style="display: none;"></app-upload-image>
