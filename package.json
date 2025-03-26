@@ -13,8 +13,7 @@
     "build:prod": "ng build --configuration production",
     "typecheck": "tsc --noEmit",
     "precommit": "npm run typecheck && npm run build:prod",
-    "prepare": "husky",
-    "seed": "ts-node -P tsconfig.scripts.json src/scripts/seedData.ts"
+    "prepare": "husky"
   },
   "private": true,
   "dependencies": {
