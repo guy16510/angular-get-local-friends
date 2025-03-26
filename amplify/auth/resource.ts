@@ -36,10 +36,6 @@ export const auth = defineAuth({
     birthdate: {
       mutable: true,
       required: true,
-    },
-    gender: {
-      mutable: true,
-      required: false,
     }
   },
   triggers: {
