@@ -1,3 +1,4 @@
+import 'aws-amplify/auth/enable-oauth-listener';
 import { Component, OnInit, inject, ViewChild } from '@angular/core';
 import { Store, Select } from '@ngxs/store';
 import { Observable } from 'rxjs';
@@ -10,6 +11,7 @@ import { LoadingComponent } from '../shared/loading/loading.component';
 import { CommonModule } from '@angular/common';
 import { AuthState } from '../../store/states/auth.state';
 import { FileService } from '../../services/file.service';
+import { CheckAuth } from '../../store/actions/auth.actions';
 
 @Component({
   selector: 'app-my-profile',
@@ -31,6 +33,8 @@ export class MyProfileComponent implements OnInit {
   constructor(private fileService: FileService) {}
 
   async ngOnInit(): Promise<void> {
+    await this.store.dispatch(new CheckAuth());
+
     this.store.dispatch(new LoadUserProfile());
     await this.loadUserProfile();
   }

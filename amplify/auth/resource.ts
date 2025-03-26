@@ -8,6 +8,11 @@ export const auth = defineAuth({
       facebook: {
         clientId: secret('FACEBOOK_APP_ID'),
         clientSecret: secret('FACEBOOK_APP_SECRET'),
+        scopes: ['public_profile', 'email'],
+        attributeMapping: {
+          email: 'email',
+          nickname: 'name'
+        }
       },
       callbackUrls: [
         'http://localhost:4200/myProfile',
