@@ -1,0 +1,9 @@
+<div class="reaction-wrapper">
+    <ng-container *ngFor="let r of reactions">
+      <span>{{ r.emoji }}</span>
+    </ng-container>
+    <button (click)="onEmojiClick('👍')">👍</button>
+    <button (click)="onEmojiClick('😂')">😂</button>
+    <button (click)="onEmojiClick('❤️')">❤️</button>
+  </div>
+  

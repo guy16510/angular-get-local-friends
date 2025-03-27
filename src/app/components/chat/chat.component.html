@@ -38,6 +38,11 @@
           >
           {{ recipientUserName$ | async }}
         </div>
+        <!-- <app-chat-reaction
+        [messageId]="msg.id"
+        [reactions]="msg.reactions"
+        (addReaction)="handleAddReaction($event, msg.id)">
+      </app-chat-reaction> -->
         <div class="text">{{ msg.text }}</div>
         <div class="timestamp">{{ msg.timestamp | date: 'shortTime' }}</div>
         <mat-icon *ngIf="msg.senderId === currentUserId" [ngClass]="{
