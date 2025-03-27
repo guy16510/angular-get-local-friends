@@ -5,6 +5,7 @@ export interface ChatMessage {
   recipientId: string;
   text: string;
   timestamp: string;
+  status: 'sent' | 'delivered' | 'read'; // new
 }
 
 export interface Conversation {

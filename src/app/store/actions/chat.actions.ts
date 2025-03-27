@@ -24,3 +24,8 @@ export class SetTypingStatus {
   static readonly type = '[Chat] Set Typing Status';
   constructor(public conversationId: string, public isTyping: boolean) {}
 }
+
+export class MarkMessagesAsRead {
+  static readonly type = '[Chat] Mark Messages As Read';
+  constructor(public conversationId: string) {}
+}

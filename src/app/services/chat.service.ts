@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { from, Observable, throwError } from 'rxjs';
+import { from, Observable, of, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../../../amplify/data/resource';
@@ -106,4 +106,20 @@ export class ChatService {
       return () => subscription.unsubscribe();
     });
   }
+
+  // markMessagesAsRead(conversationId: string): Observable<{ updatedCount: number }> {
+  //   return from(client.functions.markMessagesAsRead({ conversationId })).pipe(
+  //     map((result: any) => ({ updatedCount: result?.updatedCount || 0 })),
+  //     catchError(err => {
+  //       console.error('[ChatService] markMessagesAsRead error:', err);
+  //       return throwError(() => new Error('Failed to mark messages as read'));
+  //     })
+  //   );
+  // }
+  
+  markMessagesAsRead(conversationId: string): Observable<{ updatedCount: number }> {
+    console.warn('[ChatService] mock markMessagesAsRead called for conversation:', conversationId);
+    return of({ updatedCount: 0 }); // ✅ mock success result
+  }
+  
 }

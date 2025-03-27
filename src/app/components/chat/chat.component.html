@@ -40,6 +40,14 @@
         </div>
         <div class="text">{{ msg.text }}</div>
         <div class="timestamp">{{ msg.timestamp | date: 'shortTime' }}</div>
+        <mat-icon *ngIf="msg.senderId === currentUserId" [ngClass]="{
+          'read': msg.status === 'read',
+          'delivered': msg.status === 'delivered',
+          'sent': msg.status === 'sent'
+        }" class="read-status-icon">
+          {{ msg.status === 'read' ? 'done_all' : 'done' }}
+        </mat-icon>
+        
       </mat-card>
 
       <app-image-display
