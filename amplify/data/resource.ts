@@ -160,7 +160,6 @@ const schema = a.schema({
   markMessagesAsRead: a.mutation()
     .arguments({
       conversationId: a.string().required(),
-      userId: a.string().required()
     })
     .returns(a.ref('ChatMessage').array()) // Return array of updated messages
     .handler(a.handler.function(markMessagesAsRead))

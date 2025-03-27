@@ -107,53 +107,27 @@ export class ChatService {
     });
   }
 
-  // markMessagesAsRead(conversationId: string): Observable<{ updatedCount: number }> {
-  //   return from(client.functions.markMessagesAsRead({ conversationId })).pipe(
-  //     map(result => ({
-  //       updatedCount: result?.updatedCount ?? 0
-  //     })),
-  //     catchError(err => {
-  //       console.error('[ChatService] markMessagesAsRead error:', err);
-  //       return throwError(() => new Error('Failed to mark messages as read'));
-  //     })
-  //   );
-  // }
-  
-  markMessagesAsRead(conversationId: string): Observable<{ updatedCount: number }> {
-    console.warn('[ChatService] mock markMessagesAsRead called for conversation:', conversationId);
-    return of({ updatedCount: 0 }); // ✅ mock success result
+
+  markMessagesAsRead(conversationId: string): Observable<any[]> {
+    return from(client.mutations.markMessagesAsRead({ conversationId })).pipe(
+      map((result: any) => result?.data ?? []),
+      catchError(err => {
+        console.error('[ChatService] markMessagesAsRead error:', err);
+        return throwError(() => err);
+      })
+    );
   }
-
-  // public reactToMessage(messageId: string, emoji: string) {
-  //   return API.graphql<GraphQLResult<any>>({
-  //     query: reactToMessage,
-  //     variables: { messageId, emoji },
-  //     authMode: GRAPHQL_AUTH_MODE.AMAZON_COGNITO_USER_POOLS
-  //   });
-  // }
   
-  // markMessagesAsRead(conversationId: string): Observable<{ updatedCount: number }> {
-  //   const userId = this.store.selectSnapshot(AuthState.identityId);
-  //   if (!userId) {
-  //     return throwError(() => new Error('Unauthorized'));
-  //   }
-  
-  //   return from(
-  //     client.functions.markMessageAsRead({
-  //       conversationId,
-  //       userId,
-  //       messageId: '' // 🧠 NOTE: schema requires messageId, you may need to adjust your backend to allow batch or ignore this param
-  //     })
-  //   ).pipe(
-  //     map((result: any) => {
-  //       console.warn('[ChatService] markMessageAsRead raw result:', result);
-  //       return { updatedCount: 1 }; // mock value — backend should return a real count in future
-  //     }),
-  //     catchError(err => {
-  //       console.error('[ChatService] markMessageAsRead error:', err);
-  //       return throwError(() => new Error('Failed to mark messages as read'));
-  //     })
-  //   );
-  // }
 
-}
+  reactToMessage(messageId: string, emoji: string): Observable<ChatMessage> {
+    return from(client.mutations.reactToMessage({ messageId, emoji })).pipe(
+      map((result: any) => result?.data ?? []),
+      catchError(err => {
+        console.error('[ChatService] reactToMessage error:', err);
+        return throwError(() => new Error('Failed to react to message'));
+      })
+    );
+  }
+} 
+  
+  

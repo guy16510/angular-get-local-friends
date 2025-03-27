@@ -8,6 +8,9 @@ import { from, EMPTY, Observable } from 'rxjs';
 import { switchMap, catchError } from 'rxjs/operators';
 import { AuthState } from './auth.state';
 
+type MessageStatus = 'sent' | 'delivered' | 'read';
+
+
 export interface ChatMessage {
   conversationId: string;
   senderId: string;
@@ -46,7 +49,7 @@ export interface ChatStateModel {
 })
 @Injectable()
 export class ChatState {
-  constructor(private chatService: ChatService, private store: Store) {}
+  constructor(private chatService: ChatService, private store: Store) { }
 
   @Selector()
   static messages(state: ChatStateModel) {
@@ -57,12 +60,12 @@ export class ChatState {
   static getConversations(state: ChatStateModel) {
     return state.conversations;
   }
-  
+
   @Selector()
   static getLoading(state: ChatStateModel) {
     return state.loading;
   }
-  
+
   @Selector()
   static getError(state: ChatStateModel) {
     return state.error;
@@ -79,7 +82,7 @@ export class ChatState {
   @Action(LoadConversations)
   loadConversations(ctx: StateContext<ChatStateModel>, action: LoadConversations) {
     ctx.patchState({ loading: true, error: null });
-  
+
     return this.chatService.listConversations().pipe(
       tap((conversations: Conversation[]) => {
         ctx.patchState({
@@ -100,62 +103,31 @@ export class ChatState {
     );
   }
 
-  // @Action(LoadMessages)
-  // loadMessages(ctx: StateContext<ChatStateModel>, action: LoadMessages) {
-  //   const ids = action.conversationId.split('#');
-  //   const conversationId = getNormalizedConversationId(ids[0], ids[1]);
-  
-  //   return this.chatService.listMessagesByConversationId(conversationId).pipe(
-  //     tap((msgs: ChatMessage[]) => {
-  //       const state = ctx.getState() as ChatStateModel;
-  //       ctx.patchState({
-  //         messages: {
-  //           ...state.messages,
-  //           [conversationId]: msgs || []
-  //         }
-  //       });
-  //     })
-  //   );
-  // }
-
-  @Action(MarkMessagesAsRead)
-markMessagesAsRead(ctx: StateContext<ChatStateModel>, action: MarkMessagesAsRead) {
-  return this.chatService.markMessagesAsRead(action.conversationId).pipe(
-    tap(res => {
-      console.log(`[ChatState] Marked ${res.updatedCount} messages as read`);
-    }),
-    catchError((err) => {
-      console.error('[ChatState] Failed to mark messages as read', err);
-      return EMPTY;
-    })
-  );
-}
-
 
   @Action(LoadMessages)
-loadMessages(ctx: StateContext<ChatStateModel>, action: LoadMessages) {
-  ctx.patchState({ loading: true, error: null });
+  loadMessages(ctx: StateContext<ChatStateModel>, action: LoadMessages) {
+    ctx.patchState({ loading: true, error: null });
 
-  const ids = action.conversationId.split('#');
-  const conversationId = getNormalizedConversationId(ids[0], ids[1]);
+    const ids = action.conversationId.split('#');
+    const conversationId = getNormalizedConversationId(ids[0], ids[1]);
 
-  return this.chatService.listMessagesByConversationId(conversationId).pipe(
-    tap((msgs: ChatMessage[]) => {
-      const state = ctx.getState();
-      ctx.patchState({
-        messages: {
-          ...state.messages,
-          [conversationId]: msgs || []
-        },
-        loading: false
-      });
-    }),
-    catchError((err) => {
-      ctx.patchState({ loading: false, error: err?.message || 'Failed to load messages' });
-      return EMPTY;
-    })
-  );
-}
+    return this.chatService.listMessagesByConversationId(conversationId).pipe(
+      tap((msgs: ChatMessage[]) => {
+        const state = ctx.getState();
+        ctx.patchState({
+          messages: {
+            ...state.messages,
+            [conversationId]: msgs || []
+          },
+          loading: false
+        });
+      }),
+      catchError((err) => {
+        ctx.patchState({ loading: false, error: err?.message || 'Failed to load messages' });
+        return EMPTY;
+      })
+    );
+  }
 
 
   @Action(AppendMessage)
@@ -164,7 +136,7 @@ loadMessages(ctx: StateContext<ChatStateModel>, action: LoadMessages) {
     const msg = action.message;
     const normalizedId = getNormalizedConversationId(msg.senderId, msg.recipientId);
     const updated = [...(state.messages[normalizedId] || []), msg];
-  
+
     ctx.patchState({
       messages: {
         ...state.messages,
@@ -202,19 +174,62 @@ loadMessages(ctx: StateContext<ChatStateModel>, action: LoadMessages) {
     }
   }
 
-  // @Action(ReactToMessage)
-  // async reactToMessage(ctx: StateContext<ChatStateModel>, { messageId, emoji }: ReactToMessage) {
-  //   const result = await this.chatService.reactToMessage(messageId, emoji);
-  //   const updatedMessage = result.data?.reactToMessage;
+  @Action(ReactToMessage)
+  reactToMessage(ctx: StateContext<ChatStateModel>, { messageId, emoji }: ReactToMessage) {
+    return this.chatService.reactToMessage(messageId, emoji).pipe(
+      tap((updatedMessage: ChatMessage) => {
+        const state = ctx.getState();
+        const conversationId = updatedMessage.conversationId;
+        const updatedMessages = (state.messages[conversationId] || []).map(msg =>
+          msg.timestamp === updatedMessage.timestamp ? updatedMessage : msg
+        );
+        ctx.patchState({
+          messages: {
+            ...state.messages,
+            [conversationId]: updatedMessages
+          }
+        });
+      }),
+      catchError((err) => {
+        console.error('[ChatState] Failed to react to message', err);
+        return EMPTY;
+      })
+    );
+  }
 
-  //   if (!updatedMessage) return;
+  @Action(MarkMessagesAsRead)
+  markMessagesAsRead(ctx: StateContext<ChatStateModel>, { conversationId }: MarkMessagesAsRead) {
+    return this.chatService.markMessagesAsRead(conversationId).pipe(
+      tap((updatedMessages: ChatMessage[]) => {
+        if (!updatedMessages?.length) {
+          console.warn('[ChatState] No messages updated as read.');
+          return;
+        }
 
-  //   const state = ctx.getState();
-  //   const updatedMessages = state.messages.map(m =>
-  //     m.id === messageId ? updatedMessage : m
-  //   );
+        const state = ctx.getState();
+        const existingMessages = state.messages[conversationId] || [];
 
-  //   ctx.patchState({ messages: updatedMessages });
-  // }
+        const merged = existingMessages.map(msg => {
+          const updated = updatedMessages.find(m => m.timestamp === msg.timestamp);
+          return updated
+            ? { ...msg, status: 'read' as MessageStatus }
+            : msg;
+        });
+
+        ctx.patchState({
+          messages: {
+            ...state.messages,
+            [conversationId]: merged
+          }
+        });
+
+        console.log(`[ChatState] Marked ${updatedMessages.length} messages as read`);
+      }),
+      catchError((err) => {
+        console.error('[ChatState] Failed to mark messages as read', err);
+        return EMPTY;
+      })
+    );
+  }
 
 }

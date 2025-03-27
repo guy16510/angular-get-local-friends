@@ -1,105 +1,65 @@
-// // mark-messages-as-read/handler.ts
-// import type { Schema } from '../../data/resource';
-// import { getIdentityId } from '../../shared/utils/identity';
-// import { DynamoDB } from '@aws-sdk/client-dynamodb';
-// import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
-// import { sanitizeBigInts } from '../../shared/utils/sanitize';
-
-// const CHAT_MESSAGE_TABLE = process.env['AMPLIFY_CHAT_MESSAGE_TABLE_NAME']!;
-// if (!CHAT_MESSAGE_TABLE) throw new Error("Missing environment variable: AMPLIFY_CHAT_MESSAGE_TABLE_NAME");
-
-// const CONVERSATION_TABLE = process.env['AMPLIFY_CONVERSATION_TABLE_NAME']!;
-// if (!CONVERSATION_TABLE) throw new Error("Missing environment variable: AMPLIFY_CONVERSATION_TABLE_NAME");
-
-// const ddbClient = new DynamoDB({});
-// const docClient = DynamoDBDocument.from(ddbClient);
-
-// export const handler = async (event: any) => {
-//   const { conversationId, messageId, userId: passedUserId } = event.arguments;
-//   // Use the passed userId or fallback to the identity from the event.
-//   const userId = passedUserId || getIdentityId(event.identity);
-  
-//   if (!conversationId || !messageId || !userId) {
-//     console.error("Missing parameters", { conversationId, messageId, userId });
-//     throw new Error("Missing parameters");
-//   }
-
-//   try {
-//     // Retrieve the message
-//     const messageResult = await docClient.get({
-//       TableName: CHAT_MESSAGE_TABLE,
-//       Key: { id: messageId }
-//     });
-//     const message = messageResult.Item;
-//     if (!message) {
-//       console.error("Message not found", { messageId });
-//       throw new Error("Message not found");
-//     }
-
-//     // Update the message status to "seen"
-//     await docClient.update({
-//       TableName: CHAT_MESSAGE_TABLE,
-//       Key: { id: messageId },
-//       UpdateExpression: "SET #s = :s",
-//       ExpressionAttributeNames: { "#s": "status" },
-//       ExpressionAttributeValues: { ":s": "seen" },
-//       ReturnValues: "ALL_NEW"
-//     });
-
-//     // Retrieve the conversation
-//     const conversationResult = await docClient.get({
-//       TableName: CONVERSATION_TABLE,
-//       Key: { id: conversationId }
-//     });
-//     const conversation = conversationResult.Item;
-//     if (!conversation) {
-//       console.error("Conversation not found", { conversationId });
-//       throw new Error("Conversation not found");
-//     }
-
-//     // Update the conversation with the last seen message for the user.
-//     // We'll dynamically update the attribute named "lastSeenBy_{userId}"
-//     const attributeName = `lastSeenBy_${userId}`;
-//     await docClient.update({
-//       TableName: CONVERSATION_TABLE,
-//       Key: { id: conversationId },
-//       UpdateExpression: `SET #attr = :val`,
-//       ExpressionAttributeNames: { "#attr": attributeName },
-//       ExpressionAttributeValues: { ":val": messageId },
-//       ReturnValues: "ALL_NEW"
-//     });
-
-//     return { conversationId, userId, messageId };
-//   } catch (err) {
-//     console.error(`[markMessageAsRead] Error:`, err);
-//     throw new Error("Internal server error");
-//   }
-// };
+import { DynamoDB } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
+import type { Schema } from '../../data/resource';
 import { getIdentityId } from '../../shared/utils/identity';
+import { sanitizeBigInts } from '../../shared/utils/sanitize';
 
-export const handler = async (event: any, context: any) => {
+const TABLE_NAME = process.env['CHAT_MESSAGE_TABLE_NAME'];
+if (!TABLE_NAME) throw new Error('Missing CHAT_MESSAGE_TABLE_NAME');
+
+const ddb = new DynamoDB({});
+const docClient = DynamoDBDocument.from(ddb);
+
+export const handler: Schema['markMessagesAsRead']['functionHandler'] = async (event) => {
   const { conversationId } = event.arguments;
-  const userId = getIdentityId(event.identity);
+  const identityId = getIdentityId(event.identity);
 
-  if (!conversationId) throw new Error("Missing conversationId");
-  if (!userId) throw new Error("Unauthorized");
+  if (!conversationId) throw new Error('Missing conversationId');
+  if (!identityId) throw new Error('Unauthorized: No identity');
 
-  const messages = await context.db.ChatMessage.query({
-    conversationId,
-    recipientId: userId,
-    status: { eq: 'delivered' }
-  });
+  try {
+    const result = await docClient.query({
+      TableName: TABLE_NAME,
+      IndexName: 'chatMessagesByConversationIdAndTimestamp',
+      KeyConditionExpression: 'conversationId = :convId',
+      FilterExpression: 'recipientId = :userId AND #status = :status',
+      ExpressionAttributeValues: {
+        ':convId': conversationId,
+        ':userId': identityId,
+        ':status': 'delivered',
+      },
+      ExpressionAttributeNames: {
+        '#status': 'status',
+      },
+    });
 
-  const unreadMessages = messages.items ?? [];
+    const messages = result.Items || [];
 
-  if (unreadMessages.length === 0) return { updatedCount: 0 };
+    if (messages.length === 0) return [];
 
-  await Promise.all(unreadMessages.map((msg: any) =>
-    context.db.ChatMessage.update({
-      id: msg.id,
-      status: 'read'
-    })
-  ));
+    const now = new Date().toISOString();
 
-  return { updatedCount: unreadMessages.length };
+    const updatedMessages = await Promise.all(
+      messages.map(async (msg) => {
+        const updated = await docClient.update({
+          TableName: TABLE_NAME,
+          Key: { id: msg['id'] },
+          UpdateExpression: 'SET #status = :read, updatedAt = :now',
+          ExpressionAttributeNames: { '#status': 'status' },
+          ExpressionAttributeValues: {
+            ':read': 'read',
+            ':now': now,
+          },
+          ReturnValues: 'ALL_NEW',
+        });
+
+        return sanitizeBigInts(updated.Attributes);
+      })
+    );
+
+    return updatedMessages;
+  } catch (err) {
+    console.error('[markMessagesAsRead] Failed:', err);
+    throw new Error('Internal server error');
+  }
 };
