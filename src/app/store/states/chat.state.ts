@@ -1,7 +1,7 @@
 import { State, Action, StateContext, Selector, Store } from '@ngxs/store';
 import { Injectable } from '@angular/core';
 import { ChatService } from '../../services/chat.service';
-import { AppendMessage, LoadConversations, LoadMessages, MarkMessagesAsRead, SendMessage, SetTypingStatus } from '../actions/chat.actions';
+import { AppendMessage, LoadConversations, LoadMessages, MarkMessagesAsRead, ReactToMessage, SendMessage, SetTypingStatus } from '../actions/chat.actions';
 import { getNormalizedConversationId } from '../../utils/chat-utils';
 import { tap } from 'rxjs/operators';
 import { from, EMPTY, Observable } from 'rxjs';
@@ -201,4 +201,20 @@ loadMessages(ctx: StateContext<ChatStateModel>, action: LoadMessages) {
       await this.chatService.setTypingStatus(conversationId, userId, isTyping);
     }
   }
+
+  // @Action(ReactToMessage)
+  // async reactToMessage(ctx: StateContext<ChatStateModel>, { messageId, emoji }: ReactToMessage) {
+  //   const result = await this.chatService.reactToMessage(messageId, emoji);
+  //   const updatedMessage = result.data?.reactToMessage;
+
+  //   if (!updatedMessage) return;
+
+  //   const state = ctx.getState();
+  //   const updatedMessages = state.messages.map(m =>
+  //     m.id === messageId ? updatedMessage : m
+  //   );
+
+  //   ctx.patchState({ messages: updatedMessages });
+  // }
+
 }

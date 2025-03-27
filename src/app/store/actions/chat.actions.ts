@@ -29,3 +29,8 @@ export class MarkMessagesAsRead {
   static readonly type = '[Chat] Mark Messages As Read';
   constructor(public conversationId: string) {}
 }
+
+export class ReactToMessage {
+  static readonly type = '[Chat] React To Message';
+  constructor(public messageId: string, public emoji: string) {}
+}

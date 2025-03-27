@@ -123,6 +123,14 @@ export class ChatService {
     console.warn('[ChatService] mock markMessagesAsRead called for conversation:', conversationId);
     return of({ updatedCount: 0 }); // ✅ mock success result
   }
+
+  // public reactToMessage(messageId: string, emoji: string) {
+  //   return API.graphql<GraphQLResult<any>>({
+  //     query: reactToMessage,
+  //     variables: { messageId, emoji },
+  //     authMode: GRAPHQL_AUTH_MODE.AMAZON_COGNITO_USER_POOLS
+  //   });
+  // }
   
   // markMessagesAsRead(conversationId: string): Observable<{ updatedCount: number }> {
   //   const userId = this.store.selectSnapshot(AuthState.identityId);

@@ -11,7 +11,7 @@ import { listMessagesByConversationId } from '../functions/list-messages-by-conv
 import { setTypingStatus } from '../functions/set-typing-status/resource';
 import { acknowledgeMessage } from '../functions/acknowledge-message/resource';
 import { markMessagesAsRead } from '../functions/mark-messages-as-read/resource';
-import { addMessageReaction } from '../functions/add-message-reaction/resource';
+import {reactToMessage } from '../functions/react-to-message/resource';
 
 /* --- Define Models --- */
 export const ChatMessage = a.model({
@@ -26,6 +26,7 @@ export const ChatMessage = a.model({
   status: a.string().default('sent'),
   createdAt: a.datetime(),
   updatedAt: a.datetime(),
+  reactions: a.json(),
 })
   .secondaryIndexes(index => [index('conversationId').sortKeys(['timestamp'])])
   .authorization(allow => [allow.authenticated()]);
@@ -42,13 +43,6 @@ export const UserPresence = a.model({
   status: a.string().default('offline'),
   lastSeen: a.datetime()
 }).authorization(allow => [allow.authenticated().to(['create', 'update', 'read'])]);
-
-export const MessageReaction = a.model({
-  messageId: a.string().required(),
-  userId: a.string().required(),
-  emoji: a.string().required(),
-  createdAt: a.datetime().required()
-}).authorization(allow => [allow.authenticated().to(['create', 'read'])]);
 
 export const Conversation = a.model({
   id: a.string().required(),
@@ -172,23 +166,21 @@ const schema = a.schema({
     .handler(a.handler.function(markMessagesAsRead))
     .authorization(allow => [allow.authenticated()]),
 
-  addMessageReaction: a.mutation()
+  reactToMessage: a.mutation()
     .arguments({
       messageId: a.string().required(),
-      emoji: a.string().required()
+      emoji: a.string().required(),
     })
-    .returns(a.ref('MessageReaction')) // ← THIS is what tells Amplify the return type
-    .handler(a.handler.function(addMessageReaction))
+    .returns(a.ref('ChatMessage'))
+    .handler(a.handler.function(reactToMessage))
     .authorization(allow => [allow.authenticated()]),
   
-
   ChatMessage,
   Conversation,
   Contact,
   NearbyUsersResponse,
   TypingStatus,
   UserPresence,
-  MessageReaction,
 });
 
 export type Schema = ClientSchema<typeof schema>;
