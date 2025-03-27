@@ -14,6 +14,7 @@ backend:
             export AMPLIFY_CHAT_MESSAGE_TABLE_NAME="ChatMessage-sgb5tg4cuje3dlqjgo3nk4cqcq-NONE"
             export AMPLIFY_CONVERSATION_TABLE_NAME="Conversation-sgb5tg4cuje3dlqjgo3nk4cqcq-NONE"
             export AMPLIFY_GRAPHQL_API_ID="sgb5tg4cuje3dlqjgo3nk4cqcq"
+            export AMPLIFY_MESSAGE_REACTION_TABLE_NAME="MessageReaction-sgb5tg4cuje3dlqjgo3nk4cqcq-NONE"
 
           elif [[ "$AWS_BRANCH" == "main" ]]; then
             export AMPLIFY_TYPING_STATUS_TABLE_NAME=""
@@ -23,6 +24,7 @@ backend:
             export AMPLIFY_CHAT_MESSAGE_TABLE_NAME=""
             export AMPLIFY_CONVERSATION_TABLE_NAME=""
             export AMPLIFY_GRAPHQL_API_ID="PUT-YOUR-MAIN-ID-HERE"  # ← ADD THIS TOO
+            export AMPLIFY_MESSAGE_REACTION_TABLE_NAME=""
           else
             export AMPLIFY_TYPING_STATUS_TABLE_NAME="TypingStatus-sgb5tg4cuje3dlqjgo3nk4cqcq-NONE"
             export AMPLIFY_USER_PROFILE_TABLE_NAME="UserProfile-dev"
@@ -31,6 +33,7 @@ backend:
             export AMPLIFY_CHAT_MESSAGE_TABLE_NAME="ChatMessage-sgb5tg4cuje3dlqjgo3nk4cqcq-NONE"
             export AMPLIFY_CONVERSATION_TABLE_NAME="Conversation-sgb5tg4cuje3dlqjgo3nk4cqcq-NONE"
             export AMPLIFY_GRAPHQL_API_ID="sgb5tg4cuje3dlqjgo3nk4cqcq"
+            export AMPLIFY_MESSAGE_REACTION_TABLE_NAME="MessageReaction-sgb5tg4cuje3dlqjgo3nk4cqcq-NONE"
           fi
 
         - 'echo "Using DynamoDB Table: $AMPLIFY_TYPING_STATUS_TABLE_NAME"'

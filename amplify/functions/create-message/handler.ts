@@ -7,19 +7,20 @@ const docClient = new DynamoDB.DocumentClient();
 
 export const handler: Schema['createMessage']['functionHandler'] = async (event) => {
   const { recipientId, text } = event.arguments;
-
   const senderId = getIdentityId(event.identity);
+
   if (!senderId) {
+    console.error("Missing identity: event.identity", event.identity);
     throw new Error("Unauthorized: Missing identity");
   }
 
   if (!recipientId || !text) {
+    console.warn("Missing input params", { recipientId, text });
     throw new Error("Missing recipientId or text");
   }
 
   const [participantA, participantB] = [senderId, recipientId].sort();
   const conversationId = `${participantA}#${participantB}`;
-
   const timestamp = new Date().toISOString();
   const messageId = `${conversationId}-${timestamp}`;
 
@@ -30,53 +31,64 @@ export const handler: Schema['createMessage']['functionHandler'] = async (event)
     senderId,
     recipientId,
     text,
+    type: 'text',
+    status: 'sent',
     createdAt: timestamp,
     updatedAt: timestamp
   };
 
   const chatTableName = process.env['CHAT_MESSAGE_TABLE_NAME'];
-  if (!chatTableName) throw new Error("Missing CHAT_MESSAGE_TABLE_NAME");
-
-  await docClient.put({
-    TableName: chatTableName,
-    Item: chatMessage
-  }).promise();
-
   const conversationTableName = process.env['CONVERSATION_TABLE_NAME'];
-  if (!conversationTableName) throw new Error("Missing CONVERSATION_TABLE_NAME");
 
-  console.log('Upserting conversation record with values:', {
-    conversationTableName,
-    id: conversationId,
-    participantA,
-    participantB,
-    lastMessage: text,
-    lastTimestamp: timestamp
-  });
+  if (!chatTableName || !conversationTableName) {
+    console.error("Missing env vars", { chatTableName, conversationTableName });
+    throw new Error("Missing table environment variables");
+  }
 
-  const updateResult = await docClient.update({
-    TableName: conversationTableName,
-    Key: { id: conversationId },
-    UpdateExpression: `
-      set participantA = :pa,
-          participantB = :pb,
-          lastMessage = :lm,
-          lastTimestamp = :lt,
-          createdAt = if_not_exists(createdAt, :createdAt),
-          updatedAt = :updatedAt
-    `,
-    ExpressionAttributeValues: {
-      ':pa': participantA,
-      ':pb': participantB,
-      ':lm': text,
-      ':lt': timestamp,
-      ':createdAt': timestamp,
-      ':updatedAt': timestamp
-    },
-    ReturnValues: 'ALL_NEW'
-  }).promise();
+  // Write to ChatMessage table
+  try {
+    await docClient.put({
+      TableName: chatTableName,
+      Item: chatMessage
+    }).promise();
+    console.log(`📩 Message written to ${chatTableName}`, { messageId });
+  } catch (err) {
+    console.error("Failed to write ChatMessage", err);
+    throw err;
+  }
 
-  console.log('Conversation update result:', updateResult.Attributes);
+  // Upsert Conversation table
+  try {
+    const result = await docClient.update({
+      TableName: conversationTableName,
+      Key: { id: conversationId },
+      UpdateExpression: `
+        set participantA = :pa,
+            participantB = :pb,
+            lastMessage = :lm,
+            lastTimestamp = :lt,
+            createdAt = if_not_exists(createdAt, :createdAt),
+            updatedAt = :updatedAt
+      `,
+      ExpressionAttributeValues: {
+        ':pa': participantA,
+        ':pb': participantB,
+        ':lm': text,
+        ':lt': timestamp,
+        ':createdAt': timestamp,
+        ':updatedAt': timestamp
+      },
+      ReturnValues: 'ALL_NEW'
+    }).promise();
+
+    console.log(`💬 Conversation upserted in ${conversationTableName}`, {
+      conversationId,
+      updated: result.Attributes
+    });
+  } catch (err) {
+    console.error("Failed to upsert Conversation", err);
+    throw err;
+  }
 
   return toChatMessage(chatMessage);
 };

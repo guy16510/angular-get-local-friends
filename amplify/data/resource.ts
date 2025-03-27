@@ -11,6 +11,7 @@ import { listMessagesByConversationId } from '../functions/list-messages-by-conv
 import { setTypingStatus } from '../functions/set-typing-status/resource';
 import { acknowledgeMessage } from '../functions/acknowledge-message/resource';
 import { markMessagesAsRead } from '../functions/mark-messages-as-read/resource';
+import { addMessageReaction } from '../functions/add-message-reaction/resource';
 
 /* --- Define Models --- */
 export const ChatMessage = a.model({
@@ -162,11 +163,24 @@ const schema = a.schema({
     .handler(a.handler.function(acknowledgeMessage))
     .authorization(allow => [allow.authenticated()]),
 
-  // markMessageAsRead: a.mutation()
-  //   .arguments({ conversationId: a.string().required(), userId: a.string().required(), messageId: a.string().required() })
-  //   .returns(a.ref('ChatMessage'))
-  //   .handler(a.handler.function(markMessageAsRead))
-  //   .authorization(allow => [allow.authenticated()]),
+  markMessagesAsRead: a.mutation()
+    .arguments({
+      conversationId: a.string().required(),
+      userId: a.string().required()
+    })
+    .returns(a.ref('ChatMessage').array()) // Return array of updated messages
+    .handler(a.handler.function(markMessagesAsRead))
+    .authorization(allow => [allow.authenticated()]),
+
+  addMessageReaction: a.mutation()
+    .arguments({
+      messageId: a.string().required(),
+      emoji: a.string().required()
+    })
+    .returns(a.ref('MessageReaction')) // ← THIS is what tells Amplify the return type
+    .handler(a.handler.function(addMessageReaction))
+    .authorization(allow => [allow.authenticated()]),
+  
 
   ChatMessage,
   Conversation,
@@ -174,16 +188,13 @@ const schema = a.schema({
   NearbyUsersResponse,
   TypingStatus,
   UserPresence,
-  MessageReaction
+  MessageReaction,
 });
 
 export type Schema = ClientSchema<typeof schema>;
 
 export const data = defineData({
   schema,
-  functions: {
-    markMessagesAsRead, // ✅ This exposes it as a client.functions.<name>
-  },
   authorizationModes: {
     defaultAuthorizationMode: 'userPool',
     apiKeyAuthorizationMode: { expiresInDays: 30 }

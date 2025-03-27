@@ -14,6 +14,7 @@ import { listMessagesByConversationId } from './functions/list-messages-by-conve
 import { setTypingStatus } from './functions/set-typing-status/resource';
 import { markMessagesAsRead } from './functions/mark-messages-as-read/resource';
 import { acknowledgeMessage } from './functions/acknowledge-message/resource';
+import { addMessageReaction } from './functions/add-message-reaction/resource';
 
 import * as iam from 'aws-cdk-lib/aws-iam';
 
@@ -32,7 +33,8 @@ const backend = defineBackend({
   listMessagesByConversationId,
   setTypingStatus, 
   markMessagesAsRead,
-  acknowledgeMessage
+  acknowledgeMessage,
+  addMessageReaction
 });
 
 /** 🔐 User Profile Table (Geo-Enabled) — External DynamoDB Table */
@@ -130,4 +132,9 @@ backend.markMessagesAsRead.resources.lambda.addToRolePolicy(new iam.PolicyStatem
 backend.acknowledgeMessage.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
   actions: ['dynamodb:GetItem', 'dynamodb:UpdateItem'],
   resources: [chatMessageTableArn]
+}));
+
+backend.addMessageReaction.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
+  actions: ['dynamodb:PutItem'],
+  resources: [`arn:aws:dynamodb:us-east-1:${process.env['AWS_ACCOUNT_ID']}:table/${process.env['AMPLIFY_MESSAGE_REACTION_TABLE_NAME']}`]
 }));
