@@ -122,4 +122,28 @@ export class ChatService {
     return of({ updatedCount: 0 }); // ✅ mock success result
   }
   
+  // markMessagesAsRead(conversationId: string): Observable<{ updatedCount: number }> {
+  //   const userId = this.store.selectSnapshot(AuthState.identityId);
+  //   if (!userId) {
+  //     return throwError(() => new Error('Unauthorized'));
+  //   }
+  
+  //   return from(
+  //     client.functions.markMessageAsRead({
+  //       conversationId,
+  //       userId,
+  //       messageId: '' // 🧠 NOTE: schema requires messageId, you may need to adjust your backend to allow batch or ignore this param
+  //     })
+  //   ).pipe(
+  //     map((result: any) => {
+  //       console.warn('[ChatService] markMessageAsRead raw result:', result);
+  //       return { updatedCount: 1 }; // mock value — backend should return a real count in future
+  //     }),
+  //     catchError(err => {
+  //       console.error('[ChatService] markMessageAsRead error:', err);
+  //       return throwError(() => new Error('Failed to mark messages as read'));
+  //     })
+  //   );
+  // }
+
 }

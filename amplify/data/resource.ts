@@ -162,11 +162,11 @@ const schema = a.schema({
     .handler(a.handler.function(acknowledgeMessage))
     .authorization(allow => [allow.authenticated()]),
 
-  markMessageAsRead: a.mutation()
-    .arguments({ conversationId: a.string().required(), userId: a.string().required(), messageId: a.string().required() })
-    .returns(a.ref('ChatMessage'))
-    .handler(a.handler.function(markMessageAsRead))
-    .authorization(allow => [allow.authenticated()]),
+  // markMessageAsRead: a.mutation()
+  //   .arguments({ conversationId: a.string().required(), userId: a.string().required(), messageId: a.string().required() })
+  //   .returns(a.ref('ChatMessage'))
+  //   .handler(a.handler.function(markMessageAsRead))
+  //   .authorization(allow => [allow.authenticated()]),
 
   ChatMessage,
   Conversation,
@@ -181,6 +181,9 @@ export type Schema = ClientSchema<typeof schema>;
 
 export const data = defineData({
   schema,
+  functions: {
+    markMessageAsRead, // ✅ This exposes it as a client.functions.<name>
+  },
   authorizationModes: {
     defaultAuthorizationMode: 'userPool',
     apiKeyAuthorizationMode: { expiresInDays: 30 }

@@ -75,7 +75,6 @@
 //     throw new Error("Internal server error");
 //   }
 // };
-
 import { getIdentityId } from '../../shared/utils/identity';
 
 export const handler = async (event: any, context: any) => {
@@ -85,26 +84,22 @@ export const handler = async (event: any, context: any) => {
   if (!conversationId) throw new Error("Missing conversationId");
   if (!userId) throw new Error("Unauthorized");
 
-  // Fetch all messages sent TO this user in this conversation that are delivered (but not read)
   const messages = await context.db.ChatMessage.query({
     conversationId,
     recipientId: userId,
-    status: { eq: "delivered" }
+    status: { eq: 'delivered' }
   });
 
-  if (!messages?.items?.length) return { updatedCount: 0 };
+  const unreadMessages = messages.items ?? [];
 
-  // Mark all as read
-  const updates = messages.items.map((msg: any) =>
+  if (unreadMessages.length === 0) return { updatedCount: 0 };
+
+  await Promise.all(unreadMessages.map((msg: any) =>
     context.db.ChatMessage.update({
       id: msg.id,
-      status: "read"
+      status: 'read'
     })
-  );
+  ));
 
-  await Promise.all(updates);
-
-  return {
-    updatedCount: messages.items.length
-  };
+  return { updatedCount: unreadMessages.length };
 };
