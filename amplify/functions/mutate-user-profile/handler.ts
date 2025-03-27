@@ -13,16 +13,21 @@ geoConfig.hashKeyLength = 5;
 const geoTableManager = new ddbGeo.GeoDataManager(geoConfig);
 
 function extractProfileAttributes(surveyAnswers: any[]) {
-  const get = (id: number) => surveyAnswers.find(q => q.id === id)?.answer;
+  const get = (id: number) =>
+    surveyAnswers
+      .filter(q => q.questionId === id)
+      .map(q => q.answer);
 
-  const ageRange = get(1);
-  const desiredFriendAgeRanges = get(2);
-  const gender = get(3);
-  const genderFriendPreference = get(4);
-  const hasKids = get(5) === 'Yes' || get(5) === 'Expecting';
-  const wantsFriendsWithKids = get(6) === 'Yes';
-  const childAgeGroups = get(7);
-  const wantsSimilarChildAges = get(8) === true || get(8) === 'true';
+  const single = (id: number) => get(id)[0]; // For multiple-choice, true/false, etc.
+
+  const ageRange = single(1);
+  const desiredFriendAgeRanges = get(2); // multi-select
+  const gender = single(3);
+  const genderFriendPreference = single(4);
+  const hasKids = single(5) === 'Yes' || single(5) === 'Expecting';
+  const wantsFriendsWithKids = single(6) === 'Yes';
+  const childAgeGroups = get(7); // multi-select
+  const wantsSimilarChildAges = single(8) === true || single(8) === 'true';
 
   return {
     ageRange,
@@ -35,6 +40,7 @@ function extractProfileAttributes(surveyAnswers: any[]) {
     wantsSimilarChildAges,
   };
 }
+
 
 function addIf<T>(obj: Record<string, any>, key: string, value: T | undefined, transformer: (v: T) => any) {
   if (value !== undefined) {
@@ -85,11 +91,11 @@ export const handler: Schema["mutateUserProfile"]["functionHandler"] = async (ev
     };
 
     addIf(item, 'ageRange', traits.ageRange, v => ({ S: v }));
-    addIf(item, 'desiredFriendAgeRanges', traits.desiredFriendAgeRanges, v => ({ S: JSON.stringify(v) }));
     addIf(item, 'gender', traits.gender, v => ({ S: v }));
     addIf(item, 'genderFriendPreference', traits.genderFriendPreference, v => ({ S: v }));
+    addIf(item, 'desiredFriendAgeRanges', traits.desiredFriendAgeRanges, v => ({ S: JSON.stringify(v) }));
     addIf(item, 'childAgeGroups', traits.childAgeGroups, v => ({ S: JSON.stringify(v) }));
-
+    
     await geoTableManager.putPoint({
       RangeKeyValue: { S: rangeKey },
       GeoPoint: { latitude: locationLat, longitude: locationLng },
