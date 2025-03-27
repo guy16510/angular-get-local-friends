@@ -109,7 +109,9 @@ export class ChatService {
 
   // markMessagesAsRead(conversationId: string): Observable<{ updatedCount: number }> {
   //   return from(client.functions.markMessagesAsRead({ conversationId })).pipe(
-  //     map((result: any) => ({ updatedCount: result?.updatedCount || 0 })),
+  //     map(result => ({
+  //       updatedCount: result?.updatedCount ?? 0
+  //     })),
   //     catchError(err => {
   //       console.error('[ChatService] markMessagesAsRead error:', err);
   //       return throwError(() => new Error('Failed to mark messages as read'));

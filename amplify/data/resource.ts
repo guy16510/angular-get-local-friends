@@ -10,7 +10,7 @@ import { listConversations } from '../functions/list-conversations/resource';
 import { listMessagesByConversationId } from '../functions/list-messages-by-conversation-id/resource';
 import { setTypingStatus } from '../functions/set-typing-status/resource';
 import { acknowledgeMessage } from '../functions/acknowledge-message/resource';
-import { markMessageAsRead } from '../functions/mark-message-as-read/resource';
+import { markMessagesAsRead } from '../functions/mark-messages-as-read/resource';
 
 /* --- Define Models --- */
 export const ChatMessage = a.model({
@@ -182,7 +182,7 @@ export type Schema = ClientSchema<typeof schema>;
 export const data = defineData({
   schema,
   functions: {
-    markMessageAsRead, // ✅ This exposes it as a client.functions.<name>
+    markMessagesAsRead, // ✅ This exposes it as a client.functions.<name>
   },
   authorizationModes: {
     defaultAuthorizationMode: 'userPool',

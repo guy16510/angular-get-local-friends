@@ -12,7 +12,7 @@ import { getUserProfile } from './functions/get-user-profile/resource';
 import { getAnimalProfile } from './functions/get-animal-profile/resource';
 import { listMessagesByConversationId } from './functions/list-messages-by-conversation-id/resource';
 import { setTypingStatus } from './functions/set-typing-status/resource';
-import { markMessageAsRead } from './functions/mark-message-as-read/resource';
+import { markMessagesAsRead } from './functions/mark-messages-as-read/resource';
 import { acknowledgeMessage } from './functions/acknowledge-message/resource';
 
 import * as iam from 'aws-cdk-lib/aws-iam';
@@ -31,7 +31,7 @@ const backend = defineBackend({
   getAnimalProfile,
   listMessagesByConversationId,
   setTypingStatus, 
-  markMessageAsRead,
+  markMessagesAsRead,
   acknowledgeMessage
 });
 
@@ -122,7 +122,7 @@ backend.setTypingStatus.resources.lambda.addToRolePolicy(new iam.PolicyStatement
 /**
  * Acknowledge messages
  */
-backend.markMessageAsRead.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
+backend.markMessagesAsRead.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
   actions: ['dynamodb:Query', 'dynamodb:UpdateItem'],
   resources: [chatMessageTableArn, chatMessageIndexArn]
 }));

@@ -5,10 +5,9 @@ import { toChatMessage } from '../../shared/mappers/chatMessageMapper';
 
 const docClient = new DynamoDB.DocumentClient();
 
-export const handler: Schema["createMessage"]["functionHandler"] = async (event) => {
+export const handler: Schema['createMessage']['functionHandler'] = async (event) => {
   const { recipientId, text } = event.arguments;
 
-  // Retrieve the unique user identifier (sub) from the signed request
   const senderId = getIdentityId(event.identity);
   if (!senderId) {
     throw new Error("Unauthorized: Missing identity");
@@ -18,7 +17,6 @@ export const handler: Schema["createMessage"]["functionHandler"] = async (event)
     throw new Error("Missing recipientId or text");
   }
 
-  // Compose conversationId consistently (sorted for uniqueness)
   const [participantA, participantB] = [senderId, recipientId].sort();
   const conversationId = `${participantA}#${participantB}`;
 
@@ -36,7 +34,6 @@ export const handler: Schema["createMessage"]["functionHandler"] = async (event)
     updatedAt: timestamp
   };
 
-  // Write message to ChatMessage table
   const chatTableName = process.env['CHAT_MESSAGE_TABLE_NAME'];
   if (!chatTableName) throw new Error("Missing CHAT_MESSAGE_TABLE_NAME");
 
@@ -45,11 +42,19 @@ export const handler: Schema["createMessage"]["functionHandler"] = async (event)
     Item: chatMessage
   }).promise();
 
-  // Upsert conversation summary
   const conversationTableName = process.env['CONVERSATION_TABLE_NAME'];
   if (!conversationTableName) throw new Error("Missing CONVERSATION_TABLE_NAME");
 
-  await docClient.update({
+  console.log('Upserting conversation record with values:', {
+    conversationTableName,
+    id: conversationId,
+    participantA,
+    participantB,
+    lastMessage: text,
+    lastTimestamp: timestamp
+  });
+
+  const updateResult = await docClient.update({
     TableName: conversationTableName,
     Key: { id: conversationId },
     UpdateExpression: `
@@ -61,15 +66,17 @@ export const handler: Schema["createMessage"]["functionHandler"] = async (event)
           updatedAt = :updatedAt
     `,
     ExpressionAttributeValues: {
-      ":pa": participantA,
-      ":pb": participantB,
-      ":lm": text,
-      ":lt": timestamp,
-      ":createdAt": timestamp,
-      ":updatedAt": timestamp
+      ':pa': participantA,
+      ':pb': participantB,
+      ':lm': text,
+      ':lt': timestamp,
+      ':createdAt': timestamp,
+      ':updatedAt': timestamp
     },
-    ReturnValues: "ALL_NEW"
+    ReturnValues: 'ALL_NEW'
   }).promise();
+
+  console.log('Conversation update result:', updateResult.Attributes);
 
   return toChatMessage(chatMessage);
 };

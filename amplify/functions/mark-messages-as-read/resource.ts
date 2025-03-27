@@ -1,6 +1,6 @@
 import { defineFunction } from '@aws-amplify/backend';
 
-export const markMessageAsRead = defineFunction({
+export const markMessagesAsRead = defineFunction({
   name: 'markMessageAsRead',
   entry: './handler.ts',
   environment: {
