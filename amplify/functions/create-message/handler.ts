@@ -6,8 +6,11 @@ import { toChatMessage } from '../../shared/mappers/chatMessageMapper';
 const docClient = new DynamoDB.DocumentClient();
 
 export const handler: Schema['createMessage']['functionHandler'] = async (event) => {
+  console.log('[createMessage] Received event:', JSON.stringify(event));
+  
   const { recipientId, text } = event.arguments;
   const senderId = getIdentityId(event.identity);
+  console.log('[createMessage] Computed senderId:', senderId);
 
   if (!senderId) {
     console.error("Missing identity: event.identity", event.identity);
@@ -20,9 +23,15 @@ export const handler: Schema['createMessage']['functionHandler'] = async (event)
   }
 
   const [participantA, participantB] = [senderId, recipientId].sort();
+  console.log('[createMessage] Sorted participants:', { participantA, participantB });
+  
   const conversationId = `${participantA}#${participantB}`;
+  console.log('[createMessage] Computed conversationId:', conversationId);
+  
   const timestamp = new Date().toISOString();
   const messageId = `${conversationId}-${timestamp}`;
+  console.log('[createMessage] Current timestamp:', timestamp);
+  console.log('[createMessage] Computed messageId:', messageId);
 
   const chatMessage = {
     id: messageId,
@@ -36,6 +45,7 @@ export const handler: Schema['createMessage']['functionHandler'] = async (event)
     createdAt: timestamp,
     updatedAt: timestamp
   };
+  console.log('[createMessage] Chat message object:', chatMessage);
 
   const chatTableName = process.env['CHAT_MESSAGE_TABLE_NAME'];
   const conversationTableName = process.env['CONVERSATION_TABLE_NAME'];
@@ -45,6 +55,7 @@ export const handler: Schema['createMessage']['functionHandler'] = async (event)
     throw new Error("Missing table environment variables");
   }
 
+  console.log('[createMessage] Attempting to write chat message to table:', chatTableName);
   // Write to ChatMessage table
   try {
     await docClient.put({
