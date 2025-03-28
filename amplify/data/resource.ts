@@ -11,6 +11,7 @@ import { listMessagesByConversationId } from '../functions/list-messages-by-conv
 import { setTypingStatus } from '../functions/set-typing-status/resource';
 import { markMessagesAsRead } from '../functions/mark-messages-as-read/resource';
 import {reactToMessage } from '../functions/react-to-message/resource';
+import { listUnreadMessages } from '../functions/list-unread-messages/resource';
 
 /* --- Define Models --- */
 export const ChatMessage = a.model({
@@ -27,7 +28,10 @@ export const ChatMessage = a.model({
   updatedAt: a.datetime(),
   reactions: a.json(),
 })
-  .secondaryIndexes(index => [index('conversationId').sortKeys(['timestamp'])])
+  .secondaryIndexes(index => [
+    index('conversationId').sortKeys(['timestamp']),
+    index('recipientId').sortKeys(['status'])
+  ])
   .authorization(allow => [allow.authenticated()]);
 
 export const TypingStatus = a.model({
@@ -173,9 +177,11 @@ const schema = a.schema({
     .handler(a.handler.function(reactToMessage))
     .authorization(allow => [allow.authenticated()]),
   
-  notifyUnreadMessage: a.subscription()
-    .arguments({ identityId: a.string().required() })
-    .for(a.ref('createMessage'))
+
+  listUnreadMessages: a.query()
+    .arguments({ recipientId: a.string().required() })
+    .returns(a.ref('ChatMessage').array())
+    .handler(a.handler.function(listUnreadMessages))
     .authorization(allow => [allow.authenticated()]),
 
   ChatMessage,

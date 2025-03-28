@@ -14,6 +14,7 @@ import { listMessagesByConversationId } from './functions/list-messages-by-conve
 import { setTypingStatus } from './functions/set-typing-status/resource';
 import { markMessagesAsRead } from './functions/mark-messages-as-read/resource';
 import { reactToMessage } from './functions/react-to-message/resource';
+import { listUnreadMessages } from './functions/list-unread-messages/resource';
 
 import * as iam from 'aws-cdk-lib/aws-iam';
 
@@ -33,6 +34,7 @@ const backend = defineBackend({
   setTypingStatus, 
   markMessagesAsRead,
   reactToMessage,
+  listUnreadMessages
 });
 
 
@@ -109,8 +111,15 @@ backend.markMessagesAsRead.resources.lambda.addToRolePolicy(new iam.PolicyStatem
   resources: [chatMessageTableArn, chatMessageIndexArn]
 }));
 
-
 backend.reactToMessage.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
   actions: ['dynamodb:UpdateItem'],
   resources: [chatMessageTableArn]
+}));
+
+backend.listUnreadMessages.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
+  actions: ['dynamodb:Query'],
+  resources: [
+    chatMessageTableArn,
+    `${chatMessageTableArn}/index/*`
+  ]
 }));

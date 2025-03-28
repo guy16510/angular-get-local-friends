@@ -128,25 +128,30 @@ export class ChatService {
    * @returns 
    */
   subscribeToUnreadMessages(): Observable<ChatMessage> {
-    const identityId = this.store.selectSnapshot(AuthState.identityId);
-    if (!identityId) {
-      return throwError(() => new Error('No identity available for subscription'));
-    }
     return new Observable<ChatMessage>((observer) => {
-      const subscription = client.subscriptions.notifyUnreadMessage({ identityId }).subscribe({
-        next: (event: any) => {
-          debugger;
-          // if (event && event.conversationId === conversationId) {
-            observer.next(event as ChatMessage);
-          // }
-        },
-        error: (err: any) => {
-          console.error('[ChatService] subscribeToMessagesForConversation error:', err);
-          observer.error(err);
-        }
-      });
-      return () => subscription.unsubscribe();
+      // Immediately complete the observable.
+      observer.complete();
+      return () => {};
     });
+    // const identityId = this.store.selectSnapshot(AuthState.identityId);
+    // if (!identityId) {
+    //   return throwError(() => new Error('No identity available for subscription'));
+    // }
+    // return new Observable<ChatMessage>((observer) => {
+    //   const subscription = client.subscriptions.listUnreadMessages({ identityId }).subscribe({
+    //     next: (event: any) => {
+    //       debugger;
+    //       // if (event && event.conversationId === conversationId) {
+    //         observer.next(event as ChatMessage);
+    //       // }
+    //     },
+    //     error: (err: any) => {
+    //       console.error('[ChatService] subscribeToMessagesForConversation error:', err);
+    //       observer.error(err);
+    //     }
+    //   });
+    //   return () => subscription.unsubscribe();
+    // });
   }
 
 }
