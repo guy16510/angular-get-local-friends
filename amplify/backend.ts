@@ -37,7 +37,7 @@ const backend = defineBackend({
   reactToMessage,
 });
 
-/** 🔐 User Profile Table (Geo-Enabled) */
+/*
 const userProfileTableArn = `arn:aws:dynamodb:us-east-1:${process.env['AWS_ACCOUNT_ID']}:table/${process.env['AMPLIFY_USER_PROFILE_TABLE_NAME']}`;
 const userProfileTableIndexArn = `${userProfileTableArn}/index/*`;
 
@@ -61,7 +61,6 @@ backend.getAnimalProfile.resources.lambda.addToRolePolicy(new iam.PolicyStatemen
   resources: [userProfileTableArn, `${userProfileTableArn}/index/identityId-index`]
 }));
 
-/** 🔐 S3 Bucket Access for Cognito Role */
 const iamStack = backend.createStack("IAMStack");
 const everyoneRole = iam.Role.fromRoleArn(
   iamStack,
@@ -81,7 +80,6 @@ everyoneRole.addToPrincipalPolicy(new iam.PolicyStatement({
   resources: [`arn:aws:appsync:us-east-1:${process.env['AWS_ACCOUNT_ID']}:apis/${process.env['AMPLIFY_GRAPHQL_API_ID']}/*`]
 }));
 
-/** 💬 ChatMessage & Conversation Tables */
 const chatMessageTableArn = `arn:aws:dynamodb:us-east-1:${process.env['AWS_ACCOUNT_ID']}:table/${process.env['AMPLIFY_CHAT_MESSAGE_TABLE_NAME']}`;
 const chatMessageIndexArn = `${chatMessageTableArn}/index/*`;
 
@@ -123,8 +121,9 @@ backend.markMessagesAsRead.resources.lambda.addToRolePolicy(new iam.PolicyStatem
 }));
 
 
-// ✅ This is the new permissions block for reactions (editing the ChatMessage model)
 backend.reactToMessage.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
   actions: ['dynamodb:UpdateItem'],
   resources: [chatMessageTableArn]
 }));
+
+*/
