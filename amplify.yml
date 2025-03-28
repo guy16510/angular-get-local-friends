@@ -7,14 +7,14 @@ backend:
         - export AWS_ACCOUNT_ID=438347844807
         - |
           if [[ "$AWS_BRANCH" == "develop" ]]; then
-            export AMPLIFY_TYPING_STATUS_TABLE_NAME="TypingStatus-sgb5tg4cuje3dlqjgo3nk4cqcq-NONE"
+            export AMPLIFY_TYPING_STATUS_TABLE_NAME="TypingStatus-qpjdwf5yzbbadojyctcwpzkyyi-NONE"
             export AMPLIFY_USER_PROFILE_TABLE_NAME="UserProfile-dev"
             export AMPLIFY_STORAGE_BUCKET_NAME="amplify-d25p7fqcjyrjps-de-userimagesdevelopbucket4-k1qd6fsnlooz"
-            export AMPLIFY_EVERYONE_ROLE_ARN="arn:aws:iam::438347844807:role/amplify-d25p7fqcjyrjps-de-amplifyAuthEVERYONEdevelo-qlredYptoun6"
-            export AMPLIFY_CHAT_MESSAGE_TABLE_NAME="ChatMessage-sgb5tg4cuje3dlqjgo3nk4cqcq-NONE"
-            export AMPLIFY_CONVERSATION_TABLE_NAME="Conversation-sgb5tg4cuje3dlqjgo3nk4cqcq-NONE"
-            export AMPLIFY_GRAPHQL_API_ID="sgb5tg4cuje3dlqjgo3nk4cqcq"
-            export AMPLIFY_MESSAGE_REACTION_TABLE_NAME="MessageReaction-sgb5tg4cuje3dlqjgo3nk4cqcq-NONE"
+            export AMPLIFY_EVERYONE_ROLE_ARN="arn:aws:iam::438347844807:role/amplify-d25p7fqcjyrjps-de-amplifyAuthEVERYONEdevelo-o0wSoZDDtmEF"
+            export AMPLIFY_CHAT_MESSAGE_TABLE_NAME="ChatMessage-qpjdwf5yzbbadojyctcwpzkyyi-NONE"
+            export AMPLIFY_CONVERSATION_TABLE_NAME="Conversation-qpjdwf5yzbbadojyctcwpzkyyi-NONE"
+            export AMPLIFY_GRAPHQL_API_ID="qpjdwf5yzbbadojyctcwpzkyyi"
+            export AMPLIFY_MESSAGE_REACTION_TABLE_NAME="MessageReaction-qpjdwf5yzbbadojyctcwpzkyyi-NONE"
 
           elif [[ "$AWS_BRANCH" == "main" ]]; then
             export AMPLIFY_TYPING_STATUS_TABLE_NAME=""
@@ -26,14 +26,14 @@ backend:
             export AMPLIFY_GRAPHQL_API_ID="PUT-YOUR-MAIN-ID-HERE"  # ← ADD THIS TOO
             export AMPLIFY_MESSAGE_REACTION_TABLE_NAME=""
           else
-            export AMPLIFY_TYPING_STATUS_TABLE_NAME="TypingStatus-sgb5tg4cuje3dlqjgo3nk4cqcq-NONE"
+            export AMPLIFY_TYPING_STATUS_TABLE_NAME="TypingStatus-qpjdwf5yzbbadojyctcwpzkyyi-NONE"
             export AMPLIFY_USER_PROFILE_TABLE_NAME="UserProfile-dev"
             export AMPLIFY_STORAGE_BUCKET_NAME="amplify-d25p7fqcjyrjps-de-userimagesdevelopbucket4-k1qd6fsnlooz"
-            export AMPLIFY_EVERYONE_ROLE_ARN="arn:aws:iam::438347844807:role/amplify-d25p7fqcjyrjps-de-amplifyAuthEVERYONEdevelo-qlredYptoun6"
-            export AMPLIFY_CHAT_MESSAGE_TABLE_NAME="ChatMessage-sgb5tg4cuje3dlqjgo3nk4cqcq-NONE"
-            export AMPLIFY_CONVERSATION_TABLE_NAME="Conversation-sgb5tg4cuje3dlqjgo3nk4cqcq-NONE"
-            export AMPLIFY_GRAPHQL_API_ID="sgb5tg4cuje3dlqjgo3nk4cqcq"
-            export AMPLIFY_MESSAGE_REACTION_TABLE_NAME="MessageReaction-sgb5tg4cuje3dlqjgo3nk4cqcq-NONE"
+            export AMPLIFY_EVERYONE_ROLE_ARN="arn:aws:iam::438347844807:role/amplify-d25p7fqcjyrjps-de-amplifyAuthEVERYONEdevelo-o0wSoZDDtmEF"
+            export AMPLIFY_CHAT_MESSAGE_TABLE_NAME="ChatMessage-qpjdwf5yzbbadojyctcwpzkyyi-NONE"
+            export AMPLIFY_CONVERSATION_TABLE_NAME="Conversation-qpjdwf5yzbbadojyctcwpzkyyi-NONE"
+            export AMPLIFY_GRAPHQL_API_ID="qpjdwf5yzbbadojyctcwpzkyyi"
+            export AMPLIFY_MESSAGE_REACTION_TABLE_NAME="MessageReaction-qpjdwf5yzbbadojyctcwpzkyyi-NONE"
           fi
 
         - 'echo "Using DynamoDB Table: $AMPLIFY_TYPING_STATUS_TABLE_NAME"'

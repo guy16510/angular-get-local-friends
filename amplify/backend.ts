@@ -37,7 +37,7 @@ const backend = defineBackend({
   reactToMessage,
 });
 
-/*
+
 const userProfileTableArn = `arn:aws:dynamodb:us-east-1:${process.env['AWS_ACCOUNT_ID']}:table/${process.env['AMPLIFY_USER_PROFILE_TABLE_NAME']}`;
 const userProfileTableIndexArn = `${userProfileTableArn}/index/*`;
 
@@ -125,5 +125,3 @@ backend.reactToMessage.resources.lambda.addToRolePolicy(new iam.PolicyStatement(
   actions: ['dynamodb:UpdateItem'],
   resources: [chatMessageTableArn]
 }));
-
-*/
