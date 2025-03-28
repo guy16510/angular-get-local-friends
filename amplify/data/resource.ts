@@ -11,7 +11,6 @@ import { listMessagesByConversationId } from '../functions/list-messages-by-conv
 import { setTypingStatus } from '../functions/set-typing-status/resource';
 import { markMessagesAsRead } from '../functions/mark-messages-as-read/resource';
 import {reactToMessage } from '../functions/react-to-message/resource';
-import { notifyUnreadMessage } from '../functions/notify-unread-message/resource';
 
 /* --- Define Models --- */
 export const ChatMessage = a.model({
@@ -127,6 +126,12 @@ const schema = a.schema({
     .handler(a.handler.function(createMessage))
     .authorization(allow => [allow.authenticated()]),
 
+  onCreateMessage: a
+    .subscription()
+    .for(a.ref('createMessage'))
+    .handler(a.handler.function(createMessage))
+    .authorization(allow => [allow.authenticated()]),
+
   customListMessagesByConversationId: a.query()
     .arguments({ conversationId: a.string().required(), limit: a.integer(), nextToken: a.string() })
     .returns(a.ref('ChatMessage').array()) // ✅ FIXED: array of model
@@ -170,8 +175,7 @@ const schema = a.schema({
   
   notifyUnreadMessage: a.subscription()
     .arguments({ identityId: a.string().required() })
-    .for(a.ref('createMessage')) // this is the mutation being watched
-    .handler(a.handler.function(notifyUnreadMessage))
+    .for(a.ref('createMessage'))
     .authorization(allow => [allow.authenticated()]),
 
   ChatMessage,

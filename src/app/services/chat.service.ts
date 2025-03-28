@@ -11,27 +11,13 @@ const client = generateClient<Schema>();
 
 @Injectable({ providedIn: 'root' })
 export class ChatService {
-  
-  constructor(private store: Store) {}
+
+  constructor(private store: Store) { }
 
   sendMessage(recipientId: string, text: string): Observable<ChatMessage> {
-    const senderId = this.store.selectSnapshot(AuthState.identityId);
-    if (!senderId) return throwError(() => new Error('Unauthorized'));
-
-    const participants = [senderId, recipientId].sort();
-    const conversationId = `${participants[0]}#${participants[1]}`;
-
-    const timestamp = new Date().toISOString();
-
-    return from(client.models.ChatMessage.create({
-      conversationId,
-      senderId,
-      recipientId,
-      text,
-      timestamp,
-    })).pipe(
+    return from(client.mutations.createMessage({ recipientId, text })).pipe(
       map((result: any) => {
-        console.log('createMessage result:', result);
+        console.log('createMessage mutation result:', result);
         return result as ChatMessage;
       }),
       catchError(err => {
@@ -65,13 +51,18 @@ export class ChatService {
     await client.mutations.setTypingStatus({ conversationId, userId, isTyping });
   }
 
+  /**
+   * While in Chat, this shows that the other user is typing.
+   * @param conversationId 
+   * @returns 
+   */
   subscribeToTypingStatus(conversationId: string): Observable<{ conversationId: string; userId: string; isTyping: boolean }> {
     return new Observable(observer => {
       const subscription = (client.subscriptions as any)
         .onTypingStatus({ conversationId })
         .subscribe({
           next: (event: any) => {
-            if(event){
+            if (event) {
               observer.next(event);
             }
           },
@@ -84,29 +75,29 @@ export class ChatService {
     });
   }
 
+
+  /**
+   * Subscribes to all new messages and filters only those for the given conversationId.
+   * Note: AppSync subscriptions often inherit authMode from schema — change only if you hit errors.
+   */
   subscribeToMessagesForConversation(conversationId: string): Observable<ChatMessage> {
-    console.log('[Debug] Establishing ChatMessage subscription');
     return new Observable<ChatMessage>((observer) => {
-      const subscription = client.models.ChatMessage.onCreate().subscribe({
-        next: (message: any) => {
-          console.log('[Debug] Received subscription event:', message);
-          if (message.conversationId === conversationId) {
+      const subscription = client.subscriptions.onCreateMessage().subscribe({
+        next: (event: any) => {
+          const message = event?.data?.onCreateMessage;
+          if (message?.conversationId === conversationId) {
             observer.next(message);
-          } else {
-            console.log('[Debug] Ignored message for other conversation:', message.conversationId);
           }
         },
         error: (err: any) => {
-          console.error('[Debug] Subscription ERROR:', err);
+          console.error('[ChatService] subscribeToMessages error:', err);
           observer.error(err);
-        },
-        complete: () => console.log('[Debug] Subscription completed')
+        }
       });
 
       return () => subscription.unsubscribe();
     });
   }
-
 
   markMessagesAsRead(conversationId: string): Observable<any[]> {
     return from(client.mutations.markMessagesAsRead({ conversationId })).pipe(
@@ -117,8 +108,11 @@ export class ChatService {
       })
     );
   }
-  
 
+
+  /**
+   * Not implmented yet.
+   */
   reactToMessage(messageId: string, emoji: string): Observable<ChatMessage> {
     return from(client.mutations.reactToMessage({ messageId, emoji })).pipe(
       map((result: any) => result?.data ?? []),
@@ -129,14 +123,32 @@ export class ChatService {
     );
   }
 
-  subscribeToUnreadMessages(): Observable<any> {
+  /**
+   * Subscribes to messages that have not been read yet.
+   * @returns 
+   */
+  subscribeToUnreadMessages(): Observable<ChatMessage> {
     const identityId = this.store.selectSnapshot(AuthState.identityId);
     if (!identityId) {
-      return throwError(() => new Error("No identityId available for subscription"));
+      return throwError(() => new Error('No identity available for subscription'));
     }
-    return client.subscriptions.notifyUnreadMessage({ identityId });
+    return new Observable<ChatMessage>((observer) => {
+      const subscription = client.subscriptions.notifyUnreadMessage({ identityId }).subscribe({
+        next: (event: any) => {
+          debugger;
+          // if (event && event.conversationId === conversationId) {
+            observer.next(event as ChatMessage);
+          // }
+        },
+        error: (err: any) => {
+          console.error('[ChatService] subscribeToMessagesForConversation error:', err);
+          observer.error(err);
+        }
+      });
+      return () => subscription.unsubscribe();
+    });
   }
 
-} 
-  
-  
+}
+
+

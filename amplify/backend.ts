@@ -13,7 +13,6 @@ import { getAnimalProfile } from './functions/get-animal-profile/resource';
 import { listMessagesByConversationId } from './functions/list-messages-by-conversation-id/resource';
 import { setTypingStatus } from './functions/set-typing-status/resource';
 import { markMessagesAsRead } from './functions/mark-messages-as-read/resource';
-import { notifyUnreadMessage } from './functions/notify-unread-message/resource';
 import { reactToMessage } from './functions/react-to-message/resource';
 
 import * as iam from 'aws-cdk-lib/aws-iam';
@@ -33,7 +32,6 @@ const backend = defineBackend({
   listMessagesByConversationId,
   setTypingStatus, 
   markMessagesAsRead,
-  notifyUnreadMessage,
   reactToMessage,
 });
 
@@ -89,15 +87,6 @@ const conversationIndexArn = `${conversationTableArn}/index/*`;
 backend.createMessage.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
   actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem'],
   resources: [chatMessageTableArn, conversationTableArn]
-}));
-
-backend.createMessage.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
-  actions: [
-    'logs:CreateLogGroup',
-    'logs:CreateLogStream',
-    'logs:PutLogEvents'
-  ],
-  resources: ['arn:aws:logs:*:*:*']
 }));
 
 backend.listMessagesByConversationId.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
