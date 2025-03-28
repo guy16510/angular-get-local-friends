@@ -7,6 +7,7 @@ import { Observable, Subscription } from 'rxjs';
 import { Select, Store } from '@ngxs/store';
 import { AuthState } from '../../../store/states/auth.state';
 import { Logout } from '../../../store/actions/auth.actions';
+import { ChatState } from '../../../store/states/chat.state';
 
 @Component({
     selector: 'app-header',
@@ -16,6 +17,8 @@ import { Logout } from '../../../store/actions/auth.actions';
 })
 export class HeaderComponent{
   @Select(AuthState.isLoggedIn) isLoggedIn$!: Observable<boolean>;
+  @Select(ChatState.unreadCount) unreadCount$!: Observable<number>;
+
   // On scroll darken header
   @HostListener("window:scroll", [])
   onWindowScroll() {

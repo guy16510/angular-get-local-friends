@@ -37,4 +37,5 @@ export interface ChatStateModel {
   error: string | null;
   lastFetched: number | null;
   activeConversationId: string | null;
+  unreadCount: number;
 }

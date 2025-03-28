@@ -39,3 +39,12 @@ export class SetActiveConversation {
   static readonly type = '[Chat] Set Active Conversation';
   constructor(public conversationId: string) {}
 }
+
+export class IncrementUnreadCount {
+  static readonly type = '[Chat] Increment Unread Count';
+  constructor(public payload: number = 1) {}
+}
+
+export class ResetUnreadCount {
+  static readonly type = '[Chat] Reset Unread Count';
+}

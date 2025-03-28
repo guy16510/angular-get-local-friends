@@ -123,35 +123,23 @@ export class ChatService {
     );
   }
 
+
   /**
-   * Subscribes to messages that have not been read yet.
-   * @returns 
+   * Query unread messages using the listUnreadMessages query.
+   * This should return messages for which status === "sent".
    */
-  subscribeToUnreadMessages(): Observable<ChatMessage> {
-    return new Observable<ChatMessage>((observer) => {
-      // Immediately complete the observable.
-      observer.complete();
-      return () => {};
-    });
-    // const identityId = this.store.selectSnapshot(AuthState.identityId);
-    // if (!identityId) {
-    //   return throwError(() => new Error('No identity available for subscription'));
-    // }
-    // return new Observable<ChatMessage>((observer) => {
-    //   const subscription = client.subscriptions.listUnreadMessages({ identityId }).subscribe({
-    //     next: (event: any) => {
-    //       debugger;
-    //       // if (event && event.conversationId === conversationId) {
-    //         observer.next(event as ChatMessage);
-    //       // }
-    //     },
-    //     error: (err: any) => {
-    //       console.error('[ChatService] subscribeToMessagesForConversation error:', err);
-    //       observer.error(err);
-    //     }
-    //   });
-    //   return () => subscription.unsubscribe();
-    // });
+  getUnreadMessages(): Observable<ChatMessage[]> {
+    const identityId = this.store.selectSnapshot(AuthState.identityId);
+    if (!identityId) {
+      return throwError(() => new Error('No identity available for query'));
+    }
+    return from(client.queries.listUnreadMessages({ recipientId: identityId })).pipe(
+      map((result: any) => result?.data ?? []),
+      catchError(err => {
+        console.error('[ChatService] getUnreadMessages error:', err);
+        return throwError(() => err);
+      })
+    );
   }
 
 }

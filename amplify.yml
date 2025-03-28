@@ -3,49 +3,34 @@ backend:
   phases:
     build:
       commands:
-        - 'npm ci --cache .npm --prefer-offline'
+        - npm ci --cache .npm --prefer-offline
         - export AWS_ACCOUNT_ID=438347844807
+        # Define a default API ID variable (this comes from your Amplify env)
+        - export AMPLIFY_API_ID_DEFAULT="qpjdwf5yzbbadojyctcwpzkyyi"
+        # Set default (dev) values using the default API ID variable
         - |
-          if [[ "$AWS_BRANCH" == "develop" ]]; then
-            export AMPLIFY_TYPING_STATUS_TABLE_NAME="TypingStatus-qpjdwf5yzbbadojyctcwpzkyyi-NONE"
-            export AMPLIFY_USER_PROFILE_TABLE_NAME="UserProfile-dev"
-            export AMPLIFY_STORAGE_BUCKET_NAME="amplify-d25p7fqcjyrjps-de-userimagesdevelopbucket4-otxiabsq94pg"
-            export AMPLIFY_EVERYONE_ROLE_ARN="arn:aws:iam::438347844807:role/amplify-d25p7fqcjyrjps-de-amplifyAuthEVERYONEdevelo-o0wSoZDDtmEF"
-            export AMPLIFY_CHAT_MESSAGE_TABLE_NAME="ChatMessage-qpjdwf5yzbbadojyctcwpzkyyi-NONE"
-            export AMPLIFY_CONVERSATION_TABLE_NAME="Conversation-qpjdwf5yzbbadojyctcwpzkyyi-NONE"
-            export AMPLIFY_GRAPHQL_API_ID="qpjdwf5yzbbadojyctcwpzkyyi"
-            export AMPLIFY_MESSAGE_REACTION_TABLE_NAME="MessageReaction-qpjdwf5yzbbadojyctcwpzkyyi-NONE"
-
-          elif [[ "$AWS_BRANCH" == "main" ]]; then
+          export AMPLIFY_TYPING_STATUS_TABLE_NAME="TypingStatus-${AMPLIFY_API_ID_DEFAULT}-NONE"
+          export AMPLIFY_USER_PROFILE_TABLE_NAME="UserProfile-dev"
+          export AMPLIFY_STORAGE_BUCKET_NAME="amplify-d25p7fqcjyrjps-de-userimagesdevelopbucket4-otxiabsq94pg"
+          export AMPLIFY_EVERYONE_ROLE_ARN="arn:aws:iam::438347844807:role/amplify-d25p7fqcjyrjps-de-amplifyAuthEVERYONEdevelo-o0wSoZDDtmEF"
+          export AMPLIFY_CHAT_MESSAGE_TABLE_NAME="ChatMessage-${AMPLIFY_API_ID_DEFAULT}-NONE"
+          export AMPLIFY_CONVERSATION_TABLE_NAME="Conversation-${AMPLIFY_API_ID_DEFAULT}-NONE"
+          export AMPLIFY_GRAPHQL_API_ID="${AMPLIFY_API_ID_DEFAULT}"
+          export AMPLIFY_MESSAGE_REACTION_TABLE_NAME="MessageReaction-${AMPLIFY_API_ID_DEFAULT}-NONE"
+        # Override for main branch if needed.
+        - |
+          if [[ "$AWS_BRANCH" == "main" ]]; then
             export AMPLIFY_TYPING_STATUS_TABLE_NAME=""
             export AMPLIFY_USER_PROFILE_TABLE_NAME="UserProfile-prod"
             export AMPLIFY_STORAGE_BUCKET_NAME="amplify-dkrmsanbniimt-main-userimagesmainbucket4-xyz123abc"
             export AMPLIFY_EVERYONE_ROLE_ARN="arn:aws:iam::438347844807:role/amplify-<your-main-role-name>"
             export AMPLIFY_CHAT_MESSAGE_TABLE_NAME=""
             export AMPLIFY_CONVERSATION_TABLE_NAME=""
-            export AMPLIFY_GRAPHQL_API_ID="PUT-YOUR-MAIN-ID-HERE"  # ← ADD THIS TOO
+            export AMPLIFY_GRAPHQL_API_ID="PUT-YOUR-MAIN-ID-HERE"
             export AMPLIFY_MESSAGE_REACTION_TABLE_NAME=""
-          else
-            export AMPLIFY_TYPING_STATUS_TABLE_NAME="TypingStatus-qpjdwf5yzbbadojyctcwpzkyyi-NONE"
-            export AMPLIFY_USER_PROFILE_TABLE_NAME="UserProfile-dev"
-            export AMPLIFY_STORAGE_BUCKET_NAME="amplify-d25p7fqcjyrjps-de-userimagesdevelopbucket4-otxiabsq94pg"
-            export AMPLIFY_EVERYONE_ROLE_ARN="arn:aws:iam::438347844807:role/amplify-d25p7fqcjyrjps-de-amplifyAuthEVERYONEdevelo-o0wSoZDDtmEF"
-            export AMPLIFY_CHAT_MESSAGE_TABLE_NAME="ChatMessage-qpjdwf5yzbbadojyctcwpzkyyi-NONE"
-            export AMPLIFY_CONVERSATION_TABLE_NAME="Conversation-qpjdwf5yzbbadojyctcwpzkyyi-NONE"
-            export AMPLIFY_GRAPHQL_API_ID="qpjdwf5yzbbadojyctcwpzkyyi"
-            export AMPLIFY_MESSAGE_REACTION_TABLE_NAME="MessageReaction-qpjdwf5yzbbadojyctcwpzkyyi-NONE"
           fi
-
-        - 'echo "Using DynamoDB Table: $AMPLIFY_TYPING_STATUS_TABLE_NAME"'
-        - 'echo "Using DynamoDB Table: $AMPLIFY_USER_PROFILE_TABLE_NAME"'
-        - 'echo "Using S3 Bucket: $AMPLIFY_STORAGE_BUCKET_NAME"'
-        - 'echo "Using Everyone Role ARN: $AMPLIFY_EVERYONE_ROLE_ARN"'
-        - 'echo "Using AMPLIFY_CONVERSATION_TABLE_NAME ARN: $AMPLIFY_CONVERSATION_TABLE_NAME"'
-        - 'echo "Using AMPLIFY_CHAT_MESSAGE_TABLE_NAME: $AMPLIFY_CHAT_MESSAGE_TABLE_NAME"'
-
-        # Deploy backend resources
-        - 'npx ampx pipeline-deploy --branch "$AWS_BRANCH" --app-id "$AWS_APP_ID"'
-        
+        - echo "Using AMPLIFY_GRAPHQL_API_ID: $AMPLIFY_GRAPHQL_API_ID"
+        - npx ampx pipeline-deploy --branch "$AWS_BRANCH" --app-id "$AWS_APP_ID"
 frontend:
   phases:
     preBuild:

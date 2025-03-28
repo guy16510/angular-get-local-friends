@@ -1,7 +1,7 @@
 import { State, Action, StateContext, Selector, Store } from '@ngxs/store';
 import { Injectable } from '@angular/core';
 import { ChatService } from '../../services/chat.service';
-import { AppendMessage, LoadConversations, LoadMessages, MarkMessagesAsRead, ReactToMessage, SendMessage, SetTypingStatus, SetActiveConversation } from '../actions/chat.actions';
+import { AppendMessage, LoadConversations, LoadMessages, MarkMessagesAsRead, ReactToMessage, SendMessage, SetTypingStatus, SetActiveConversation, IncrementUnreadCount, ResetUnreadCount } from '../actions/chat.actions';
 import { getNormalizedConversationId } from '../../utils/chat-utils';
 import { tap } from 'rxjs/operators';
 import { from, EMPTY, Observable } from 'rxjs';
@@ -17,7 +17,8 @@ import { ChatMessage, Conversation, ChatStateModel, MessageStatus } from '../../
     loading: false,
     error: null,
     lastFetched: null,
-    activeConversationId: null
+    activeConversationId: null,
+    unreadCount: 0
   }
 })
 @Injectable()
@@ -54,6 +55,22 @@ export class ChatState {
   @Selector()
   static activeConversationId(state: ChatStateModel) {
     return state.activeConversationId;
+  }
+
+  @Selector()
+  static unreadCount(state: ChatStateModel) {
+    return state.unreadCount;
+  }
+  
+  @Action(IncrementUnreadCount)
+  incrementUnreadCount(ctx: StateContext<ChatStateModel>, action: IncrementUnreadCount) {
+    const state = ctx.getState();
+    ctx.patchState({ unreadCount: state.unreadCount + action.payload });
+  }
+
+  @Action(ResetUnreadCount)
+  resetUnreadCount(ctx: StateContext<ChatStateModel>) {
+    ctx.patchState({ unreadCount: 0 });
   }
 
   @Action(SetActiveConversation)
@@ -211,4 +228,6 @@ export class ChatState {
       })
     );
   }
+
+
 }

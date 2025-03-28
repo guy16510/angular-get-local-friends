@@ -38,88 +38,88 @@ const backend = defineBackend({
 });
 
 
-const userProfileTableArn = `arn:aws:dynamodb:us-east-1:${process.env['AWS_ACCOUNT_ID']}:table/${process.env['AMPLIFY_USER_PROFILE_TABLE_NAME']}`;
-const userProfileTableIndexArn = `${userProfileTableArn}/index/*`;
+// const userProfileTableArn = `arn:aws:dynamodb:us-east-1:${process.env['AWS_ACCOUNT_ID']}:table/${process.env['AMPLIFY_USER_PROFILE_TABLE_NAME']}`;
+// const userProfileTableIndexArn = `${userProfileTableArn}/index/*`;
 
-backend.findNearbyUsers.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
-  actions: ['dynamodb:Query', 'dynamodb:Scan'],
-  resources: [userProfileTableArn, userProfileTableIndexArn]
-}));
+// backend.findNearbyUsers.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
+//   actions: ['dynamodb:Query', 'dynamodb:Scan'],
+//   resources: [userProfileTableArn, userProfileTableIndexArn]
+// }));
 
-backend.mutateUserProfile.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
-  actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem', 'dynamodb:DeleteItem', 'dynamodb:Query'],
-  resources: [userProfileTableArn, `${userProfileTableArn}/index/identityId-index`]
-}));
+// backend.mutateUserProfile.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
+//   actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem', 'dynamodb:DeleteItem', 'dynamodb:Query'],
+//   resources: [userProfileTableArn, `${userProfileTableArn}/index/identityId-index`]
+// }));
 
-backend.getUserProfile.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
-  actions: ['dynamodb:GetItem', 'dynamodb:Query'],
-  resources: [userProfileTableArn, userProfileTableIndexArn]
-}));
+// backend.getUserProfile.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
+//   actions: ['dynamodb:GetItem', 'dynamodb:Query'],
+//   resources: [userProfileTableArn, userProfileTableIndexArn]
+// }));
 
-backend.getAnimalProfile.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
-  actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem', 'dynamodb:GetItem', 'dynamodb:Query'],
-  resources: [userProfileTableArn, `${userProfileTableArn}/index/identityId-index`]
-}));
+// backend.getAnimalProfile.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
+//   actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem', 'dynamodb:GetItem', 'dynamodb:Query'],
+//   resources: [userProfileTableArn, `${userProfileTableArn}/index/identityId-index`]
+// }));
 
-const iamStack = backend.createStack("IAMStack");
-const everyoneRole = iam.Role.fromRoleArn(
-  iamStack,
-  'EVERYONERole',
-  process.env['AMPLIFY_EVERYONE_ROLE_ARN'] as string
-);
+// const iamStack = backend.createStack("IAMStack");
+// const everyoneRole = iam.Role.fromRoleArn(
+//   iamStack,
+//   'EVERYONERole',
+//   process.env['AMPLIFY_EVERYONE_ROLE_ARN'] as string
+// );
 
-const bucketArn = `arn:aws:s3:::${process.env['AMPLIFY_STORAGE_BUCKET_NAME']}`;
+// const bucketArn = `arn:aws:s3:::${process.env['AMPLIFY_STORAGE_BUCKET_NAME']}`;
 
-everyoneRole.addToPrincipalPolicy(new iam.PolicyStatement({
-  actions: ['s3:GetObject', 's3:PutObject', 's3:DeleteObject'],
-  resources: [`${bucketArn}/protected/*`]
-}));
+// everyoneRole.addToPrincipalPolicy(new iam.PolicyStatement({
+//   actions: ['s3:GetObject', 's3:PutObject', 's3:DeleteObject'],
+//   resources: [`${bucketArn}/protected/*`]
+// }));
 
-everyoneRole.addToPrincipalPolicy(new iam.PolicyStatement({
-  actions: ['appsync:GraphQL'],
-  resources: [`arn:aws:appsync:us-east-1:${process.env['AWS_ACCOUNT_ID']}:apis/${process.env['AMPLIFY_GRAPHQL_API_ID']}/*`]
-}));
+// everyoneRole.addToPrincipalPolicy(new iam.PolicyStatement({
+//   actions: ['appsync:GraphQL'],
+//   resources: [`arn:aws:appsync:us-east-1:${process.env['AWS_ACCOUNT_ID']}:apis/${process.env['AMPLIFY_GRAPHQL_API_ID']}/*`]
+// }));
 
-const chatMessageTableArn = `arn:aws:dynamodb:us-east-1:${process.env['AWS_ACCOUNT_ID']}:table/${process.env['AMPLIFY_CHAT_MESSAGE_TABLE_NAME']}`;
-const chatMessageIndexArn = `${chatMessageTableArn}/index/*`;
+// const chatMessageTableArn = `arn:aws:dynamodb:us-east-1:${process.env['AWS_ACCOUNT_ID']}:table/${process.env['AMPLIFY_CHAT_MESSAGE_TABLE_NAME']}`;
+// const chatMessageIndexArn = `${chatMessageTableArn}/index/*`;
 
-const conversationTableArn = `arn:aws:dynamodb:us-east-1:${process.env['AWS_ACCOUNT_ID']}:table/${process.env['AMPLIFY_CONVERSATION_TABLE_NAME']}`;
-const conversationIndexArn = `${conversationTableArn}/index/*`;
+// const conversationTableArn = `arn:aws:dynamodb:us-east-1:${process.env['AWS_ACCOUNT_ID']}:table/${process.env['AMPLIFY_CONVERSATION_TABLE_NAME']}`;
+// const conversationIndexArn = `${conversationTableArn}/index/*`;
 
-backend.createMessage.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
-  actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem'],
-  resources: [chatMessageTableArn, conversationTableArn]
-}));
+// backend.createMessage.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
+//   actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem'],
+//   resources: [chatMessageTableArn, conversationTableArn]
+// }));
 
-backend.listMessagesByConversationId.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
-  actions: ['dynamodb:Query'],
-  resources: [chatMessageTableArn, chatMessageIndexArn]
-}));
+// backend.listMessagesByConversationId.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
+//   actions: ['dynamodb:Query'],
+//   resources: [chatMessageTableArn, chatMessageIndexArn]
+// }));
 
-backend.listConversations.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
-  actions: ['dynamodb:Query'],
-  resources: [conversationTableArn, conversationIndexArn]
-}));
+// backend.listConversations.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
+//   actions: ['dynamodb:Query'],
+//   resources: [conversationTableArn, conversationIndexArn]
+// }));
 
-backend.setTypingStatus.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
-  actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem'],
-  resources: [`arn:aws:dynamodb:us-east-1:${process.env['AWS_ACCOUNT_ID']}:table/${process.env['AMPLIFY_TYPING_STATUS_TABLE_NAME']}`]
-}));
+// backend.setTypingStatus.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
+//   actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem'],
+//   resources: [`arn:aws:dynamodb:us-east-1:${process.env['AWS_ACCOUNT_ID']}:table/${process.env['AMPLIFY_TYPING_STATUS_TABLE_NAME']}`]
+// }));
 
-backend.markMessagesAsRead.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
-  actions: ['dynamodb:Query', 'dynamodb:UpdateItem'],
-  resources: [chatMessageTableArn, chatMessageIndexArn]
-}));
+// backend.markMessagesAsRead.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
+//   actions: ['dynamodb:Query', 'dynamodb:UpdateItem'],
+//   resources: [chatMessageTableArn, chatMessageIndexArn]
+// }));
 
-backend.reactToMessage.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
-  actions: ['dynamodb:UpdateItem'],
-  resources: [chatMessageTableArn]
-}));
+// backend.reactToMessage.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
+//   actions: ['dynamodb:UpdateItem'],
+//   resources: [chatMessageTableArn]
+// }));
 
-backend.listUnreadMessages.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
-  actions: ['dynamodb:Query'],
-  resources: [
-    chatMessageTableArn,
-    `${chatMessageTableArn}/index/*`
-  ]
-}));
+// backend.listUnreadMessages.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
+//   actions: ['dynamodb:Query'],
+//   resources: [
+//     chatMessageTableArn,
+//     `${chatMessageTableArn}/index/*`
+//   ]
+// }));

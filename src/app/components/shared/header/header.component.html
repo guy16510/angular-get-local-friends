@@ -19,7 +19,13 @@
       <ng-container *ngIf="(isLoggedIn$ | async); else loggedOut">
         <a routerLink="/dashboard" routerLinkActive="active"><mat-icon>dashboard</mat-icon>Dashboard</a>
         <a routerLink="/search" routerLinkActive="active"><mat-icon>search</mat-icon>Search</a>
-        <a routerLink="/chatList" routerLinkActive="active"><mat-icon>forum</mat-icon>Messages</a>
+        <a routerLink="/chatList" routerLinkActive="active">
+          <mat-icon>forum</mat-icon>
+          Messages
+          <span class="unread-badge" *ngIf="(unreadCount$ | async)">
+            {{ unreadCount$ | async }}
+          </span>
+        </a>
         
         <!-- Profile dropdown (desktop hover, mobile integrated) -->
         <div class="profile-container">
