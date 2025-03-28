@@ -3,18 +3,16 @@ import { AppSyncResolverEvent } from 'aws-lambda';
 import { getIdentityId } from '../../shared/utils/identity';
 
 export const handler: Schema['notifyUnreadMessage']['functionHandler'] = async (
-  event: AppSyncResolverEvent<{ conversationId: string }>
+  event: AppSyncResolverEvent<{ identityId: string }>
 ) => {
-  const identityId = getIdentityId(event.identity);
-  const { conversationId } = event.arguments;
-
+  // The subscriber's identity (from the token)
+  const subscriberIdentityId = getIdentityId(event.identity);
+  const { identityId } = event.arguments; // this should be the same as subscriberIdentityId
   const message = event.source as Schema['ChatMessage']['type'];
-  if (!message || !identityId) return null as any;
+  if (!message || !subscriberIdentityId) return null as any;
 
-  if (
-    message.conversationId !== conversationId ||
-    message.recipientId !== identityId
-  ) {
+  // Ensure the message is for the subscriber.
+  if (message.recipientId !== subscriberIdentityId) {
     return null as any;
   }
 

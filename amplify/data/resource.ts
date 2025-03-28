@@ -169,7 +169,7 @@ const schema = a.schema({
     .authorization(allow => [allow.authenticated()]),
   
   notifyUnreadMessage: a.subscription()
-    .arguments({ conversationId: a.string().required() })
+    .arguments({ identityId: a.string().required() })
     .for(a.ref('createMessage')) // this is the mutation being watched
     .handler(a.handler.function(notifyUnreadMessage)) // enables filtering
     .authorization(allow => [allow.authenticated()]),

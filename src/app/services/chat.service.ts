@@ -128,6 +128,15 @@ export class ChatService {
       })
     );
   }
+
+  subscribeToUnreadMessages(): Observable<any> {
+    const identityId = this.store.selectSnapshot(AuthState.identityId);
+    if (!identityId) {
+      return throwError(() => new Error("No identityId available for subscription"));
+    }
+    return client.subscriptions.notifyUnreadMessage({ identityId });
+  }
+
 } 
   
   

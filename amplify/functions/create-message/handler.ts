@@ -59,6 +59,22 @@ export const handler: Schema['createMessage']['functionHandler'] = async (event)
 
   // Upsert Conversation table
   try {
+    console.log('Starting conversation update with details:', {
+      conversationTableName,
+      conversationId,
+      participantA,
+      participantB,
+      text,
+      timestamp,
+      updateExpression: `
+        set participantA = :pa,
+            participantB = :pb,
+            lastMessage = :lm,
+            lastTimestamp = :lt,
+            createdAt = if_not_exists(createdAt, :createdAt),
+            updatedAt = :updatedAt
+      `
+    });
     const result = await docClient.update({
       TableName: conversationTableName,
       Key: { id: conversationId },
@@ -80,6 +96,7 @@ export const handler: Schema['createMessage']['functionHandler'] = async (event)
       },
       ReturnValues: 'ALL_NEW'
     }).promise();
+    console.log('Conversation update response:', result);
 
     console.log(`💬 Conversation upserted in ${conversationTableName}`, {
       conversationId,
@@ -90,5 +107,6 @@ export const handler: Schema['createMessage']['functionHandler'] = async (event)
     throw err;
   }
 
+  console.log('Returning chat message:', chatMessage);
   return toChatMessage(chatMessage);
 };

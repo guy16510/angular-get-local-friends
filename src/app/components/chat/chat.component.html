@@ -40,8 +40,6 @@
         </div>
         <div class="text">{{ msg.text }}</div>
         <div class="timestamp">{{ msg.timestamp | date: 'shortTime' }}</div>
-          <!-- Add this line -->
-           <!-- <pre>{{msg | json}}</pre> -->
           <app-chat-reaction
           [messageId]="msg.id"
           [reactions]="msg.reactions"
