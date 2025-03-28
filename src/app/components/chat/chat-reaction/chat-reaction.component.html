@@ -1,9 +1,9 @@
-<!-- <div class="reaction-wrapper">
-  <ng-container *ngFor="let r of reactions || []">
-    <span>{{ r.emoji }}</span>
-  </ng-container>
-  <button (click)="onEmojiClick('👍')">👍</button>
-  <button (click)="onEmojiClick('😂')">😂</button>
-  <button (click)="onEmojiClick('❤️')">❤️</button>
-</div> -->
-<p>...</p>
+<!-- Only render the emoji picker when expanded -->
+<div class="emoji-picker" *ngIf="expanded">
+  <h1>hi</h1>
+  <button *ngFor="let emoji of emojiList"
+          class="emoji-btn"
+          (click)="onEmojiClick(emoji, $event)">
+    {{ emoji }}
+  </button>
+</div>

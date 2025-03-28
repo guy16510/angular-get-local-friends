@@ -16,14 +16,14 @@ import { ImageDisplayComponent } from '../image-display/image-display.component'
 import { LoadingComponent } from '../shared/loading/loading.component';
 import { UserProfileState } from '../../store/states/user-profile.state';
 import { LoadUserProfile } from '../../store/actions/user-profile.actions';
-import { ChatReactionComponent } from './chat-reaction/chat-reaction.component'; // adjust path if needed
+// import { ChatReactionComponent } from './chat-reaction/chat-reaction.component'; // adjust path if needed
 
 @Component({
   selector: 'app-chat',
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, MaterialModule, ImageDisplayComponent, LoadingComponent, ChatReactionComponent]
+  imports: [CommonModule, FormsModule, MaterialModule, ImageDisplayComponent, LoadingComponent]
 })
 export class ChatComponent implements OnInit, OnDestroy {
   @ViewChild('messagesContainer') private messagesContainer!: ElementRef;

@@ -171,7 +171,7 @@ const schema = a.schema({
   notifyUnreadMessage: a.subscription()
     .arguments({ identityId: a.string().required() })
     .for(a.ref('createMessage')) // this is the mutation being watched
-    .handler(a.handler.function(notifyUnreadMessage)) // enables filtering
+    .handler(a.handler.function(notifyUnreadMessage))
     .authorization(allow => [allow.authenticated()]),
 
   ChatMessage,
