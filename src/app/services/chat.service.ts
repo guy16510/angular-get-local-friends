@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { from, Observable, of, throwError } from 'rxjs';
+import { from, Observable, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../../../amplify/data/resource';
@@ -106,37 +106,4 @@ export class ChatService {
       return () => subscription.unsubscribe();
     });
   }
-
-
-  markMessagesAsRead(conversationId: string): Observable<any[]> {
-    return from(client.mutations.markMessagesAsRead({ conversationId })).pipe(
-      map((result: any) => result?.data ?? []),
-      catchError(err => {
-        console.error('[ChatService] markMessagesAsRead error:', err);
-        return throwError(() => err);
-      })
-    );
-  }
-  
-
-  reactToMessage(messageId: string, emoji: string): Observable<ChatMessage> {
-    return from(client.mutations.reactToMessage({ messageId, emoji })).pipe(
-      map((result: any) => result?.data ?? []),
-      catchError(err => {
-        console.error('[ChatService] reactToMessage error:', err);
-        return throwError(() => new Error('Failed to react to message'));
-      })
-    );
-  }
-
-  subscribeToUnreadMessages(): Observable<any> {
-    const identityId = this.store.selectSnapshot(AuthState.identityId);
-    if (!identityId) {
-      return throwError(() => new Error("No identityId available for subscription"));
-    }
-    return client.subscriptions.notifyUnreadMessage({ identityId });
-  }
-
-} 
-  
-  
+}

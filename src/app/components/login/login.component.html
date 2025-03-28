@@ -1,5 +1,6 @@
 <div class="login">
   <amplify-authenticator [signUpAttributes]="signUpAttributes">
+    <amplify-sign-in-button provider="facebook"></amplify-sign-in-button>
     <ng-template
       amplifySlot="authenticated"
       let-user="user"

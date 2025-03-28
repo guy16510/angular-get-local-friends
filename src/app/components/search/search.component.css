@@ -92,17 +92,27 @@
 .user-info p {
   margin: 0;
   font-size: 0.9rem;
+  /* color: #555; */
 }
 
+.dark-theme .user-info p {
+  /* color: white !important; */
+}
+
+.dark-theme .last-online{
+  /* color: white !important; */
+}
 
 .light-theme .last-online {
   font-size: 0.8rem;
+  /* color: #999; */
 }
 
 /* Reserve space for images to prevent layout shifts */
 app-image-display {
   display: block;
   width: 100%;
+  /* aspect-ratio: 1 / 1; */
   border-radius: 8px;
   margin-bottom: 10px;
 }
@@ -118,17 +128,11 @@ app-image-display {
 }
 
 /* Navigation buttons */
-/* .navigation-buttons {
+.navigation-buttons {
   display: flex;
   justify-content: center;
   gap: 20px;
   margin: 20px 0;
-} */
-
-.navigation-buttons {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 20px;
 }
 
 /* Media query adjustments for smaller screens */

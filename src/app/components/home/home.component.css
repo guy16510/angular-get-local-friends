@@ -1,5 +1,5 @@
 .hero-section {
-    background-image: url("../../../assets/images/heroImage.png");
+    background-image: url("../../../assets/images/aiStockImage.jpg");
     background-position: center;
     background-size: cover;
     background-repeat: no-repeat;
@@ -176,9 +176,3 @@
     line-height: 1.4;
     color: #555;
   }
-
-  @media (max-width: 768px) {
-  .intro-images img {
-    width: 100%;
-  }
-}

@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, ViewChild } from '@angular/core';
 import { Store, Select } from '@ngxs/store';
-import { map, Observable } from 'rxjs';
+import { Observable } from 'rxjs';
 import { UserProfile } from '../../models/user-profile.model';
 import { UserProfileState } from '../../store/states/user-profile.state';
 import { LoadAnimalProfile, LoadUserProfile, SubmitUserProfile } from '../../store/actions/user-profile.actions';
@@ -10,8 +10,6 @@ import { LoadingComponent } from '../shared/loading/loading.component';
 import { CommonModule } from '@angular/common';
 import { AuthState } from '../../store/states/auth.state';
 import { FileService } from '../../services/file.service';
-import { CheckAuth } from '../../store/actions/auth.actions';
-import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-my-profile',
@@ -21,57 +19,43 @@ import { Router } from '@angular/router';
   standalone: true
 })
 export class MyProfileComponent implements OnInit {
+  @Select(UserProfileState.profile) userProfile$!: Observable<UserProfile | null>;
   @Select(UserProfileState.loading) loading$!: Observable<boolean>;
   @Select(UserProfileState.error) error$!: Observable<string | null>;
-  userProfile$!: Observable<UserProfile | null>;
 
+  profileImage: string = '/assets/images/noImageUploaded.jpg';
+  private store = inject(Store);
 
   @ViewChild('uploadComponent') uploadComponent!: UploadComponent;
 
-  readonly fallbackImage = '/assets/images/noImageUploaded.jpg';
-  profileImage: string = this.fallbackImage;
+  constructor(private fileService: FileService) {}
 
-  private store = inject(Store);
-
-  constructor(
-    private fileService: FileService,
-    private router: Router
-  ) {}
-
-  ngOnInit(): void {
-    this.store.dispatch(new CheckAuth()).subscribe(() => {
-      const identityId = this.store.selectSnapshot(AuthState.identityId);
-      if (!identityId) return;
-  
-      this.userProfile$ = this.store.select(UserProfileState.getProfileById).pipe(
-        map(getById => getById(identityId))
-      );
-  
-      this.store.dispatch(new LoadUserProfile(identityId));
-      this.loadProfileImage();
-    });
-  }
-  
-
-  async loadProfileImage(): Promise<void> {
-    try {
-      const identityId = this.store.selectSnapshot(AuthState.identityId);
-      if (!identityId) throw new Error('Missing identityId');
-
-      const imgSrc = await this.fileService.getUserImage(identityId);
-      this.profileImage = imgSrc || this.fallbackImage;
-    } catch (err) {
-      console.error('Image load failed:', err);
-      this.profileImage = this.fallbackImage;
-    }
+  async ngOnInit(): Promise<void> {
+    this.store.dispatch(new LoadUserProfile());
+    await this.loadUserProfile();
   }
 
   onSubmit(updatedProfile: UserProfile): void {
     this.store.dispatch(new SubmitUserProfile(updatedProfile));
   }
 
+  async loadUserProfile() {
+    try {
+      const identityId = this.store.selectSnapshot(AuthState.identityId) || '';
+      const imgSrc = await this.fileService.getUserImage(identityId);
+      if (imgSrc) {
+        this.profileImage = imgSrc;
+      } else {
+        this.profileImage = '/assets/images/noImageUploaded.jpg';
+      }
+    } catch (error) {
+      console.error(error);
+      this.profileImage = '/assets/images/noImageUploaded.jpg';
+    }
+  }
+
   triggerEdit(): void {
-    this.uploadComponent?.triggerFileInput();
+    this.uploadComponent.triggerFileInput();
   }
 
   onImageUpdated(newImage: string): void {
@@ -82,21 +66,15 @@ export class MyProfileComponent implements OnInit {
     this.store.dispatch(new LoadAnimalProfile());
   }
 
-  getDeepInsights(profile: UserProfile | null) {
-    return profile?.deepInsights ?? null;
+  getDeepInsights(userProfile: UserProfile | null) {
+    return userProfile?.deepInsights ?? null;
   }
 
-  getSelfAnimalImage(profile: UserProfile | null): string | null {
-    const animal = profile?.selfProfile?.animal;
-    return animal ? `/assets/images/animal/male/${animal.toLowerCase()}.png` : null;
+  getSelfAnimalImage(userProfile: UserProfile | null): string | null {
+    return userProfile?.selfProfile?.animal ? `/assets/images/animal/male/${userProfile.selfProfile.animal.toLowerCase()}.png` : null;
   }
 
-  getSeekingAnimalImage(profile: UserProfile | null): string | null {
-    const animal = profile?.seekingProfile?.animal;
-    return animal ? `/assets/images/animal/male/${animal.toLowerCase()}.png` : null;
-  }
-
-  completeSurvey(): void {
-    this.router.navigate(['/survey']);
+  getSeekingAnimalImage(userProfile: UserProfile | null): string | null {
+    return userProfile?.seekingProfile?.animal ? `/assets/images/animal/male/${userProfile.seekingProfile.animal.toLowerCase()}.png` : null;
   }
 }

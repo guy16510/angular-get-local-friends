@@ -3,7 +3,7 @@ import { ActivatedRoute, Router, ParamMap } from '@angular/router';
 import { Store } from '@ngxs/store';
 import { Observable, Subject, Subscription, of } from 'rxjs';
 import { debounceTime, takeUntil, map, switchMap } from 'rxjs/operators';
-import { AppendMessage, LoadMessages, MarkMessagesAsRead, ReactToMessage, SendMessage, SetTypingStatus } from '../../store/actions/chat.actions';
+import { AppendMessage, LoadMessages, SendMessage, SetTypingStatus } from '../../store/actions/chat.actions';
 import { ChatService } from '../../services/chat.service';
 import { ChatMessage } from '../../models/chat';
 import { ChatState } from '../../store/states/chat.state';
@@ -16,7 +16,6 @@ import { ImageDisplayComponent } from '../image-display/image-display.component'
 import { LoadingComponent } from '../shared/loading/loading.component';
 import { UserProfileState } from '../../store/states/user-profile.state';
 import { LoadUserProfile } from '../../store/actions/user-profile.actions';
-// import { ChatReactionComponent } from './chat-reaction/chat-reaction.component'; // adjust path if needed
 
 @Component({
   selector: 'app-chat',
@@ -72,9 +71,6 @@ export class ChatComponent implements OnInit, OnDestroy {
     console.log(`[ChatComponent] Initializing chat for conversation: ${this.conversationId}`);
     this.store.dispatch(new LoadMessages(this.conversationId));
   
-    // Dispatch the NGXS action to mark messages as read 
-    this.store.dispatch(new MarkMessagesAsRead(this.conversationId));
-
     const recipientUserName = this.store.selectSnapshot(UserProfileState.getUserNameById)(this.recipientId);
     if (!recipientUserName) {
       this.store.dispatch(new LoadUserProfile(this.recipientId));
@@ -160,10 +156,6 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   getUserNameForMessage(senderId: string): string {
     return this.store.selectSnapshot(UserProfileState.getUserNameById)?.(senderId) || 'Friend';
-  }
-
-  handleAddReaction(emoji: string, messageId: string): void {
-    this.store.dispatch(new ReactToMessage(messageId, emoji));
   }
   
 }

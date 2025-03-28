@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './guards/auth.guard';
-import { AnimalShareComponent } from './components/animal-share/animal-share.component';
 
 export const routes: Routes = [
   {
@@ -73,10 +72,6 @@ export const routes: Routes = [
   {
     path: 'cookie-policy',
     loadComponent: () => import('./components/legal-pages/cookie-policy/cookie-policy.component').then(m => m.CookiePolicyComponent)
-  },
-  {
-    path: 'animal/:slug',
-    loadComponent:() => import('./components/animal-share/animal-share.component').then(m => m.AnimalShareComponent)
   },
   {
     path: '**',
