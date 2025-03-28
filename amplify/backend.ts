@@ -93,6 +93,15 @@ backend.createMessage.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
   resources: [chatMessageTableArn, conversationTableArn]
 }));
 
+backend.createMessage.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
+  actions: [
+    'logs:CreateLogGroup',
+    'logs:CreateLogStream',
+    'logs:PutLogEvents'
+  ],
+  resources: ['arn:aws:logs:*:*:*']
+}));
+
 backend.listMessagesByConversationId.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
   actions: ['dynamodb:Query'],
   resources: [chatMessageTableArn, chatMessageIndexArn]
