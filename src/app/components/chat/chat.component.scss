@@ -21,13 +21,16 @@
   border-bottom: 1px solid #ddd;
 }
 
-/* The scrollable messages area takes remaining space */
 .chat-messages {
-  flex: 1;             /* fill all available vertical space */
-  overflow-y: auto;    /* only one scrollbar for messages */
+  flex: 1 1 auto;   // Ensure it expands to fill available space
+  min-height: 1px;   // Prevent collapse when empty
+  overflow-y: auto;
   padding: 16px;
   display: flex;
   flex-direction: column;
+  /* Optionally, if you want the messages to appear at the bottom when there are none,
+     uncomment the following line.*/
+  justify-content: flex-end;
 }
 
 /* Each message row: "mine" or "theirs" */
