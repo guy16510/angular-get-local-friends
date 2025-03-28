@@ -17,7 +17,6 @@ import { of } from 'rxjs';
 import { AuthState } from './auth.state';
 
 export interface UserProfileStateModel {
-  profile: UserProfile | null;
   profilesById: { [key: string]: UserProfile };
   loading: boolean;
   error: string | null;
@@ -26,7 +25,6 @@ export interface UserProfileStateModel {
 @State<UserProfileStateModel>({
   name: 'userProfile',
   defaults: {
-    profile: null,
     profilesById: {},
     loading: false,
     error: null
@@ -37,40 +35,46 @@ export class UserProfileState {
   constructor(private userProfileService: UserProfileService, private store: Store) {}
 
   @Selector()
-  static profile(state: UserProfileStateModel) {
-    return state.profile;
-  }
-
-  @Selector()
-  static loading(state: UserProfileStateModel) {
+  static loading(state: UserProfileStateModel): boolean {
     return state.loading;
   }
-
+  
   @Selector()
-  static getSelfProfile(state: UserProfileStateModel) {
-    return state?.profile?.selfProfile;
-  }
-
-  @Selector()
-  static getSeekingProfile(state: UserProfileStateModel) {
-    return state?.profile?.seekingProfile;
-  }
-
-  @Selector()
-  static getDeepInsights(state: UserProfileStateModel) {
-    return state?.profile?.deepInsights;
-  }
-
-  @Selector()
-  static error(state: UserProfileStateModel) {
+  static error(state: UserProfileStateModel): string | null {
     return state.error;
   }
-
+  
   @Selector()
   static getUserNameById(state: UserProfileStateModel) {
-    return (identityId: string) => state.profilesById[identityId]?.userName || null;
+    return (identityId: string): string | null =>
+      state.profilesById[identityId]?.userName ?? null;
   }
-
+  
+  @Selector()
+  static getProfileById(state: UserProfileStateModel) {
+    return (id: string): UserProfile | null => state.profilesById[id] ?? null;
+  }
+  
+  @Selector([AuthState.identityId])
+  static currentUserProfile(state: UserProfileStateModel, identityId: string | null): UserProfile | null {
+    return identityId ? state.profilesById[identityId] ?? null : null;
+  }
+  
+  @Selector([AuthState.identityId])
+  static getSelfProfile(state: UserProfileStateModel, identityId: string | null) {
+    return identityId ? state.profilesById[identityId]?.selfProfile ?? null : null;
+  }
+  
+  @Selector([AuthState.identityId])
+  static getSeekingProfile(state: UserProfileStateModel, identityId: string | null) {
+    return identityId ? state.profilesById[identityId]?.seekingProfile ?? null : null;
+  }
+  
+  @Selector([AuthState.identityId])
+  static getDeepInsights(state: UserProfileStateModel, identityId: string | null) {
+    return identityId ? state.profilesById[identityId]?.deepInsights ?? null : null;
+  }
+  
   @Action(LoadUserProfile)
   loadUserProfile(ctx: StateContext<UserProfileStateModel>, action: LoadUserProfile) {
     ctx.patchState({ loading: true, error: null });
@@ -81,7 +85,21 @@ export class UserProfileState {
     }
 
     return this.userProfileService.getUserProfile(identityId).pipe(
-      tap((profile) => {
+      tap((response) => {
+        let profile: any;
+        try {
+          profile = typeof response === 'string' ? JSON.parse(response) : response;
+        } catch (err) {
+          console.error('❌ Failed to parse user profile JSON string:', response, err);
+          ctx.dispatch(new LoadUserProfileFail('Invalid user profile format'));
+          return;
+        }
+
+        if (!profile || typeof profile !== 'object' || !profile.identityId) {
+          ctx.dispatch(new LoadUserProfileFail('No valid user profile found'));
+          return;
+        }
+
         ctx.dispatch(new LoadUserProfileSuccess(profile));
       }),
       catchError((err) => {
@@ -93,35 +111,37 @@ export class UserProfileState {
 
   @Action(LoadUserProfileSuccess)
   loadUserProfileSuccess(ctx: StateContext<UserProfileStateModel>, action: LoadUserProfileSuccess) {
-    let parsedProfile: any;
-    try {
-      parsedProfile = JSON.parse(action.payload as unknown as string);
-    } catch (e) {
-      console.error('❌ Failed to parse user profile JSON string:', action.payload, e);
-      parsedProfile = {};
+    const raw = action.payload as any;
+
+    if (!raw || typeof raw !== 'object' || !raw.identityId) {
+      console.warn('⚠️ LoadUserProfileSuccess called with invalid payload:', raw);
+      return;
     }
 
-    if (typeof parsedProfile.surveyAnswers === 'string') {
-      try {
-        parsedProfile.surveyAnswers = JSON.parse(parsedProfile.surveyAnswers);
-      } catch {
-        parsedProfile.surveyAnswers = [];
-      }
-    }
+    const parsedProfile: UserProfile = {
+      identityId: raw.identityId,
+      locationLat: raw.locationLat ?? 0,
+      locationLng: raw.locationLng ?? 0,
+      userName: raw.userName ?? '',
+      surveyAnswers: typeof raw.surveyAnswers === 'string' ? JSON.parse(raw.surveyAnswers) : raw.surveyAnswers ?? [],
+      ageRange: raw.ageRange,
+      desiredFriendAgeRanges: raw.desiredFriendAgeRanges ? JSON.parse(raw.desiredFriendAgeRanges) : [],
+      gender: raw.gender,
+      genderFriendPreference: raw.genderFriendPreference,
+      hasKids: raw.hasKids,
+      wantsFriendsWithKids: raw.wantsFriendsWithKids,
+      childAgeGroups: raw.childAgeGroups ? JSON.parse(raw.childAgeGroups) : [],
+      wantsSimilarChildAges: raw.wantsSimilarChildAges,
+      lastOnlineAt: raw.lastOnlineAt,
+      selfProfile: raw.selfProfile,
+      seekingProfile: raw.seekingProfile,
+      deepInsights: raw.deepInsights,
+      animalProfileLoadedAt: raw.animalProfileLoadedAt
+    };
 
-    if (typeof parsedProfile.images === 'string') {
-      try {
-        parsedProfile.images = JSON.parse(parsedProfile.images);
-      } catch {
-        parsedProfile.images = [];
-      }
-    }
-
-    const state = ctx.getState();
     ctx.patchState({
-      profile: parsedProfile,
       profilesById: {
-        ...state.profilesById,
+        ...ctx.getState().profilesById,
         [parsedProfile.identityId]: parsedProfile
       },
       loading: false,
@@ -131,10 +151,7 @@ export class UserProfileState {
 
   @Action(LoadUserProfileFail)
   loadUserProfileFail(ctx: StateContext<UserProfileStateModel>, action: LoadUserProfileFail) {
-    ctx.patchState({
-      loading: false,
-      error: action.error
-    });
+    ctx.patchState({ loading: false, error: action.error });
   }
 
   @Action(SubmitUserProfile)
@@ -143,7 +160,6 @@ export class UserProfileState {
     return this.userProfileService.submitUserProfile(action.payload).pipe(
       tap((response) => {
         ctx.patchState({
-          profile: response,
           profilesById: {
             ...ctx.getState().profilesById,
             [response.identityId]: response
@@ -160,7 +176,7 @@ export class UserProfileState {
   }
 
   @Action(UpdateUserOnlineStatus)
-  updateUserOnlineStatus(ctx: StateContext<UserProfileStateModel>) {
+  updateUserOnlineStatus() {
     const identityId = this.store.selectSnapshot(AuthState.identityId);
     if (!identityId) return of();
 
@@ -184,15 +200,15 @@ export class UserProfileState {
     ctx.patchState({ loading: true, error: null });
     return this.userProfileService.getAnimalProfile().pipe(
       tap((response) => {
-        const currentProfile = ctx.getState().profile;
+        const currentProfile = ctx.getState().profilesById[identityId];
+
+        if (!currentProfile) {
+          ctx.dispatch(new LoadAnimalProfileFail('No profile loaded to attach animal data'));
+          return;
+        }
 
         const updatedProfile: UserProfile = {
-          identityId: identityId,
-          locationLat: currentProfile?.locationLat ?? 0,
-          locationLng: currentProfile?.locationLng ?? 0,
-          userName: currentProfile?.userName ?? '',
-          surveyAnswers: currentProfile?.surveyAnswers ?? [],
-          lastOnlineAt: currentProfile?.lastOnlineAt,
+          ...currentProfile,
           selfProfile: response.selfProfile,
           seekingProfile: response.seekingProfile,
           deepInsights: response.deepInsights,
@@ -200,7 +216,6 @@ export class UserProfileState {
         };
 
         ctx.patchState({
-          profile: updatedProfile,
           profilesById: {
             ...ctx.getState().profilesById,
             [identityId]: updatedProfile

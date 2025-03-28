@@ -40,8 +40,35 @@
         </div>
         <div class="text">{{ msg.text }}</div>
         <div class="timestamp">{{ msg.timestamp | date: 'shortTime' }}</div>
-      </mat-card>
-
+        <mat-icon *ngIf="msg.senderId === currentUserId" [ngClass]="{
+          'read': msg.status === 'read',
+          'delivered': msg.status === 'delivered',
+          'sent': msg.status === 'sent'
+        }" class="read-status-icon">
+          {{ msg.status === 'read' ? 'done_all' : 'done' }}
+        </mat-icon>
+      </mat-card> 
+<!-- 
+      <mat-card class="message-bubble" (click)="reaction.toggle($event)">
+        <div class="recipientUserName" (click)="openUserProfile(msg.senderId); $event.stopPropagation()">
+          {{ recipientUserName$ | async }}
+        </div>
+        <div class="text">{{ msg.text }}</div>
+        <div class="timestamp">{{ msg.timestamp | date: 'shortTime' }}</div>
+        <app-chat-reaction #reaction
+                           [messageId]="msg.id"
+                           [reactions]="msg.reactions"
+                           (addReaction)="handleAddReaction($event, msg.id)">
+        </app-chat-reaction>
+        <mat-icon *ngIf="msg.senderId === currentUserId" [ngClass]="{
+          'read': msg.status === 'read',
+          'delivered': msg.status === 'delivered',
+          'sent': msg.status === 'sent'
+        }" class="read-status-icon">
+          {{ msg.status === 'read' ? 'done_all' : 'done' }}
+        </mat-icon>
+      </mat-card> -->
+      
       <app-image-display
         *ngIf="msg.senderId === currentUserId"
         [identityId]="msg.senderId"

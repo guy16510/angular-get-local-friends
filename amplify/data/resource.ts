@@ -9,8 +9,9 @@ import { createMessage } from '../functions/create-message/resource';
 import { listConversations } from '../functions/list-conversations/resource';
 import { listMessagesByConversationId } from '../functions/list-messages-by-conversation-id/resource';
 import { setTypingStatus } from '../functions/set-typing-status/resource';
-import { acknowledgeMessage } from '../functions/acknowledge-message/resource';
-import { markMessageAsRead } from '../functions/mark-message-as-read/resource';
+import { markMessagesAsRead } from '../functions/mark-messages-as-read/resource';
+import {reactToMessage } from '../functions/react-to-message/resource';
+import { notifyUnreadMessage } from '../functions/notify-unread-message/resource';
 
 /* --- Define Models --- */
 export const ChatMessage = a.model({
@@ -25,6 +26,7 @@ export const ChatMessage = a.model({
   status: a.string().default('sent'),
   createdAt: a.datetime(),
   updatedAt: a.datetime(),
+  reactions: a.json(),
 })
   .secondaryIndexes(index => [index('conversationId').sortKeys(['timestamp'])])
   .authorization(allow => [allow.authenticated()]);
@@ -41,13 +43,6 @@ export const UserPresence = a.model({
   status: a.string().default('offline'),
   lastSeen: a.datetime()
 }).authorization(allow => [allow.authenticated().to(['create', 'update', 'read'])]);
-
-export const MessageReaction = a.model({
-  messageId: a.string().required(),
-  userId: a.string().required(),
-  emoji: a.string().required(),
-  createdAt: a.datetime().required()
-}).authorization(allow => [allow.authenticated().to(['create', 'read'])]);
 
 export const Conversation = a.model({
   id: a.string().required(),
@@ -155,17 +150,28 @@ const schema = a.schema({
     .for(a.ref('setTypingStatus'))
     .handler(a.handler.function(setTypingStatus))
     .authorization(allow => [allow.authenticated()]),
-    
-  acknowledgeMessage: a.mutation()
-    .arguments({ messageId: a.string().required() })
-    .returns(a.ref('ChatMessage'))
-    .handler(a.handler.function(acknowledgeMessage))
+
+  markMessagesAsRead: a.mutation()
+    .arguments({
+      conversationId: a.string().required(),
+    })
+    .returns(a.ref('ChatMessage').array()) // Return array of updated messages
+    .handler(a.handler.function(markMessagesAsRead))
     .authorization(allow => [allow.authenticated()]),
 
-  markMessageAsRead: a.mutation()
-    .arguments({ conversationId: a.string().required(), userId: a.string().required(), messageId: a.string().required() })
+  reactToMessage: a.mutation()
+    .arguments({
+      messageId: a.string().required(),
+      emoji: a.string().required(),
+    })
     .returns(a.ref('ChatMessage'))
-    .handler(a.handler.function(markMessageAsRead))
+    .handler(a.handler.function(reactToMessage))
+    .authorization(allow => [allow.authenticated()]),
+  
+  notifyUnreadMessage: a.subscription()
+    .arguments({ identityId: a.string().required() })
+    .for(a.ref('createMessage')) // this is the mutation being watched
+    .handler(a.handler.function(notifyUnreadMessage))
     .authorization(allow => [allow.authenticated()]),
 
   ChatMessage,
@@ -174,7 +180,6 @@ const schema = a.schema({
   NearbyUsersResponse,
   TypingStatus,
   UserPresence,
-  MessageReaction
 });
 
 export type Schema = ClientSchema<typeof schema>;
