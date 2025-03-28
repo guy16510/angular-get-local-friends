@@ -13,7 +13,7 @@ import { getAnimalProfile } from './functions/get-animal-profile/resource';
 import { listMessagesByConversationId } from './functions/list-messages-by-conversation-id/resource';
 import { setTypingStatus } from './functions/set-typing-status/resource';
 import { markMessagesAsRead } from './functions/mark-messages-as-read/resource';
-import { acknowledgeMessage } from './functions/acknowledge-message/resource';
+import { notifyUnreadMessage } from './functions/notify-unread-message/resource';
 import { reactToMessage } from './functions/react-to-message/resource';
 
 import * as iam from 'aws-cdk-lib/aws-iam';
@@ -33,8 +33,8 @@ const backend = defineBackend({
   listMessagesByConversationId,
   setTypingStatus, 
   markMessagesAsRead,
-  acknowledgeMessage,
-  reactToMessage, // ✅ this is the one we're using now
+  notifyUnreadMessage,
+  reactToMessage,
 });
 
 /** 🔐 User Profile Table (Geo-Enabled) */
@@ -113,10 +113,6 @@ backend.markMessagesAsRead.resources.lambda.addToRolePolicy(new iam.PolicyStatem
   resources: [chatMessageTableArn, chatMessageIndexArn]
 }));
 
-backend.acknowledgeMessage.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
-  actions: ['dynamodb:GetItem', 'dynamodb:UpdateItem'],
-  resources: [chatMessageTableArn]
-}));
 
 // ✅ This is the new permissions block for reactions (editing the ChatMessage model)
 backend.reactToMessage.resources.lambda.addToRolePolicy(new iam.PolicyStatement({

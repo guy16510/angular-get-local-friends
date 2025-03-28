@@ -14,20 +14,21 @@ export const handler: Schema['reactToMessage']['functionHandler'] = async (event
 
   const timestamp = new Date().toISOString();
 
-  // Update `reactions` field in ChatMessage (assumes reactions is a map of userId -> emoji)
   const updateResult = await docClient.update({
     TableName: tableName,
     Key: { id: messageId },
-    UpdateExpression: 'SET reactions.#uid = :emoji, updatedAt = :updatedAt',
+    UpdateExpression: 'SET reactions = if_not_exists(reactions, :emptyMap), reactions.#uid = :emoji, updatedAt = :updatedAt',
     ExpressionAttributeNames: {
       '#uid': userId,
     },
     ExpressionAttributeValues: {
       ':emoji': emoji,
       ':updatedAt': timestamp,
+      ':emptyMap': {},
     },
     ReturnValues: 'ALL_NEW'
   }).promise();
+  
 
   const updatedItem = updateResult.Attributes;
 
@@ -48,6 +49,6 @@ export const handler: Schema['reactToMessage']['functionHandler'] = async (event
     status: updatedItem['status'],
     createdAt: updatedItem['createdAt'],
     updatedAt: updatedItem['updatedAt'],
-    reactions: updatedItem['reactions'],
+    reactions: updatedItem['reactions'] || {},
   };
 };

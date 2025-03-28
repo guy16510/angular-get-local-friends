@@ -1,41 +1,13 @@
 import { State, Action, StateContext, Selector, Store } from '@ngxs/store';
 import { Injectable } from '@angular/core';
 import { ChatService } from '../../services/chat.service';
-import { AppendMessage, LoadConversations, LoadMessages, MarkMessagesAsRead, ReactToMessage, SendMessage, SetTypingStatus } from '../actions/chat.actions';
+import { AppendMessage, LoadConversations, LoadMessages, MarkMessagesAsRead, ReactToMessage, SendMessage, SetTypingStatus, SetActiveConversation } from '../actions/chat.actions';
 import { getNormalizedConversationId } from '../../utils/chat-utils';
 import { tap } from 'rxjs/operators';
 import { from, EMPTY, Observable } from 'rxjs';
 import { switchMap, catchError } from 'rxjs/operators';
 import { AuthState } from './auth.state';
-
-type MessageStatus = 'sent' | 'delivered' | 'read';
-
-
-export interface ChatMessage {
-  conversationId: string;
-  senderId: string;
-  recipientId: string;
-  text: string;
-  timestamp: string;
-  status: 'sent' | 'delivered' | 'read'; // new
-}
-
-export interface Conversation {
-  conversationId: string;
-  id: string;
-  participantA: string;
-  participantB: string;
-  lastMessage: string;
-  lastTimestamp: string;
-}
-
-export interface ChatStateModel {
-  conversations: Conversation[];
-  messages: Record<string, ChatMessage[]>;
-  loading: boolean;
-  error: string | null;
-  lastFetched: number | null;
-}
+import { ChatMessage, Conversation, ChatStateModel, MessageStatus } from '../../models/chat';
 
 @State<ChatStateModel>({
   name: 'chat',
@@ -44,7 +16,8 @@ export interface ChatStateModel {
     messages: {},
     loading: false,
     error: null,
-    lastFetched: null
+    lastFetched: null,
+    activeConversationId: null
   }
 })
 @Injectable()
@@ -78,9 +51,18 @@ export class ChatState {
     };
   }
 
+  @Selector()
+  static activeConversationId(state: ChatStateModel) {
+    return state.activeConversationId;
+  }
+
+  @Action(SetActiveConversation)
+  setActiveConversation(ctx: StateContext<ChatStateModel>, { conversationId }: SetActiveConversation) {
+    ctx.patchState({ activeConversationId: conversationId });
+  }
+
   @Action(LoadConversations)
-  @Action(LoadConversations)
-  loadConversations(ctx: StateContext<ChatStateModel>, action: LoadConversations) {
+  loadConversations(ctx: StateContext<ChatStateModel>) {
     ctx.patchState({ loading: true, error: null });
 
     return this.chatService.listConversations().pipe(
@@ -102,7 +84,6 @@ export class ChatState {
       })
     );
   }
-
 
   @Action(LoadMessages)
   loadMessages(ctx: StateContext<ChatStateModel>, action: LoadMessages) {
@@ -129,10 +110,9 @@ export class ChatState {
     );
   }
 
-
   @Action(AppendMessage)
   appendMessage(ctx: StateContext<ChatStateModel>, action: AppendMessage) {
-    const state = ctx.getState() as ChatStateModel;
+    const state = ctx.getState();
     const msg = action.message;
     const normalizedId = getNormalizedConversationId(msg.senderId, msg.recipientId);
     const updated = [...(state.messages[normalizedId] || []), msg];
@@ -153,7 +133,7 @@ export class ChatState {
           console.error('Received undefined message');
           return;
         }
-        const state = ctx.getState() as ChatStateModel;
+        const state = ctx.getState();
         const conversationId = [msg.senderId, msg.recipientId].sort().join('#');
         const updatedMsgs = [...(state.messages[conversationId] || []), msg];
         ctx.patchState({
@@ -231,5 +211,4 @@ export class ChatState {
       })
     );
   }
-
 }

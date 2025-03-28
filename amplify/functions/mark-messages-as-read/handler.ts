@@ -22,11 +22,11 @@ export const handler: Schema['markMessagesAsRead']['functionHandler'] = async (e
       TableName: TABLE_NAME,
       IndexName: 'chatMessagesByConversationIdAndTimestamp',
       KeyConditionExpression: 'conversationId = :convId',
-      FilterExpression: 'recipientId = :userId AND #status = :status',
+      FilterExpression: 'recipientId = :userId AND #status = :sent',
       ExpressionAttributeValues: {
         ':convId': conversationId,
         ':userId': identityId,
-        ':status': 'delivered',
+        ':sent': 'sent',
       },
       ExpressionAttributeNames: {
         '#status': 'status',

@@ -3,7 +3,7 @@ import { ActivatedRoute, Router, ParamMap } from '@angular/router';
 import { Store } from '@ngxs/store';
 import { Observable, Subject, Subscription, of } from 'rxjs';
 import { debounceTime, takeUntil, map, switchMap } from 'rxjs/operators';
-import { AppendMessage, LoadMessages, MarkMessagesAsRead, SendMessage, SetTypingStatus } from '../../store/actions/chat.actions';
+import { AppendMessage, LoadMessages, MarkMessagesAsRead, ReactToMessage, SendMessage, SetTypingStatus } from '../../store/actions/chat.actions';
 import { ChatService } from '../../services/chat.service';
 import { ChatMessage } from '../../models/chat';
 import { ChatState } from '../../store/states/chat.state';
@@ -16,13 +16,14 @@ import { ImageDisplayComponent } from '../image-display/image-display.component'
 import { LoadingComponent } from '../shared/loading/loading.component';
 import { UserProfileState } from '../../store/states/user-profile.state';
 import { LoadUserProfile } from '../../store/actions/user-profile.actions';
+import { ChatReactionComponent } from './chat-reaction/chat-reaction.component'; // adjust path if needed
 
 @Component({
   selector: 'app-chat',
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, MaterialModule, ImageDisplayComponent, LoadingComponent]
+  imports: [CommonModule, FormsModule, MaterialModule, ImageDisplayComponent, LoadingComponent, ChatReactionComponent]
 })
 export class ChatComponent implements OnInit, OnDestroy {
   @ViewChild('messagesContainer') private messagesContainer!: ElementRef;
@@ -159,6 +160,10 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   getUserNameForMessage(senderId: string): string {
     return this.store.selectSnapshot(UserProfileState.getUserNameById)?.(senderId) || 'Friend';
+  }
+
+  handleAddReaction(emoji: string, messageId: string): void {
+    this.store.dispatch(new ReactToMessage(messageId, emoji));
   }
   
 }

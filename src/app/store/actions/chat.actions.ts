@@ -34,3 +34,8 @@ export class ReactToMessage {
   static readonly type = '[Chat] React To Message';
   constructor(public messageId: string, public emoji: string) {}
 }
+
+export class SetActiveConversation {
+  static readonly type = '[Chat] Set Active Conversation';
+  constructor(public conversationId: string) {}
+}

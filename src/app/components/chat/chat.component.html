@@ -38,13 +38,15 @@
           >
           {{ recipientUserName$ | async }}
         </div>
-        <!-- <app-chat-reaction
-        [messageId]="msg.id"
-        [reactions]="msg.reactions"
-        (addReaction)="handleAddReaction($event, msg.id)">
-      </app-chat-reaction> -->
         <div class="text">{{ msg.text }}</div>
         <div class="timestamp">{{ msg.timestamp | date: 'shortTime' }}</div>
+          <!-- Add this line -->
+           <!-- <pre>{{msg | json}}</pre> -->
+          <app-chat-reaction
+          [messageId]="msg.id"
+          [reactions]="msg.reactions"
+          (addReaction)="handleAddReaction($event, msg.id)">
+        </app-chat-reaction>
         <mat-icon *ngIf="msg.senderId === currentUserId" [ngClass]="{
           'read': msg.status === 'read',
           'delivered': msg.status === 'delivered',

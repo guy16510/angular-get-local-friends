@@ -9,9 +9,9 @@ import { createMessage } from '../functions/create-message/resource';
 import { listConversations } from '../functions/list-conversations/resource';
 import { listMessagesByConversationId } from '../functions/list-messages-by-conversation-id/resource';
 import { setTypingStatus } from '../functions/set-typing-status/resource';
-import { acknowledgeMessage } from '../functions/acknowledge-message/resource';
 import { markMessagesAsRead } from '../functions/mark-messages-as-read/resource';
 import {reactToMessage } from '../functions/react-to-message/resource';
+import { notifyUnreadMessage } from '../functions/notify-unread-message/resource';
 
 /* --- Define Models --- */
 export const ChatMessage = a.model({
@@ -150,12 +150,6 @@ const schema = a.schema({
     .for(a.ref('setTypingStatus'))
     .handler(a.handler.function(setTypingStatus))
     .authorization(allow => [allow.authenticated()]),
-    
-  acknowledgeMessage: a.mutation()
-    .arguments({ messageId: a.string().required() })
-    .returns(a.ref('ChatMessage'))
-    .handler(a.handler.function(acknowledgeMessage))
-    .authorization(allow => [allow.authenticated()]),
 
   markMessagesAsRead: a.mutation()
     .arguments({
@@ -174,6 +168,12 @@ const schema = a.schema({
     .handler(a.handler.function(reactToMessage))
     .authorization(allow => [allow.authenticated()]),
   
+  notifyUnreadMessage: a.subscription()
+    .arguments({ conversationId: a.string().required() })
+    .for(a.ref('createMessage')) // this is the mutation being watched
+    .handler(a.handler.function(notifyUnreadMessage)) // enables filtering
+    .authorization(allow => [allow.authenticated()]),
+
   ChatMessage,
   Conversation,
   Contact,
