@@ -212,15 +212,7 @@ span#logoText {
   transition: transform 0.2s ease-in-out;
 }
 
-.messages-icon:hover {
-  transform: rotate(15deg);
-}
-
-.search-icon:hover {
-  transform: rotate(15deg);
-}
-
-.lightDark-icon:hover{
+.jiggle-icon:hover {
   transform: rotate(15deg);
 }
 
