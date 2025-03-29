@@ -4,6 +4,10 @@
       overflow-wrap: break-word;
       hyphens: auto;
     }
+
+    mat-list-item p {
+      white-space: normal;
+    }
   
     mat-card-content,
     mat-list-item {

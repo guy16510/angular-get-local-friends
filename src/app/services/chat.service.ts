@@ -84,7 +84,7 @@ export class ChatService {
     return new Observable<ChatMessage>((observer) => {
       const subscription = client.subscriptions.onCreateMessage().subscribe({
         next: (event: any) => {
-          const message = event?.data?.onCreateMessage;
+          const message = event;
           if (message?.conversationId === conversationId) {
             observer.next(message);
           }

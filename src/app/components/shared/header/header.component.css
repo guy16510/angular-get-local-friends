@@ -196,6 +196,57 @@ span#logoText {
   padding: 0 6px;
   margin-left: 4px;
 }
+
+/* New styles for the messages icon with overlayed unread badge */
+.messages-link {
+  display: flex;
+  align-items: center;
+}
+
+.icon-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.messages-icon {
+  transition: transform 0.2s ease-in-out;
+}
+
+.messages-icon:hover {
+  transform: rotate(15deg);
+}
+
+.search-icon:hover {
+  transform: rotate(15deg);
+}
+
+.lightDark-icon:hover{
+  transform: rotate(15deg);
+}
+
+.unread-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: red;
+  color: white;
+  border-radius: 50%;
+  font-size: 0.65rem;
+  padding: 2px 5px;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.messages-text {
+  margin-left: 8px;
+  font-size: 1rem;
+}
+
 /* ======= Responsive Styles ======= */
 @media (max-width: 768px) {
   .nav-links {
