@@ -28,3 +28,7 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 mat-card {
   padding: 20px;
 }
+
+main {
+  margin-top: 70px; /* Adjust this value to match your header’s height */
+}

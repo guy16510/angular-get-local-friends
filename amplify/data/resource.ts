@@ -12,6 +12,7 @@ import { setTypingStatus } from '../functions/set-typing-status/resource';
 import { markMessagesAsRead } from '../functions/mark-messages-as-read/resource';
 import {reactToMessage } from '../functions/react-to-message/resource';
 import { listUnreadMessages } from '../functions/list-unread-messages/resource';
+import { getCallerIdentity } from '../functions/get-caller-identity/resource';
 
 /* --- Define Models --- */
 export const ChatMessage = a.model({
@@ -133,6 +134,7 @@ const schema = a.schema({
   onCreateMessage: a
     .subscription()
     .for(a.ref('createMessage'))
+    .handler(a.handler.function(getCallerIdentity))
     .authorization(allow => [allow.authenticated()]),
 
   customListMessagesByConversationId: a.query()
