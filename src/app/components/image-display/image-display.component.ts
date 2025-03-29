@@ -23,4 +23,10 @@ export class ImageDisplayComponent implements OnInit {
       this.imgSrc = this.defaultImg;
     }
   }
+  
+  onImgError(): void {
+    // Optionally, you can log this event or silently handle it
+    // console.warn('Image failed to load, using default.');
+    this.imgSrc = this.defaultImg;
+  }
 }

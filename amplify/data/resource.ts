@@ -133,7 +133,6 @@ const schema = a.schema({
   onCreateMessage: a
     .subscription()
     .for(a.ref('createMessage'))
-    .handler(a.handler.function(createMessage))
     .authorization(allow => [allow.authenticated()]),
 
   customListMessagesByConversationId: a.query()

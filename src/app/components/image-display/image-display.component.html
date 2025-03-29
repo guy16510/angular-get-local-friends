@@ -1,1 +1,1 @@
-<img [src]="imgSrc || defaultImg"alt="User profile photo" class="profile-photo" loading="lazy" />
+<img [src]="imgSrc || defaultImg" alt="User profile photo" class="profile-photo" loading="lazy" (error)="onImgError()" />
