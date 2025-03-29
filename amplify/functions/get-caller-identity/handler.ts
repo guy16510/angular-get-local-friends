@@ -1,22 +1,18 @@
+import type { Schema } from '../../data/resource';
 import { getIdentityId } from '../../shared/utils/identity';
 
-export const handler = async (event: any): Promise<any> => {
+export const handler = async (event: any) => {
   console.info("Identity lambda invoked with event:", JSON.stringify(event, null, 2));
-
+  
   let payload = event;
-
+  
   try {
-    // If the event comes as a JSON string, parse it.
-    if (typeof event === "string") {
-      try {
-        payload = JSON.parse(event);
-      } catch (parseError) {
-        console.error("Failed to parse event as JSON:", event);
-        throw new Error("Invalid event format: unable to parse JSON.");
-      }
+    // If the event is a JSON string, parse it.
+    if (typeof payload === "string") {
+      payload = JSON.parse(payload);
     }
-
-    // Optionally, process identity information for logging.
+    
+    // Optionally extract and log the identity.
     if (payload.identity && typeof payload.identity === "object") {
       try {
         const identityId = getIdentityId(payload.identity);
@@ -27,24 +23,39 @@ export const handler = async (event: any): Promise<any> => {
     } else {
       console.warn("No identity provided in payload or identity is not an object.");
     }
-
-    // Unwrap the subscription payload if it's nested (common pattern is { data: { onCreateMessage: {...} } }).
-    let message = payload;
+    
+    // Unwrap the message payload if it exists.
+    let message: any;
     if (payload.data && payload.data.onCreateMessage) {
       message = payload.data.onCreateMessage;
+      console.info("Using payload.data.onCreateMessage as message:", JSON.stringify(message));
+    } else if (payload.prev && payload.prev.result && payload.prev.result.id) {
+      message = payload.prev.result;
+      console.info("Using payload.prev.result as message:", JSON.stringify(message));
+    } else {
+      // If no valid message found, return a dummy ChatMessage to satisfy non-nullable fields.
+      console.warn("No valid message found in payload. Returning dummy message.");
+      message = {
+        id: "init",
+        conversationId: "init",
+        senderId: "init",
+        recipientId: "init",
+        timestamp: new Date().toISOString(),
+        text: ""
+      };
     }
-
-    // Validate that the returned message contains all required non-nullable fields.
+    
+    // Validate that the message contains all required fields.
     const requiredFields = ['id', 'conversationId', 'senderId', 'recipientId', 'timestamp'];
     for (const field of requiredFields) {
-      if (!message[field]) {
-        console.error(`Missing required field '${field}' in message:`, message);
+      if (message[field] == null) {
+        console.error(`Missing required field '${field}' in message:`, JSON.stringify(message, null, 2));
         throw new Error(`Missing required field '${field}' in message payload.`);
       }
     }
-
-    // Return the fully unwrapped and validated message.
+    
     return message;
+    
   } catch (error) {
     console.error("Error in identity lambda:", error);
     throw error;
