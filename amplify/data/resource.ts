@@ -176,7 +176,6 @@ const schema = a.schema({
     .handler(a.handler.function(reactToMessage))
     .authorization(allow => [allow.authenticated()]),
   
-
   listUnreadMessages: a.query()
     .arguments({ recipientId: a.string().required() })
     .returns(a.ref('ChatMessage').array())
