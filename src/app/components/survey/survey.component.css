@@ -1,6 +1,16 @@
 .survey-container {
   margin: auto;
   width: 80%;
+  margin-top:70px;
+}
+p.disclaimer{
+  font-size: 0.9rem;
+  margin-top: 1rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #ddd;
+  font-style: italic;
+  text-align: center;
+  line-height: 1.4;
 }
 
 @media (max-width: 600px) {

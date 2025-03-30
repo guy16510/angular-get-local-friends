@@ -1,5 +1,5 @@
 import { Component, HostListener, OnInit } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { ThemeService } from '../../../services/theme.service';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
@@ -32,7 +32,7 @@ export class HeaderComponent{
   
   isDarkMode = false;
 
-  constructor(private themeService: ThemeService, private store: Store) {
+  constructor(private themeService: ThemeService, private store: Store, private router: Router) {
     this.isDarkMode = this.themeService.isDarkMode();
   }
 
@@ -44,6 +44,7 @@ export class HeaderComponent{
   async signOut() {
     try {
       this.store.dispatch(new Logout());
+      this.router.navigate(['/']);
     } catch (error) {
       console.error('Error signing out:', error);
     }

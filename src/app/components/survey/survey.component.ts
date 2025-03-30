@@ -4,9 +4,9 @@ import { SURVEY_QUESTIONS, SurveyQuestion } from '../../data/surveyQuestions';
 import { MaterialModule } from '../../shared/material.module';
 import { ReactiveFormsModule, FormBuilder, FormControl, FormGroup, Validators, ValidatorFn, AbstractControl } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { ProgressBarComponent } from '../shared/progress-bar/progress-bar.component';
 import { NgxsFormDirective } from '@ngxs/form-plugin';
 import { Store } from '@ngxs/store';
+import { SetProgress } from '../../store/actions/progress.actions';
 // import {SaveSurveyAnswers} from '../../store/actions/survey.actions';
 
 /**
@@ -26,7 +26,7 @@ export function minLengthArray(min: number): ValidatorFn {
     selector: 'app-survey',
     templateUrl: './survey.component.html',
     styleUrls: ['./survey.component.css'],
-    imports: [MaterialModule, CommonModule, ReactiveFormsModule, ProgressBarComponent, NgxsFormDirective]
+    imports: [MaterialModule, CommonModule, ReactiveFormsModule, NgxsFormDirective]
 })
 export class SurveyComponent implements OnInit {
   surveyForm!: FormGroup;
@@ -38,6 +38,8 @@ export class SurveyComponent implements OnInit {
   constructor(private fb: FormBuilder, private store: Store, private router: Router) { }
 
   ngOnInit(): void {
+    this.store.dispatch(new SetProgress(this.progress));
+
     // Generate the scale range for sliding-scale (replaced with radio buttons 1-10)
     this.scaleRange = Array.from({ length: 5 }, (_, i) => i + 1);
 
@@ -59,6 +61,7 @@ export class SurveyComponent implements OnInit {
     // However, we need to compute the correct page based on existing answers.
     // Use a timeout to ensure that the plugin has time to sync the state.
     setTimeout(() => {
+      this.store.dispatch(new SetProgress(this.progress));
       this.restoreCurrentPage();
     }, 0);
   }
@@ -122,6 +125,7 @@ export class SurveyComponent implements OnInit {
       // With the form plugin, the state is automatically in sync,
       // so no manual dispatch is necessary.
       this.currentPage++;
+      this.store.dispatch(new SetProgress(this.progress));
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
@@ -129,6 +133,7 @@ export class SurveyComponent implements OnInit {
   previousPage(): void {
     if (this.currentPage > 0) {
       this.currentPage--;
+      this.store.dispatch(new SetProgress(this.progress));
     }
   }
 

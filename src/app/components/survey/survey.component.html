@@ -1,11 +1,13 @@
 <!-- survey.component.html -->
-<app-progress-bar [progress]="progress"></app-progress-bar>
-
 <main class="survey-container">
   <mat-card>
-    <mat-card-title>Survey</mat-card-title>
+    <mat-card-title><h1>Survey</h1></mat-card-title>
     <mat-card-content>
-      <form [formGroup]="surveyForm" ngxsForm="survey.form" ngxsFormDebounce="-1" (ngSubmit)="onSubmit()">        <div class="question" *ngFor="let question of paginatedQuestions">
+      <form [formGroup]="surveyForm" ngxsForm="survey.form" ngxsFormDebounce="-1" (ngSubmit)="onSubmit()">  
+        <p class="disclaimer">
+          Your answers are private and will not be shared. We respect your privacy and are committed to protecting your information.
+        </p>
+         <div class="question" *ngFor="let question of paginatedQuestions">
           <h3>{{ question.question }}</h3>
           <ng-container [ngSwitch]="question.type">
             <!-- Multiple Choice -->

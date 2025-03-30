@@ -1,7 +1,10 @@
 .progress-container {
-    margin-bottom: 20px;
-    margin-top: 70px;
-}
+    position: fixed;
+    top: 62px;
+    left: 0;
+    right: 0;
+    z-index: 1000; /* Ensure it stays on top of other elements */
+  }
 
 .survey-container {
     margin: auto;

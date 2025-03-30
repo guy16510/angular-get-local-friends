@@ -353,3 +353,13 @@ footer {
   text-align: center;
   padding-bottom: 2rem;
 }
+mat-card-title{
+  text-align: center;
+}
+
+.navigation-buttons button[disabled] {
+  background-color: #c0c0c0 !important;
+  color: #fff !important; 
+  cursor: not-allowed;              
+  opacity: 1;                          
+}
