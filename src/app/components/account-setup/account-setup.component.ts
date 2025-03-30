@@ -134,7 +134,7 @@ export class AccountSetupComponent implements OnInit {
 
     this.store.dispatch(new SubmitUserProfile(payload)).subscribe(() => {
       console.log("✅ Profile submitted successfully.");
-      this.router.navigate(['/dashboard']);
+      this.router.navigate(['/myProfile']);
     });
   }
 

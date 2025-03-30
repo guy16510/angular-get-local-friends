@@ -1,50 +1,64 @@
 .chat-list-card {
-    background-color: var(--bio-layout-bg, #fff);
-    color: var(--label-color, #000);
-    border-radius: 1rem;
-    padding: 1rem;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
-    margin-top:80px;
-  }
-  
-  .chat-item {
-    cursor: pointer;
-    transition: background 0.3s;
-  }
-  
-  .chat-item:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-  }
-  
-  .chat-user {
-    font-weight: 600;
-    font-size: 1.1rem;
-  }
-  
-  .chat-preview {
-    color: var(--meta-color, #555);
-    font-size: 0.95rem;
-  }
-  
-  .chat-timestamp {
-    font-size: 0.8rem;
-    color: var(--footer-meta-color, #777);
-  }
-  
-  .dark-theme .chat-list-card {
-    background-color: var(--bio-layout-bg, #1e1e1e);
-    color: var(--label-color, #fff);
-  }
-  
-  .dark-theme .chat-preview {
-    color: var(--meta-color, #ccc);
-  }
-  
-  .dark-theme .chat-timestamp {
-    color: var(--footer-meta-color, #aaa);
-  }
-  
-  .error-msg {
-    color: red;
-    margin-bottom: 0.5rem;
-  }
+  background-color: var(--bio-layout-bg, #fff);
+  color: var(--label-color, #000);
+  border-radius: 1rem;
+  padding: 1rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+  margin-top:80px;
+}
+
+.chat-item {
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.chat-item:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.chat-user {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.chat-preview {
+  color: var(--meta-color, #555);
+  font-size: 0.95rem;
+}
+
+.chat-timestamp {
+  font-size: 0.8rem;
+  color: var(--footer-meta-color, #777);
+}
+
+.dark-theme .chat-list-card {
+  background-color: var(--bio-layout-bg, #1e1e1e);
+  color: var(--label-color, #fff);
+}
+
+.dark-theme .chat-preview {
+  color: var(--meta-color, #ccc);
+}
+
+.dark-theme .chat-timestamp {
+  color: var(--footer-meta-color, #aaa);
+}
+
+.error-msg {
+  color: red;
+  margin-bottom: 0.5rem;
+}
+
+::ng-deep .chat-avatar {
+  width: 70px !important;
+  height: 70px !important;
+  border-radius: 50% !important;
+  overflow: hidden !important;
+  display: inline-block !important;
+}
+
+::ng-deep .chat-avatar img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}

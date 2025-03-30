@@ -353,8 +353,8 @@ footer {
   text-align: center;
   padding-bottom: 2rem;
 }
-mat-card-title{
-  text-align: center;
+mat-card-title h1{
+  text-align: center !important;
 }
 
 .navigation-buttons button[disabled] {

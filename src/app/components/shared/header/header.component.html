@@ -1,5 +1,5 @@
 <header>
-  <div class="header-container">
+  <div class="header-container" #headerContainer>
     <div class="branding">
       <a routerLink="/">
         <img id="logo" src='/assets/images/logo.svg' />
@@ -15,37 +15,29 @@
     </label>
 
     <nav class="nav-links">
-    
+
       <ng-container *ngIf="(isLoggedIn$ | async); else loggedOut">
-        <a routerLink="/dashboard" routerLinkActive="active"><mat-icon>dashboard</mat-icon>Dashboard</a>
+        <!-- <a routerLink="/dashboard" routerLinkActive="active"><mat-icon>dashboard</mat-icon>Dashboard</a> -->
         <a routerLink="/search" routerLinkActive="active"><mat-icon class="jiggle-icon">search</mat-icon>Search</a>
         <a routerLink="/chatList" routerLinkActive="active" class="messages-link">
-            <div class="icon-wrapper">
-              <mat-icon class="jiggle-icon">forum</mat-icon>
-              <span class="unread-badge" *ngIf="(unreadCount$ | async)">
-                {{ unreadCount$ | async }}
-              </span>
-            </div>
-            <span class="messages-text">Messages</span>
-          </a>
-        
-        <!-- Profile dropdown (desktop hover, mobile integrated) -->
-        <div class="profile-container">
-          <mat-icon>person</mat-icon>
-          <div class="profile-dropdown">
-            <div>
-              <a routerLink="/myProfile">My Profile</a>
-            </div>
-            <div>
-              <a class="signOut" (click)="signOut()"><mat-icon>logout</mat-icon>Logout</a>
-            </div>
+          <div class="icon-wrapper">
+            <mat-icon class="jiggle-icon">forum</mat-icon>
+            <span class="unread-badge" *ngIf="(unreadCount$ | async)">
+              {{ unreadCount$ | async }}
+            </span>
           </div>
-        </div>
+          <span class="messages-text">Messages</span>
+        </a>
+
+        <a routerLink="/myProfile"><mat-icon>person</mat-icon>My Profile</a>
+        <a class="signOut" (click)="signOut()"><mat-icon>logout</mat-icon>Logout</a>
+
       </ng-container>
       <ng-template #loggedOut>
         <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
         <a routerLink="/survey" routerLinkActive="active"><mat-icon class="jiggle-icon">assignment</mat-icon>Survey</a>
-        <a routerLink="/contact-us" routerLinkActive="active"><mat-icon class="jiggle-icon">mail</mat-icon>Contact Us</a>
+        <a routerLink="/contact-us" routerLinkActive="active"><mat-icon class="jiggle-icon">mail</mat-icon>Contact
+          Us</a>
         <a routerLink="/login" routerLinkActive="active"><mat-icon class="jiggle-icon">login</mat-icon>Sign Up</a>
         <!-- <a routerLink="/login" routerLinkActive="active">Login</a> -->
       </ng-template>
