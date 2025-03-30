@@ -38,6 +38,7 @@ export class SurveyComponent implements OnInit {
   constructor(private fb: FormBuilder, private store: Store, private router: Router) { }
 
   ngOnInit(): void {
+    window.scrollTo({ top: 0 });
     this.store.dispatch(new SetProgress(this.progress));
 
     // Generate the scale range for sliding-scale (replaced with radio buttons 1-10)

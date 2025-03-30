@@ -138,3 +138,32 @@
     gap: 0.5rem;
   }
 }
+
+.premium-compatibility {
+  padding: 1rem;
+  border-top: 1px solid #eee;
+  margin-top: 1.5rem;
+  background: #fef9e7;
+  border-radius: 8px;
+
+  .label {
+    color: #ffb300;
+    margin-bottom: 0.5rem;
+  }
+
+  .premium-button {
+    margin-top: 0.5rem;
+    background-color: #ffb300;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    padding: 0.6rem 1.2rem;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: #ffa000;
+    }
+  }
+}
