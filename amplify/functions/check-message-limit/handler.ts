@@ -10,7 +10,7 @@ const cognitoClient = new CognitoIdentityProviderClient({});
 const USER_POOL_ID = process.env['AMPLIFY_USER_POOL_ID'] as string;
 const PREMIUM_GROUP = `PREMIUM-${process.env['AWS_BRANCH']}`;
 
-const DAILY_MESSAGE_LIMIT = 3;
+const DAILY_MESSAGE_LIMIT = 5;
 
 export const handler = async (event: any) => {
   try {
