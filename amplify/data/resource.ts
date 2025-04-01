@@ -13,6 +13,8 @@ import { markMessagesAsRead } from '../functions/mark-messages-as-read/resource'
 import {reactToMessage } from '../functions/react-to-message/resource';
 import { listUnreadMessages } from '../functions/list-unread-messages/resource';
 import { getCallerIdentity } from '../functions/get-caller-identity/resource';
+import { enrollPremium } from '../functions/enroll-premium/resource';
+import { removePremium } from '../functions/remove-premium/resource';
 
 /* --- Define Models --- */
 export const ChatMessage = a.model({
@@ -182,6 +184,16 @@ const schema = a.schema({
     .arguments({ recipientId: a.string().required() })
     .returns(a.ref('ChatMessage').array())
     .handler(a.handler.function(listUnreadMessages))
+    .authorization(allow => [allow.authenticated()]),
+
+  enrollPremium: a.mutation()
+    .returns(a.json())
+    .handler(a.handler.function(enrollPremium))
+    .authorization(allow => [allow.authenticated()]),
+
+  removePremium: a.mutation()
+    .returns(a.json())
+    .handler(a.handler.function(removePremium))
     .authorization(allow => [allow.authenticated()]),
 
   ChatMessage,

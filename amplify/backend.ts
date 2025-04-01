@@ -15,6 +15,9 @@ import { setTypingStatus } from './functions/set-typing-status/resource';
 import { markMessagesAsRead } from './functions/mark-messages-as-read/resource';
 import { reactToMessage } from './functions/react-to-message/resource';
 import { listUnreadMessages } from './functions/list-unread-messages/resource';
+import { enrollPremium } from './functions/enroll-premium/resource';
+import { checkMessageLimit } from './functions/check-message-limit/resource';
+import { removePremium } from './functions/remove-premium/resource';
 
 import * as iam from 'aws-cdk-lib/aws-iam';
 
@@ -34,7 +37,10 @@ const backend = defineBackend({
   setTypingStatus, 
   markMessagesAsRead,
   reactToMessage,
-  listUnreadMessages
+  listUnreadMessages,
+  enrollPremium,
+  checkMessageLimit,
+  removePremium
 });
 
 
@@ -121,5 +127,39 @@ backend.listUnreadMessages.resources.lambda.addToRolePolicy(new iam.PolicyStatem
   resources: [
     chatMessageTableArn,
     `${chatMessageTableArn}/index/*`
+  ]
+}));
+
+backend.enrollPremium.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
+  actions: [
+    'dynamodb:UpdateItem',
+    'cognito-idp:AdminAddUserToGroup'
+  ],
+  resources: [
+    userProfileTableArn,
+    `arn:aws:cognito-idp:us-east-1:${process.env['AWS_ACCOUNT_ID']}:userpool/${process.env['AMPLIFY_USER_POOL_ID']}`
+  ]
+}));
+
+backend.checkMessageLimit.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
+  actions: [
+    'dynamodb:GetItem',
+    'dynamodb:Query',
+    'cognito-idp:AdminListGroupsForUser'
+  ],
+  resources: [
+    userProfileTableArn,
+    chatMessageTableArn,
+    chatMessageIndexArn,
+    `arn:aws:cognito-idp:us-east-1:${process.env['AWS_ACCOUNT_ID']}:userpool/${process.env['AMPLIFY_USER_POOL_ID']}`
+  ]
+}));
+
+backend.removePremium.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
+  actions: [
+    'cognito-idp:AdminRemoveUserFromGroup'
+  ],
+  resources: [
+    `arn:aws:cognito-idp:us-east-1:${process.env['AWS_ACCOUNT_ID']}:userpool/${process.env['AMPLIFY_USER_POOL_ID']}`
   ]
 }));

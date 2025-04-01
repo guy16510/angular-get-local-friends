@@ -48,6 +48,7 @@ export interface UserProfile {
   seekingProfile?: AnimalProfile;
   deepInsights?: DeepProfileInsights;
   animalProfileLoadedAt?: string;
+  premiumEnrolledAt?: string | null;
 }
 
 export interface UserProfileStateModel {

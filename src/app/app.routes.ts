@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './guards/auth.guard';
 import { AnimalShareComponent } from './components/animal-share/animal-share.component';
+import { PremiumUpgradeComponent } from './components/premium-upgrade/premium-upgrade.component';
 
 export const routes: Routes = [
   {
@@ -77,6 +78,10 @@ export const routes: Routes = [
   {
     path: 'animal/:slug',
     loadComponent:() => import('./components/animal-share/animal-share.component').then(m => m.AnimalShareComponent)
+  },
+  {
+    path: 'premium-upgrade',
+    loadComponent: () => import('./components/premium-upgrade/premium-upgrade.component').then(m => m.PremiumUpgradeComponent)
   },
   {
     path: '**',

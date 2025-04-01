@@ -9,12 +9,21 @@ import {
   SubmitUserProfile,
   UpdateUserOnlineStatus,
   LoadAnimalProfile,
-  LoadAnimalProfileFail,
-  LoadAnimalProfileSuccess
+  LoadAnimalProfileSuccess,
+  LoadAnimalProfileFail
 } from '../actions/user-profile.actions';
+import {
+  EnrollPremium,
+  EnrollPremiumSuccess,
+  EnrollPremiumFail,
+  RemovePremium,
+  RemovePremiumSuccess,
+  RemovePremiumFail
+} from '../actions/premium.actions';
 import { tap, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { AuthState } from './auth.state';
+import { PremiumService } from '../../services/premium.service';
 
 export interface UserProfileStateModel {
   profilesById: { [key: string]: UserProfile };
@@ -32,7 +41,11 @@ export interface UserProfileStateModel {
 })
 @Injectable()
 export class UserProfileState {
-  constructor(private userProfileService: UserProfileService, private store: Store) {}
+  constructor(
+    private userProfileService: UserProfileService,
+    private premiumService: PremiumService,
+    private store: Store
+  ) {}
 
   @Selector()
   static loading(state: UserProfileStateModel): boolean {
@@ -73,6 +86,12 @@ export class UserProfileState {
   @Selector([AuthState.identityId])
   static getDeepInsights(state: UserProfileStateModel, identityId: string | null) {
     return identityId ? state.profilesById[identityId]?.deepInsights ?? null : null;
+  }
+  
+  @Selector([AuthState.identityId])
+  static isPremium(state: UserProfileStateModel, identityId: string | null): boolean {
+    const currentUser = this.currentUserProfile(state, identityId);
+    return currentUser?.premiumEnrolledAt ? true : false;
   }
   
   @Action(LoadUserProfile)
@@ -136,7 +155,8 @@ export class UserProfileState {
       selfProfile: raw.selfProfile,
       seekingProfile: raw.seekingProfile,
       deepInsights: raw.deepInsights,
-      animalProfileLoadedAt: raw.animalProfileLoadedAt
+      animalProfileLoadedAt: raw.animalProfileLoadedAt,
+      premiumEnrolledAt: raw.premiumEnrolledAt
     };
 
     ctx.patchState({
@@ -229,6 +249,80 @@ export class UserProfileState {
         ctx.patchState({ loading: false, error: err.message || 'Unknown error' });
         ctx.dispatch(new LoadAnimalProfileFail(err));
         return of(err);
+      })
+    );
+  }
+
+  @Action(EnrollPremium)
+  enrollPremium(ctx: StateContext<UserProfileStateModel>) {
+    ctx.patchState({ loading: true, error: null });
+    
+    return this.premiumService.enrollPremium().pipe(
+      tap(() => {
+        const identityId = this.store.selectSnapshot(AuthState.identityId);
+        const currentUser = UserProfileState.currentUserProfile(ctx.getState(), identityId);
+        if (!currentUser) {
+          throw new Error('No user profile found');
+        }
+
+        const updatedProfile = {
+          ...currentUser,
+          premiumEnrolledAt: new Date().toISOString()
+        };
+
+        ctx.dispatch(new EnrollPremiumSuccess());
+        ctx.patchState({
+          profilesById: {
+            ...ctx.getState().profilesById,
+            [currentUser.identityId]: updatedProfile
+          },
+          loading: false
+        });
+      }),
+      catchError(error => {
+        ctx.dispatch(new EnrollPremiumFail(error.message));
+        ctx.patchState({
+          loading: false,
+          error: error.message
+        });
+        return of(error);
+      })
+    );
+  }
+
+  @Action(RemovePremium)
+  removePremium(ctx: StateContext<UserProfileStateModel>) {
+    ctx.patchState({ loading: true, error: null });
+    
+    return this.premiumService.removePremium().pipe(
+      tap(() => {
+        const identityId = this.store.selectSnapshot(AuthState.identityId);
+        const currentUser = UserProfileState.currentUserProfile(ctx.getState(), identityId);
+        if (!currentUser) {
+          throw new Error('No user profile found');
+        }
+
+        const updatedProfile = {
+          ...currentUser,
+          premiumEnrolledAt: null
+        };
+
+        ctx.dispatch(new RemovePremiumSuccess());
+        ctx.patchState({
+          profilesById: {
+            ...ctx.getState().profilesById,
+            [currentUser.identityId]: updatedProfile
+          },
+          loading: false
+        });
+      }),
+      catchError(error => {
+        ctx.dispatch(new RemovePremiumFail(error.message));
+        ctx.patchState({
+          loading: false,
+          error: error.message
+        });
+        return of(error);
       })
     );
   }

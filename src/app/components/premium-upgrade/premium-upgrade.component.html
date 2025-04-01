@@ -1,0 +1,196 @@
+<div class="premium-upgrade-container">
+  <!-- Hero Section -->
+  <div class="hero-section">
+    <div class="hero-content">
+      <h1>Unlock Your Full Potential</h1>
+      <p class="hero-subtitle">Join thousands of happy premium members who found their perfect match</p>
+      <div class="social-proof">
+        <div class="rating">
+          <mat-icon>star</mat-icon>
+          <mat-icon>star</mat-icon>
+          <mat-icon>star</mat-icon>
+          <mat-icon>star</mat-icon>
+          <mat-icon>star</mat-icon>
+        </div>
+        <span>4.9/5 from 2,500+ reviews</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="content-grid">
+    <!-- Left Column: Features -->
+    <div class="features-column">
+      <mat-card class="features-card">
+        <mat-card-header>
+          <mat-card-title>Premium Benefits</mat-card-title>
+          <mat-card-subtitle>Everything you need to find your perfect match</mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-content>
+          <div class="features-grid">
+            <div class="feature-item">
+              <mat-icon class="feature-icon">unlimited</mat-icon>
+              <h3>Unlimited Messages</h3>
+              <p>Break free from message limits and connect with anyone you want</p>
+            </div>
+
+            <div class="feature-item">
+              <mat-icon class="feature-icon">visibility</mat-icon>
+              <h3>Premium Matches</h3>
+              <p>Get matched with our most compatible members using advanced AI</p>
+            </div>
+
+            <div class="feature-item">
+              <mat-icon class="feature-icon">priority_high</mat-icon>
+              <h3>Priority Support</h3>
+              <p>24/7 dedicated support to help you find your perfect match</p>
+            </div>
+
+            <div class="feature-item">
+              <mat-icon class="feature-icon">stars</mat-icon>
+              <h3>Exclusive Features</h3>
+              <p>Early access to new features and premium-only events</p>
+            </div>
+          </div>
+
+          <div class="stats-section">
+            <div class="stat-item">
+              <span class="stat-number">98%</span>
+              <span class="stat-label">Success Rate</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number">2.5k+</span>
+              <span class="stat-label">Happy Friends</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number">24/7</span>
+              <span class="stat-label">Support</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Testimonials -->
+      <mat-card class="testimonials-card">
+        <mat-card-header>
+          <mat-card-title>Success Stories</mat-card-title>
+          <mat-card-subtitle>Real stories from our premium members</mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-content>
+          <div class="testimonials-grid">
+            <div class="testimonial-item">
+              <div class="testimonial-content">
+                <mat-icon class="quote-icon">format_quote</mat-icon>
+                <p>"Found my soulmate within 2 weeks of upgrading to premium. The matching algorithm is incredible!"</p>
+              </div>
+              <div class="testimonial-author">
+                <img src="assets/testimonial1.jpg" alt="Sarah" class="author-image">
+                <div class="author-info">
+                  <span class="author-name">Sarah & Mike</span>
+                  <span class="author-location">New York, NY</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="testimonial-item">
+              <div class="testimonial-content">
+                <mat-icon class="quote-icon">format_quote</mat-icon>
+                <p>"The unlimited messaging feature made all the difference. We could really get to know each other!"</p>
+              </div>
+              <div class="testimonial-author">
+                <img src="assets/testimonial2.jpg" alt="James" class="author-image">
+                <div class="author-info">
+                  <span class="author-name">James & Emma</span>
+                  <span class="author-location">Los Angeles, CA</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Right Column: Pricing -->
+    <div class="pricing-column">
+      <mat-card class="pricing-card">
+        <mat-card-header>
+          <mat-card-title>Premium Membership</mat-card-title>
+          <mat-card-subtitle>Start your journey today</mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-content>
+          <div class="price-display">
+            <div class="price-amount">
+              <span class="currency">$</span>
+              <span class="amount">4</span>
+              <span class="cents">.99</span>
+            </div>
+            <span class="price-period">per month</span>
+          </div>
+
+          <div class="price-features">
+            <div class="feature-check">
+              <mat-icon>check_circle</mat-icon>
+              <span>Unlimited Messages</span>
+            </div>
+            <div class="feature-check">
+              <mat-icon>check_circle</mat-icon>
+              <span>Premium Matching Algorithm</span>
+            </div>
+            <div class="feature-check">
+              <mat-icon>check_circle</mat-icon>
+              <span>Priority Support</span>
+            </div>
+            <div class="feature-check">
+              <mat-icon>check_circle</mat-icon>
+              <span>Exclusive Features</span>
+            </div>
+          </div>
+
+          <button mat-raised-button color="primary" class="upgrade-button" (click)="onUpgradeClick()" [disabled]="isLoading">
+            <mat-spinner diameter="20" *ngIf="isLoading"></mat-spinner>
+            <span *ngIf="!isLoading">Upgrade Now</span>
+          </button>
+
+          <div class="guarantee-section">
+            <mat-icon>security</mat-icon>
+            <p>30-day money-back guarantee. No questions asked.</p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- FAQ Section -->
+      <mat-card class="faq-card">
+        <mat-card-header>
+          <mat-card-title>Common Questions</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <mat-accordion>
+            <mat-expansion-panel>
+              <mat-expansion-panel-header>
+                <mat-panel-title>How do I cancel my subscription?</mat-panel-title>
+              </mat-expansion-panel-header>
+              <p>You can cancel your subscription at any time through your account settings. Your premium features will remain active until the end of your billing period.</p>
+            </mat-expansion-panel>
+
+            <mat-expansion-panel>
+              <mat-expansion-panel-header>
+                <mat-panel-title>Is my payment information secure?</mat-panel-title>
+              </mat-expansion-panel-header>
+              <p>Yes, we use industry-standard encryption to protect your payment information. We never store your full credit card details on our servers.</p>
+            </mat-expansion-panel>
+
+            <mat-expansion-panel>
+              <mat-expansion-panel-header>
+                <mat-panel-title>What happens if I don't like the premium features?</mat-panel-title>
+              </mat-expansion-panel-header>
+              <p>We offer a 30-day money-back guarantee. If you're not satisfied with your premium subscription, simply contact our support team within 30 days of purchase for a full refund.</p>
+            </mat-expansion-panel>
+          </mat-accordion>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div> 
