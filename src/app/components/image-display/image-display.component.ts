@@ -12,15 +12,22 @@ export class ImageDisplayComponent implements OnInit {
   @Input() identityId: string = '';
   imgSrc: string | null = null;
   defaultImg = '/assets/images/noImageUploaded.jpg';
+  isLoading = true;
 
   constructor(private fileService: FileService) {}
 
   async ngOnInit() {
     try {
+      this.isLoading = true;
       this.imgSrc = await this.fileService.getUserImage(this.identityId);
-    } catch (error) {
-      console.error('❌ Error loading user image:', error);
+    } catch (error: any) {
+      // Only log unexpected errors
+      if (!error.message?.includes('No profile image found')) {
+        console.warn('⚠️ Unexpected error loading profile image:', error.message || error);
+      }
       this.imgSrc = this.defaultImg;
+    } finally {
+      this.isLoading = false;
     }
   }
   

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { SURVEY_QUESTIONS, SurveyQuestion } from '../../data/surveyQuestions';
 import { MaterialModule } from '../../shared/material.module';
@@ -35,12 +35,16 @@ export class SurveyComponent implements OnInit {
   pageSize = 10;
   scaleRange: number[] = [];
 
-  constructor(private fb: FormBuilder, private store: Store, private router: Router) { }
+  constructor(
+    private fb: FormBuilder,
+    private store: Store,
+    private router: Router,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     window.scrollTo({ top: 0 });
-    this.store.dispatch(new SetProgress(this.progress));
-
+    
     // Generate the scale range for sliding-scale (replaced with radio buttons 1-10)
     this.scaleRange = Array.from({ length: 5 }, (_, i) => i + 1);
 
@@ -49,7 +53,6 @@ export class SurveyComponent implements OnInit {
     for (const question of this.questions) {
       const key = question.id.toString();
       if (question.type === 'multiple-select') {
-        // For checkboxes, initialize as an empty array and require at least one selection.
         formGroupConfig[key] = new FormControl([], minLengthArray(1));
       } else {
         formGroupConfig[key] = new FormControl(null, Validators.required);
@@ -57,14 +60,17 @@ export class SurveyComponent implements OnInit {
     }
     this.surveyForm = this.fb.group(formGroupConfig);
 
-    // With the NGXS Form Plugin bound (via ngxsForm directive in the template),
-    // the form is automatically patched with the saved state.
-    // However, we need to compute the correct page based on existing answers.
-    // Use a timeout to ensure that the plugin has time to sync the state.
-    setTimeout(() => {
-      this.store.dispatch(new SetProgress(this.progress));
+    // Use Promise.resolve().then to ensure this runs after the current change detection cycle
+    Promise.resolve().then(() => {
+      this.updateProgress();
       this.restoreCurrentPage();
-    }, 0);
+    });
+  }
+
+  private updateProgress(): void {
+    const progress = this.progress;
+    this.store.dispatch(new SetProgress(progress));
+    this.cdr.detectChanges();
   }
 
   /**
@@ -122,11 +128,9 @@ export class SurveyComponent implements OnInit {
   }
 
   nextPage(): void {
-    if (!this.isLastPage() && this.arePageQuestionsValid()) {
-      // With the form plugin, the state is automatically in sync,
-      // so no manual dispatch is necessary.
+    if (this.currentPage < this.totalPages - 1) {
       this.currentPage++;
-      this.store.dispatch(new SetProgress(this.progress));
+      this.updateProgress();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
@@ -134,7 +138,8 @@ export class SurveyComponent implements OnInit {
   previousPage(): void {
     if (this.currentPage > 0) {
       this.currentPage--;
-      this.store.dispatch(new SetProgress(this.progress));
+      this.updateProgress();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 

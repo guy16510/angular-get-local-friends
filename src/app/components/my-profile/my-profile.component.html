@@ -2,22 +2,26 @@
   <!-- Always show loading indicator -->
   <app-loading *ngIf="loading$ | async"></app-loading>
 
-  <!-- Always show error if present -->
-  <p *ngIf="error$ | async as error" class="error">{{ error }}</p>
+  <!-- Only show error if it's not the "no profile" message -->
+  <p *ngIf="(error$ | async) && (error$ | async) !== 'No valid user profile found'" class="error">{{ error$ | async }}</p>
 
   <!-- Render profile if loaded -->
-  <ng-container *ngIf="userProfile$ | async as userProfile; else noProfile">
+  <ng-container *ngIf="!(loading$ | async) && (userProfile$ | async) as userProfile; else noProfile">
     <div class="user-details">
-      <h2>{{ userProfile.userName }}</h2>
-      <div class="location">
-        <mat-icon>location_on</mat-icon>
-        <span>{{ userProfile.locationLat | number:'1.2-2' }}, {{ userProfile.locationLng | number:'1.2-2' }}</span>
+      <div class="profile-image-column">
+        <div class="profile-image-container">
+          <img class="profile-image" [src]="profileImage" (error)="profileImage = fallbackImage" />
+          <button mat-icon-button class="edit-image-button" (click)="triggerEdit()">
+            <mat-icon>edit</mat-icon>
+          </button>
+        </div>
       </div>
-      <img class="profile-image" [src]="profileImage" (error)="profileImage = fallbackImage" />
-      <button mat-raised-button color="accent" (click)="triggerEdit()">Change Profile Image</button>
-      <button mat-raised-button color="accent" class="animal-profile-button" (click)="viewAnimalProfile()">
-        Fetch Animal Profile
-      </button>
+      <div class="profile-info-column">
+        <h2>Welcome, {{ userProfile.userName }}!</h2>
+        <button mat-raised-button color="accent" class="animal-profile-button" (click)="viewAnimalProfile()">
+          Fetch Animal Profile
+        </button>
+      </div>
     </div>
 
       <!-- Self Profile Image -->

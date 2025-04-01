@@ -1,60 +1,104 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, HostListener } from '@angular/core';
 import { Store } from '@ngxs/store';
-import { SearchNearbyUsers } from '../../store/actions/search.actions';
+import { SearchNearbyUsers, SearchUsers, SetSearchFilters } from '../../store/actions/search.actions';
 import { SearchState } from '../../store/states/search.state';
-import { GeolocationService } from '../../services/geolocation.service';
+import { GeolocationState } from '../../store/states/geolocation.state';
+import { FetchPreciseLocation, FetchIPLocation } from '../../store/actions/geolocation.action';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../shared/material.module';
 import { ImageDisplayComponent } from '../image-display/image-display.component';
 import { LoadingComponent } from '../shared/loading/loading.component';
 import { FormsModule } from '@angular/forms';
-import { Observable } from 'rxjs';
+import { Observable, Subject, takeUntil } from 'rxjs';
 import { RouterModule } from '@angular/router';
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { User } from '../../models/user.model';
 
 @Component({
   selector: 'app-search',
   templateUrl: './search.component.html',
-  styleUrls: ['./search.component.css'],
+  styleUrls: ['./search.component.scss'],
   imports: [
     CommonModule,
     MaterialModule,
     ImageDisplayComponent,
     LoadingComponent,
     FormsModule,
-    RouterModule
+    RouterModule,
+    MatCardModule,
+    MatButtonModule,
+    MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatGridListModule,
+    MatMenuModule,
+    MatExpansionModule
   ],
   standalone: true
 })
 export class SearchComponent implements OnInit, OnDestroy {
-  loading$: Observable<boolean> = this.store.select(SearchState.loading);
-  nearbyUsers$: Observable<any[]> = this.store.select(SearchState.nearbyUsers);
-  nextToken$: Observable<string | null> = this.store.select(SearchState.nextToken);
+  users$: Observable<User[]> = this.store.select(state => state.search.nearbyUsers);
+  loading$: Observable<boolean> = this.store.select(state => state.search.loading);
+  error$: Observable<string | null> = this.store.select(state => state.search.error);
+  hasMore$: Observable<boolean> = this.store.select(state => state.search.hasMore);
+  currentPage$: Observable<number> = this.store.select(state => state.search.currentPage);
+  totalPages$: Observable<number> = this.store.select(state => state.search.totalPages);
+  isPremium$: Observable<boolean> = this.store.select(state => state.search.isPremium);
+  
+  // Geolocation state selectors
+  location$: Observable<{ lat: number | null; lng: number | null; city: string | null }> = this.store.select(GeolocationState.location);
+  geoLoading$: Observable<boolean> = this.store.select(GeolocationState.loading);
+  geoError$: Observable<string | null> = this.store.select(GeolocationState.error);
+
+  hasSearched = false;
+  isLoading = false;
+  radius = 10;
+  sortBy = 'distance';
+  gender: string | null = null;
+  hasKids: boolean | null = null;
+  ageRange = {
+    min: 18,
+    max: 100
+  };
+  private destroy$ = new Subject<void>();
 
   lat!: number;
   lng!: number;
   city: string | null = null;
-  radius = 10;
   radiusOptions = [5, 10, 15, 25, 50];
-
   paginationTokens: (string | null)[] = [null];
   currentPage: number = 0;
   hasMoreResults: boolean = false;
   
-  // Responsive grid columns property
   cols: number = 3;
 
-  constructor(
-    private geoService: GeolocationService,
-    private store: Store
-  ) {}
+  constructor(private store: Store) {}
 
   async ngOnInit() {
-    const ipLocation = await this.geoService.getIPLocation();
-    this.lat = ipLocation.lat;
-    this.lng = ipLocation.lng;
-    this.city = ipLocation.city || null;
+    // Try to get precise location first
+    await this.store.dispatch(new FetchPreciseLocation()).toPromise();
+    
+    // If precise location failed, fallback to IP location
+    const location = this.store.selectSnapshot(GeolocationState.location);
+    if (!location.lat || !location.lng) {
+      await this.store.dispatch(new FetchIPLocation()).toPromise();
+    }
 
-    // Set initial grid columns and listen for window resize events
+    // Get the final location state
+    const finalLocation = this.store.selectSnapshot(GeolocationState.location);
+    this.lat = finalLocation.lat!;
+    this.lng = finalLocation.lng!;
+    this.city = finalLocation.city;
+
     this.updateGridCols();
     window.addEventListener('resize', this.updateGridCols.bind(this));
   }
@@ -74,25 +118,15 @@ export class SearchComponent implements OnInit, OnDestroy {
     }
   }
 
-  async usePreciseLocation() {
-    try {
-      const preciseLoc = await this.geoService.getCurrentPosition();
-      this.lat = preciseLoc.lat;
-      this.lng = preciseLoc.lng;
-    } catch (error) {
-      console.error('Error fetching precise location:', error);
-    }
-  }
-
   isOnline(lastOnlineAt: string) {
     if (lastOnlineAt) {
-      // Consider user online if last seen within 5 minutes
       return Date.now() - new Date(lastOnlineAt).getTime() < 5 * 60 * 1000;
     }
     return false;
   }
 
   searchUsers(pageIndex = 0) {
+    this.hasSearched = true;
     const token = this.paginationTokens[pageIndex] ?? undefined;
     this.store.dispatch(new SearchNearbyUsers(this.lat, this.lng, this.radius, token)).subscribe(() => {
       const nextToken = this.store.selectSnapshot(SearchState.nextToken);
@@ -114,5 +148,17 @@ export class SearchComponent implements OnInit, OnDestroy {
     if (this.currentPage > 0) {
       this.searchUsers(this.currentPage - 1);
     }
+  }
+
+  // New methods for premium filters
+  upgradeToPremium() {
+    // Mock premium upgrade action
+    console.log('Upgrade to premium clicked');
+  }
+
+  clearFilters() {
+    this.gender = null;
+    this.hasKids = null;
+    this.ageRange = { min: 18, max: 100 };
   }
 }

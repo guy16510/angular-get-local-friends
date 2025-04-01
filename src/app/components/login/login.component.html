@@ -1,11 +1,120 @@
 <div class="login">
-  <amplify-authenticator [signUpAttributes]="signUpAttributes">
-    <ng-template
-      amplifySlot="authenticated"
-      let-user="user"
-      let-signOut="signOut"
-    >
-      <button (click)="handleSignOut(signOut)">Sign Out</button>
+  <amplify-authenticator>
+    <!-- Override the default sign-up slot with a custom form -->
+    <ng-template amplifySlot="sign-up">
+      <mat-card class="signup-card">
+        <mat-card-header>
+          <mat-card-title>Create Account</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <form [formGroup]="signUpForm" (ngSubmit)="onSignUp()">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Nickname</mat-label>
+              <input matInput formControlName="nickname" placeholder="Enter your nickname">
+              <mat-error *ngIf="signUpForm.controls['nickname'].touched && signUpForm.controls['nickname'].invalid">
+                Nickname is required
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Email</mat-label>
+              <input matInput formControlName="email" type="email" placeholder="Enter your email">
+              <mat-error *ngIf="signUpForm.controls['email'].touched && signUpForm.controls['email'].invalid">
+                <span *ngIf="signUpForm.controls['email'].errors?.['required']">Email is required</span>
+                <span *ngIf="signUpForm.controls['email'].errors?.['email']">Please enter a valid email</span>
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Password</mat-label>
+              <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password">
+              <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" type="button">
+                <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+              </button>
+              <mat-error *ngIf="signUpForm.controls['password'].touched && signUpForm.controls['password'].invalid">
+                <div *ngIf="signUpForm.controls['password'].errors?.['required']">Password is required</div>
+                <div *ngIf="signUpForm.controls['password'].errors?.['minlength']">Password must be at least 8 characters long</div>
+                <div *ngIf="signUpForm.controls['password'].errors?.['passwordStrength']">
+                  <div class="password-requirements">
+                    <div class="requirement-title">Password must contain:</div>
+                    <ul>
+                      <li *ngFor="let error of getPasswordStrengthErrors()" class="requirement-item">
+                        <mat-icon class="requirement-icon">error</mat-icon>
+                        {{ error }}
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Confirm Password</mat-label>
+              <input matInput [type]="hideConfirmPassword ? 'password' : 'text'" formControlName="confirmPassword">
+              <button mat-icon-button matSuffix (click)="hideConfirmPassword = !hideConfirmPassword" type="button">
+                <mat-icon>{{hideConfirmPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+              </button>
+              <mat-error *ngIf="getPasswordMatchError()">
+                {{ getPasswordMatchError() }}
+              </mat-error>
+            </mat-form-field>
+
+            <div class="button-container">
+              <button mat-raised-button type="submit" [disabled]="signUpForm.invalid">
+                <mat-icon>person_add</mat-icon>
+                Sign Up
+              </button>
+            </div>
+          </form>
+        </mat-card-content>
+      </mat-card>
+    </ng-template>
+
+    <!-- Override the default sign-in slot with a custom form -->
+    <ng-template amplifySlot="sign-in">
+      <mat-card class="signup-card">
+        <mat-card-header>
+          <mat-card-title>Sign In</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <form [formGroup]="signInForm" (ngSubmit)="onSignIn()">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Email</mat-label>
+              <input matInput formControlName="email" type="email" placeholder="Enter your email">
+              <mat-error *ngIf="signInForm.controls['email'].touched && signInForm.controls['email'].invalid">
+                <span *ngIf="signInForm.controls['email'].errors?.['required']">Email is required</span>
+                <span *ngIf="signInForm.controls['email'].errors?.['email']">Please enter a valid email</span>
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Password</mat-label>
+              <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password">
+              <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" type="button">
+                <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+              </button>
+              <mat-error *ngIf="signInForm.controls['password'].touched && signInForm.controls['password'].invalid">
+                Password is required
+              </mat-error>
+            </mat-form-field>
+
+            <div class="button-container">
+              <button mat-raised-button type="submit" [disabled]="signInForm.invalid">
+                <mat-icon>login</mat-icon>
+                Sign In
+              </button>
+            </div>
+          </form>
+        </mat-card-content>
+      </mat-card>
+    </ng-template>
+
+    <!-- Use the default authenticated slot for logged in users -->
+    <ng-template amplifySlot="authenticated" let-user="user" let-signOut="signOut">
+      <button mat-raised-button color="warn" (click)="handleSignOut(signOut)">
+        <mat-icon>logout</mat-icon>
+        Sign Out
+      </button>
     </ng-template>
   </amplify-authenticator>
 </div>

@@ -7,6 +7,8 @@ import { BehaviorSubject, Observable } from 'rxjs';
 export class GeolocationService {
   private loadingSubject = new BehaviorSubject<boolean>(false);
   private errorSubject = new BehaviorSubject<string | null>(null);
+  private readonly MAX_RETRIES = 3;
+  private readonly RETRY_DELAY = 1000; // 1 second
 
   loading$: Observable<boolean> = this.loadingSubject.asObservable();
   error$: Observable<string | null> = this.errorSubject.asObservable();
@@ -20,48 +22,64 @@ export class GeolocationService {
         this.errorSubject.next('Geolocation is not supported by this browser.');
         this.loadingSubject.next(false);
         reject(new Error('Geolocation is not supported by this browser.'));
-      } else {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            this.loadingSubject.next(false);
-            resolve({
-              lat: position.coords.latitude,
-              lng: position.coords.longitude
-            });
-          },
-          async (error) => {
-            this.loadingSubject.next(false);
-        
-            // Retry once if it's a transient "unknown" location failure
-            if (error.code === error.POSITION_UNAVAILABLE) {
-              console.warn('[Geolocation] Location unknown. Retrying once...');
-              try {
-                const retry = await this.getCurrentPosition(options);
-                resolve(retry);
-                return;
-              } catch (retryError) {
-                this.errorSubject.next('Still unable to get location after retry.');
-                reject(retryError);
-                return;
-              }
-            }
-        
-            // Handle other error types
-            switch (error.code) {
-              case error.PERMISSION_DENIED:
-                this.errorSubject.next('Location permission denied.');
-                break;
-              case error.TIMEOUT:
-                this.errorSubject.next('Location request timed out.');
-                break;
-              default:
-                this.errorSubject.next('Failed to get location.');
-            }
-            reject(error);
-          },
-          options
-        );
+        return;
       }
+
+      const attemptGetLocation = async (attempt: number = 1): Promise<void> => {
+        try {
+          const position = await new Promise<GeolocationPosition>((resolvePosition, rejectPosition) => {
+            navigator.geolocation.getCurrentPosition(resolvePosition, rejectPosition, {
+              ...options,
+              timeout: 10000, // 10 second timeout
+              enableHighAccuracy: true
+            });
+          });
+
+          this.loadingSubject.next(false);
+          resolve({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          });
+        } catch (error: any) {
+          // Handle CoreLocation specific error
+          if (error.code === error.POSITION_UNAVAILABLE || 
+              (error.message && error.message.includes('kCLErrorLocationUnknown'))) {
+            if (attempt < this.MAX_RETRIES) {
+              console.warn(`[Geolocation] Location unknown. Attempt ${attempt}/${this.MAX_RETRIES}. Retrying...`);
+              await new Promise(resolve => setTimeout(resolve, this.RETRY_DELAY));
+              await attemptGetLocation(attempt + 1);
+              return;
+            }
+          }
+
+          // Handle other error types
+          this.loadingSubject.next(false);
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              this.errorSubject.next('Location permission denied. Please enable location services in your device settings.');
+              break;
+            case error.TIMEOUT:
+              this.errorSubject.next('Location request timed out. Please check your internet connection.');
+              break;
+            case error.POSITION_UNAVAILABLE:
+              this.errorSubject.next('Location information is unavailable. Falling back to IP-based location.');
+              // Try IP-based location as fallback
+              try {
+                const ipLocation = await this.getIPLocation();
+                resolve(ipLocation);
+                return;
+              } catch (ipError) {
+                this.errorSubject.next('Both GPS and IP-based location failed.');
+                break;
+              }
+            default:
+              this.errorSubject.next('Failed to get location. Please try again later.');
+          }
+          reject(error);
+        }
+      };
+
+      attemptGetLocation();
     });
   }
 
@@ -71,6 +89,9 @@ export class GeolocationService {
 
     try {
       const response = await fetch('https://ipapi.co/json/');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const data = await response.json();
       this.loadingSubject.next(false);
       return {

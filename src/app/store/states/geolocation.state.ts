@@ -28,39 +28,71 @@ export class GeolocationState {
 
   @Selector()
   static loading(state: GeolocationStateModel): boolean {
-    return state.lat === null && state.lng === null;
+    return state.loading;
   }
 
   @Selector()
   static error(state: GeolocationStateModel): string | null {
-    return state.lat && state.lng ? null : state.city;
+    return state.error;
+  }
+
+  @Selector()
+  static preciseLocationGranted(state: GeolocationStateModel): boolean {
+    return state.preciseLocationGranted;
   }
 
   @Action(FetchIPLocation)
   async fetchIPLocation({ patchState }: StateContext<GeolocationStateModel>) {
+    patchState({ loading: true, error: null });
+    debugger;
     try {
       const location = await this.geoService.getIPLocation();
       patchState({
         lat: location.lat,
         lng: location.lng,
-        city: location.city || null
+        city: location.city || null,
+        loading: false,
+        error: null
       });
+      return location;
     } catch (error: any) {
-      patchState({ error: error.message });
+      patchState({ 
+        loading: false,
+        error: error.message || 'Failed to get IP location'
+      });
+      throw error;
     }
   }
 
   @Action(FetchPreciseLocation)
-  async fetchPreciseLocation({ patchState }: StateContext<GeolocationStateModel>) {
+  async fetchPreciseLocation({ patchState, dispatch, getState }: StateContext<GeolocationStateModel>) {
+    patchState({ loading: true, error: null });
     try {
       const position = await this.geoService.getCurrentPosition();
+      const currentState = getState();
       patchState({
         lat: position.lat,
         lng: position.lng,
-        city: null
+        city: currentState.city,
+        preciseLocationGranted: true,
+        loading: false,
+        error: null
       });
+      return position;
     } catch (error: any) {
-      patchState({ error: error.message });
+      patchState({ 
+        loading: false,
+        error: error.message || 'Failed to get precise location'
+      });
+      // If precise location fails, try IP location as fallback
+      try {
+        return await dispatch(new FetchIPLocation()).toPromise();
+      } catch (ipError: any) {
+        patchState({ 
+          error: `Precise location failed: ${error.message}. IP fallback failed: ${ipError.message}`
+        });
+        throw ipError;
+      }
     }
   }
 }

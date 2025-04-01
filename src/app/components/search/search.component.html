@@ -1,66 +1,164 @@
 <main class="search-container">
   <div class="search-header">
     <h1 class="header-title">Find Friends Nearby</h1>
-    <p class="header-subtitle">Discover people around you in an instant.</p>
+    <p class="header-subtitle">Discover people around you in an instant</p>
   </div>
 
-  <mat-card class="search-card modern-card">
-    <div class="search-form">
-      <div class="form-field">
-        <mat-form-field appearance="outline" class="radius-field">
-          <mat-label>Radius (mi)</mat-label>
-          <mat-select [(ngModel)]="radius" name="radius">
-            <mat-option *ngFor="let option of radiusOptions" [value]="option">
-              {{ option }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
-      </div>
-      <div class="form-actions">
-        <button mat-raised-button color="accent" (click)="usePreciseLocation()">
-          Use Precise Location
-        </button>
-        <button mat-raised-button color="primary" (click)="searchUsers()" [disabled]="loading$ | async">
-          Search
-        </button>
-      </div>
-      <div class="location-info" *ngIf="city">
-        Searching near: <strong>{{ city }}</strong>
-      </div>
-    </div>
-  </mat-card>
+  <div class="search-content">
+    <mat-card class="search-card modern-card">
+      <div class="search-form">
+        <div class="search-row">
+          <!-- Left Column -->
+          <div class="search-column">
+            <mat-form-field appearance="outline">
+              <mat-label>Search Radius</mat-label>
+              <mat-select [(ngModel)]="radius" name="radius">
+                <mat-option [value]="5">5 mi</mat-option>
+                <mat-option [value]="10">10 mi</mat-option>
+                <mat-option [value]="20">20 mi</mat-option>
+                <mat-option [value]="50">50 mi</mat-option>
+              </mat-select>
+            </mat-form-field>
 
-  <app-loading *ngIf="loading$ | async"></app-loading>
+            <!-- <mat-form-field appearance="outline">
+              <mat-label>Sort By</mat-label>
+              <mat-select [(ngModel)]="sortBy" name="sortBy">
+                <mat-option value="distance">Distance</mat-option>
+                <mat-option value="age">Age</mat-option>
+                <mat-option value="name">Name</mat-option>
+              </mat-select>
+            </mat-form-field> -->
+          </div>
 
-  <ng-container *ngIf="(nearbyUsers$ | async) as users">
-    <div *ngIf="users.length > 0" class="users-section">
-      <h2 class="section-title">Nearby Users</h2>
-      <mat-grid-list [cols]="cols" rowHeight="1:1.2" gutterSize="16px">
-        <mat-grid-tile *ngFor="let user of users">
-          <mat-card class="user-card modern-card" [routerLink]="['/user-bio', user.identityId]">
-            <app-image-display style="cursor:pointer" [identityId]="user.identityId"></app-image-display>
-            <div class="user-info">
-              <h3 style="cursor:pointer">{{ user.userName }}</h3>
-              <p>{{ user.distance }} miles away</p>
-              <p class="last-online" *ngIf="!isOnline(user.lastOnlineAt)">
-                Last seen: {{ user.lastOnlineAt | date:'short' }}
-              </p>
-              <span class="online-dot" *ngIf="isOnline(user.lastOnlineAt)"></span>
-            </div>
-          </mat-card>
-        </mat-grid-tile>
-      </mat-grid-list>
-      <div class="navigation-buttons">
-        <button mat-stroked-button (click)="previousPage()" [disabled]="currentPage === 0" [ngClass]="{'disabled-btn': currentPage === 0}">
-          Previous
-        </button>
-        <button mat-stroked-button (click)="nextPage()" [disabled]="!hasMoreResults" [ngClass]="{'disabled-btn': !hasMoreResults}">
-          Next
-        </button>
+          <!-- Right Column -->
+          <div class="search-column">
+            <mat-accordion class="filters-accordion">
+              <mat-expansion-panel [expanded]="false" class="filters-panel">
+                <mat-expansion-panel-header>
+                  <mat-panel-title>
+                    <mat-icon>filter_list</mat-icon>
+                    Premium Filters
+                    <span class="premium-badge" *ngIf="!(isPremium$ | async)">
+                      <mat-icon>star</mat-icon>
+                      Premium
+                    </span>
+                  </mat-panel-title>
+                </mat-expansion-panel-header>
+
+                <div class="premium-filters" [class.disabled]="!(isPremium$ | async)">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Gender</mat-label>
+                    <mat-select [(ngModel)]="gender" name="gender" [disabled]="!(isPremium$ | async)">
+                      <mat-option [value]="null">Any</mat-option>
+                      <mat-option value="male">Male</mat-option>
+                      <mat-option value="female">Female</mat-option>
+                      <mat-option value="other">Other</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Has Kids</mat-label>
+                    <mat-select [(ngModel)]="hasKids" name="hasKids" [disabled]="!(isPremium$ | async)">
+                      <mat-option [value]="null">Any</mat-option>
+                      <mat-option [value]="true">Yes</mat-option>
+                      <mat-option [value]="false">No</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+
+                  <div class="age-range">
+                    <mat-form-field appearance="outline">
+                      <mat-label>Min Age</mat-label>
+                      <input matInput type="number" [(ngModel)]="ageRange.min" name="minAge" 
+                             [disabled]="!(isPremium$ | async)" min="18" max="100">
+                    </mat-form-field>
+                    <mat-form-field appearance="outline">
+                      <mat-label>Max Age</mat-label>
+                      <input matInput type="number" [(ngModel)]="ageRange.max" name="maxAge" 
+                             [disabled]="!(isPremium$ | async)" min="18" max="100">
+                    </mat-form-field>
+                  </div>
+
+                  <div class="premium-actions">
+                    <button mat-stroked-button (click)="clearFilters()" [disabled]="!(isPremium$ | async)">
+                      <mat-icon>clear</mat-icon>
+                      Clear Filters
+                    </button>
+                    <button mat-raised-button color="accent" (click)="upgradeToPremium()" *ngIf="!(isPremium$ | async)">
+                      <mat-icon>star</mat-icon>
+                      Upgrade to Premium
+                    </button>
+                  </div>
+                </div>
+              </mat-expansion-panel>
+            </mat-accordion>
+          </div>
+
+          <!-- Centered Search Button -->
+          <div class="search-button-container">
+            <button mat-raised-button color="primary" (click)="searchUsers()" 
+                    [disabled]="isLoading || (geoLoading$ | async) || !lat || !lng">
+              <mat-icon>search</mat-icon>
+              Search
+            </button>
+          </div>
+        </div>
+
+        <!-- <div class="location-info" *ngIf="city">
+          <mat-icon>location_on</mat-icon>
+          Searching near: <strong>{{ city }}</strong>
+        </div> -->
+
+        <div class="location-error" *ngIf="geoError$ | async">
+          <mat-icon>error_outline</mat-icon>
+          {{ geoError$ | async }}
+        </div>
       </div>
-    </div>
-    <div *ngIf="users.length === 0" class="no-results">
-      <p>No users found. Try adjusting your search parameters.</p>
-    </div>
-  </ng-container>
+    </mat-card>
+
+    <app-loading *ngIf="loading$ | async"></app-loading>
+
+    <ng-container *ngIf="(users$ | async) as users">
+      <div *ngIf="users.length > 0" class="users-section">
+        <h2 class="section-title">Nearby Users</h2>
+        <mat-grid-list [cols]="cols" rowHeight="1:1.2" gutterSize="16px">
+          <mat-grid-tile *ngFor="let user of users">
+            <mat-card class="user-card modern-card" [routerLink]="['/user-bio', user.identityId]">
+              <div class="user-image-container">
+                <app-image-display [identityId]="user.identityId"></app-image-display>
+                <div class="online-indicator" *ngIf="isOnline(user.lastOnlineAt)">
+                  <span class="online-dot"></span>
+                  <span class="online-text">Online</span>
+                </div>
+              </div>
+              <div class="user-info">
+                <h3>{{ user.userName }}</h3>
+                <p class="distance">
+                  <mat-icon>location_on</mat-icon>
+                  {{ user.distance }} miles away
+                </p>
+                <p class="last-online" *ngIf="!isOnline(user.lastOnlineAt)">
+                  <mat-icon>schedule</mat-icon>
+                  Last seen: {{ user.lastOnlineAt | date:'short' }}
+                </p>
+              </div>
+            </mat-card>
+          </mat-grid-tile>
+        </mat-grid-list>
+        <div class="navigation-buttons">
+          <button mat-stroked-button (click)="previousPage()" [disabled]="currentPage === 0" [ngClass]="{'disabled-btn': currentPage === 0}">
+            <mat-icon>chevron_left</mat-icon>
+            Previous
+          </button>
+          <button mat-stroked-button (click)="nextPage()" [disabled]="!hasMoreResults" [ngClass]="{'disabled-btn': !hasMoreResults}">
+            Next
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+        </div>
+      </div>
+      <div *ngIf="users.length === 0 && hasSearched" class="no-results">
+        <mat-icon>search_off</mat-icon>
+        <p>No users found. Try adjusting your search parameters.</p>
+      </div>
+    </ng-container>
+  </div>
 </main>

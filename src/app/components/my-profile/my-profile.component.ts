@@ -25,7 +25,6 @@ export class MyProfileComponent implements OnInit {
   @Select(UserProfileState.error) error$!: Observable<string | null>;
   userProfile$!: Observable<UserProfile | null>;
 
-
   @ViewChild('uploadComponent') uploadComponent!: UploadComponent;
 
   readonly fallbackImage = '/assets/images/noImageUploaded.jpg';
@@ -43,12 +42,23 @@ export class MyProfileComponent implements OnInit {
       const identityId = this.store.selectSnapshot(AuthState.identityId);
       if (!identityId) return;
   
+      // Set up the selector first
       this.userProfile$ = this.store.select(UserProfileState.getProfileById).pipe(
         map(getById => getById(identityId))
       );
   
-      this.store.dispatch(new LoadUserProfile(identityId));
-      this.loadProfileImage();
+      // Check if profile exists in state before dispatching
+      const existingProfile = this.store.selectSnapshot(UserProfileState.getProfileById)(identityId);
+      if (!existingProfile) {
+        this.store.dispatch(new LoadUserProfile(identityId));
+      }
+      
+      // Subscribe to userProfile$ to load image only when profile exists
+      this.userProfile$.subscribe(profile => {
+        if (profile) {
+          this.loadProfileImage();
+        }
+      });
     });
   }
   

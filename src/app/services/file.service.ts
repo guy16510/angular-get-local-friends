@@ -40,17 +40,32 @@ export class FileService {
   async uploadFile(identityId: string, fileBlob: Blob): Promise<string> {
     const uploadPath = `protected/${identityId}/profile.webp`;
     try {
+      // Upload the file
       await uploadData({
         path: uploadPath,
         data: fileBlob,
         options: { contentType: 'image/webp' },
       });
+
+      // Clear the cache to ensure we get the fresh image
       await this.indexedDB.delete(`user-image-${identityId}`);
+
+      // Add a small delay to ensure the upload is processed
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Get the URL and fetch the image
       const urlResult = await getUrl({ path: uploadPath });
       const blob = await this.fetchAndCache(urlResult.url.toString(), identityId);
+      
+      if (!blob) {
+        // If we can't fetch the image immediately, return a URL to the uploaded file
+        return urlResult.url.toString();
+      }
+
       return URL.createObjectURL(blob);
     } catch (error: any) {
-      throw new Error(`Failed to upload image: ${error.message || error}`);
+      console.error('❌ Failed to upload profile image:', error.message || error);
+      throw new Error(`Failed to upload profile image: ${error.message || error}`);
     }
   }
 
@@ -61,18 +76,36 @@ export class FileService {
     try {
       const result = await getUrl({ path: `protected/${identityId}/profile.webp` });
       const blob = await this.fetchAndCache(result.url.toString(), identityId);
-      return URL.createObjectURL(blob);
-    } catch (err) {
-      console.error('❌ Failed to fetch user image:', err);
+      return blob ? URL.createObjectURL(blob) : null;
+    } catch (err: any) {
+      // Don't log 403 errors as they're expected when no image exists
+      if (err.message?.includes('403') || err.status === 403) {
+        return null;
+      }
+      console.error('❌ Error fetching profile image:', err.message || err);
       return null;
     }
   }
 
-  private async fetchAndCache(url: string, identityId: string): Promise<Blob> {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error('Failed to fetch image');
-    const blob = await response.blob();
-    await this.indexedDB.set(`user-image-${identityId}`, blob);
-    return blob;
+  private async fetchAndCache(url: string, identityId: string): Promise<Blob | null> {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        // Don't throw for 403 as it's an expected case
+        if (response.status === 403) {
+          return null;
+        }
+        throw new Error(`Failed to fetch image: ${response.statusText}`);
+      }
+      const blob = await response.blob();
+      await this.indexedDB.set(`user-image-${identityId}`, blob);
+      return blob;
+    } catch (error: any) {
+      // If it's a 403, return null instead of throwing
+      if (error.message?.includes('403') || error.status === 403) {
+        return null;
+      }
+      throw new Error(`Failed to fetch image: ${error.message || error}`);
+    }
   }
 }

@@ -1,4 +1,201 @@
-.login{
-    margin-top:80px;
+.login {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  background-color: var(--bio-layout-bg);
+  margin-top:80px;
+}
+
+// Style the Amplify Authenticator tabs first
+::ng-deep {
+  .amplify-tabs {
+    margin-bottom: 24px;
+    width: 100%;
+    max-width: 400px;
+    
+    .amplify-tabs__list {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .amplify-tabs__item {
+      padding: 8px 16px;
+      border-radius: 4px;
+      color: var(--meta-color);
+      font-family: var(--font-family);
+      font-size: 16px;
+      transition: all 0.3s ease;
+
+      &:hover {
+        color: var(--theme-primary);
+        background-color: rgba(255, 0, 85, 0.04);
+      }
+
+      &[data-state="active"] {
+        color: var(--theme-primary);
+        background-color: rgba(255, 0, 85, 0.08);
+        font-weight: 500;
+      }
+    }
+  }
+
+  // Style the Amplify Authenticator container
+  .amplify-authenticator {
+    width: 100%;
+    max-width: 400px;
+  }
+}
+
+.signup-card {
+  width: 100%;
+  padding: 20px;
+  background-color: var(--mdc-elevated-card-container-color);
+  border-radius: var(--mdc-elevated-card-container-shape);
+  box-shadow: var(--mdc-elevated-card-container-elevation);
+}
+
+mat-card-header {
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+mat-card-title {
+  font-size: 24px;
+  font-weight: 500;
+  color: var(--theme-primary);
+  font-family: var(--font-family);
+}
+
+.full-width {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.password-requirements {
+  margin-top: 8px;
+  padding: 8px;
+  background-color: var(--bio-image-bg);
+  border-radius: 4px;
+}
+
+.requirement-title {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: var(--meta-color);
+}
+
+.requirement-item {
+  display: flex;
+  align-items: center;
+  margin: 4px 0;
+  font-size: 12px;
+  color: var(--meta-color);
+  list-style: none;
+  padding: 0;
+}
+
+.requirement-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  color: var(--theme-warn);
+}
+
+.button-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+button[type="submit"] {
+  min-width: 200px;
+  font-family: var(--font-family);
+
+  &:disabled {
+    background-color: rgba(0, 0, 0, 0.12) !important;
+    color: rgba(0, 0, 0, 0.38) !important;
+  }
+}
+
+mat-form-field {
+  .mat-form-field-wrapper {
+    margin-bottom: 16px;
+  }
+
+  &.mat-focused {
+    .mat-form-field-label {
+      color: var(--theme-primary);
+    }
+    .mat-form-field-ripple {
+      background-color: var(--theme-primary);
+    }
+  }
+}
+
+mat-error {
+  font-size: 12px;
+  margin-top: 4px;
+  color: var(--theme-warn);
+}
+
+// Dark theme adjustments
+.dark-theme {
+  .signup-card {
+    background-color: var(--mdc-elevated-card-container-color);
+  }
+
+  .password-requirements {
+    background-color: var(--bio-image-bg);
+  }
+
+  .requirement-title,
+  .requirement-item {
+    color: var(--meta-color);
+  }
+
+  button[type="submit"] {
+    &:disabled {
+      background-color: rgba(255, 255, 255, 0.12) !important;
+      color: rgba(255, 255, 255, 0.38) !important;
+    }
+  }
+
+  ::ng-deep {
+    .amplify-tabs {
+      .amplify-tabs__item {
+        &:hover {
+          background-color: rgba(255, 255, 255, 0.04);
+        }
+
+        &[data-state="active"] {
+          background-color: rgba(255, 255, 255, 0.08);
+        }
+      }
+    }
+  }
+}
+
+// Update responsive adjustments
+@media (max-width: 480px) {
+  .login {
+    padding: 16px;
+  }
+
+  .signup-card {
+    padding: 16px;
+  }
+
+  mat-card-title {
+    font-size: 20px;
+  }
+
+  button[type="submit"] {
+    min-width: 100%;
+  }
 }
 
