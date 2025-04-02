@@ -77,7 +77,7 @@ export class AppComponent implements OnInit, OnDestroy {
           // Setup subscription to unread count
           this.unreadSub = this.store.select(ChatState.unreadCount).subscribe(count => {
             if (count > 0) {
-              this.snackBar.open(`You have ${count} unread messages`, 'Dismiss', { duration: 3000 });
+              this.snackBar.open(`You have ${count} unread messages`, 'Dismiss', {  panelClass: 'message-snackbar', duration: 3000 });
             }
           });
           

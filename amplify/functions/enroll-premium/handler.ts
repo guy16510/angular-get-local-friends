@@ -9,7 +9,7 @@ const cognitoClient = new CognitoIdentityProviderClient({});
 
 const USER_POOL_ID = process.env['USER_POOL_ID'] as string;
 const AWS_BRANCH = process.env['AWS_BRANCH'];
-const PREMIUM_GROUP = `PREMIUM-${AWS_BRANCH}`;
+const PREMIUM_GROUP = process.env['PREMIUM_GROUP_NAME'];
 
 export const handler = async (event: any) => {
   console.log('Handler triggered with event:', JSON.stringify(event));

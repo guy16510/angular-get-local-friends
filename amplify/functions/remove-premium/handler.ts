@@ -4,7 +4,7 @@ import { CognitoIdentityProviderClient, AdminRemoveUserFromGroupCommand } from '
 const cognitoClient = new CognitoIdentityProviderClient({});
 
 const USER_POOL_ID = process.env['AMPLIFY_USER_POOL_ID'] as string;
-const PREMIUM_GROUP = `PREMIUM-${process.env['AWS_BRANCH']}`;
+const PREMIUM_GROUP = process.env['PREMIUM_GROUP_NAME'];
 
 export const handler = async (event: any) => {
   try {

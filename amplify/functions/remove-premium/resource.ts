@@ -5,5 +5,6 @@ export const removePremium = defineFunction({
   entry: './handler.ts',
   environment: {
     USER_POOL_ID: process.env['AMPLIFY_USER_POOL_ID'] as string,
+    PREMIUM_GROUP_NAME: `PREMIUM-${process.env['AWS_BRANCH']}`
   }
 }); 
