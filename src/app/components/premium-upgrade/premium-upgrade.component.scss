@@ -411,6 +411,19 @@
       }
     }
   }
+
+  .pricing-section {
+    position: relative;
+    z-index: 2;
+    margin-bottom: 2rem;
+  }
+
+  .faq-section {
+    position: relative;
+    z-index: 1;
+    margin-top: -2rem;
+    padding-top: 2rem;
+  }
 }
 
 // Dark theme adjustments

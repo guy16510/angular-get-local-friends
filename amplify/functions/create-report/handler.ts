@@ -9,10 +9,20 @@ const docClient = DynamoDBDocumentClient.from(dynamoClient);
 const sesClient = new SESClient({});
 
 export const handler: Schema['createReport']['functionHandler'] = async (event) => {
+  console.log('Handler triggered with event:', JSON.stringify(event, null, 2));
+  console.log('USER_POOL_ID:', process.env['USER_POOL_ID']);
+  console.log('AWS_BRANCH:', process.env['AWS_BRANCH']);
+  console.log('Constructed PREMIUM_GROUP:', process.env['PREMIUM_GROUP']);
+
   const { reportedUserId, conversationId, messageId, reason } = event.arguments;
+  console.log('Extracted arguments:', { reportedUserId, conversationId, messageId, reason });
+
   const reporterId = getIdentityId(event.identity);
+  console.log('[getIdentityId] Using Cognito User Pool unique identifier (sub):', reporterId);
+  console.log('Extracted identityId:', reporterId);
 
   if (!reporterId) {
+    console.error('No reporterId found - unauthorized');
     throw new Error('Unauthorized');
   }
 
@@ -30,16 +40,24 @@ export const handler: Schema['createReport']['functionHandler'] = async (event) 
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
+    console.log('Created report object:', JSON.stringify(report, null, 2));
 
-    await docClient.send(new PutCommand({
+    console.log('Attempting to write to DynamoDB table:', process.env['AMPLIFY_REPORT_TABLE_NAME']);
+    const putCommand = new PutCommand({
       TableName: process.env['AMPLIFY_REPORT_TABLE_NAME']!,
       Item: report
-    }));
+    });
+    
+    const putResult = await docClient.send(putCommand);
+    console.log('DynamoDB PutCommand result:', JSON.stringify(putResult, null, 2));
 
     // Send email notification to admin
     const adminEmail = process.env['ADMIN_EMAIL'];
+    console.log('Admin email configured:', adminEmail);
+    
     if (adminEmail) {
-      await sesClient.send(new SendEmailCommand({
+      console.log('Attempting to send email notification to admin');
+      const emailCommand = new SendEmailCommand({
         Destination: {
           ToAddresses: [adminEmail]
         },
@@ -65,12 +83,27 @@ export const handler: Schema['createReport']['functionHandler'] = async (event) 
           }
         },
         Source: adminEmail
-      }));
+      });
+
+      const emailResult = await sesClient.send(emailCommand);
+      console.log('SES SendEmail result:', JSON.stringify(emailResult, null, 2));
+    } else {
+      console.log('No admin email configured, skipping email notification');
     }
 
+    console.log('Successfully completed report creation');
     return report;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating report:', error);
+    console.error('Error details:', {
+      name: error?.name,
+      message: error?.message,
+      stack: error?.stack,
+      code: error?.code,
+      statusCode: error?.statusCode,
+      time: error?.time,
+      requestId: error?.requestId
+    });
     throw error;
   }
 }; 
