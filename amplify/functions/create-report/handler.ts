@@ -2,13 +2,24 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 import { getIdentityId } from '../../shared/utils/identity';
-import type { Schema } from '../../data/resource';
 
 const dynamoClient = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(dynamoClient);
 const sesClient = new SESClient({});
 
-export const handler: Schema['createReport']['functionHandler'] = async (event) => {
+type CreateReportEvent = {
+  arguments: {
+    reportedUserId: string;
+    conversationId: string;
+    messageId?: string;
+    reason: string;
+  };
+  identity: {
+    sub: string;
+  };
+};
+
+export const handler = async (event: CreateReportEvent) => {
   console.log('Handler triggered with event:', JSON.stringify(event, null, 2));
   console.log('USER_POOL_ID:', process.env['USER_POOL_ID']);
   console.log('AWS_BRANCH:', process.env['AWS_BRANCH']);
@@ -98,11 +109,7 @@ export const handler: Schema['createReport']['functionHandler'] = async (event) 
     console.error('Error details:', {
       name: error?.name,
       message: error?.message,
-      stack: error?.stack,
-      code: error?.code,
-      statusCode: error?.statusCode,
-      time: error?.time,
-      requestId: error?.requestId
+      stack: error?.stack
     });
     throw error;
   }

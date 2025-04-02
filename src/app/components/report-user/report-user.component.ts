@@ -1,13 +1,14 @@
 import { Component, Inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { MaterialModule } from '../../shared/material.module';
-import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ReportService } from '../../services/report.service';
 import { CreateReportInput } from '../../models/report.model';
+import { ToastMessageService } from '../../services/toast-message.service';
+import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 
 @Component({
   selector: 'app-report-user',
@@ -16,63 +17,66 @@ import { MatInputModule } from '@angular/material/input';
   standalone: true,
   imports: [
     CommonModule,
+    ReactiveFormsModule,
     MatDialogModule,
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
-    FormsModule,
-    MaterialModule
+    MatSelectModule
   ]
 })
 export class ReportUserComponent {
-  reason: string = '';
-  isSubmitting: boolean = false;
-  error: string | null = null;
-  isValidLength: boolean = false;
+  reportForm: FormGroup;
+  isSubmitting = false;
 
   constructor(
-    private dialogRef: MatDialogRef<ReportUserComponent>,
-    private reportService: ReportService,
+    public dialogRef: MatDialogRef<ReportUserComponent>,
     @Inject(MAT_DIALOG_DATA) public data: {
       reportedUserId: string;
       conversationId: string;
       messageId?: string;
       userName: string;
-    }
-  ) {}
-
-  onReasonInput() {
-    this.isValidLength = this.reason.length >= 25;
+    },
+    private fb: FormBuilder,
+    private reportService: ReportService,
+    private toastService: ToastMessageService
+  ) {
+    this.reportForm = this.fb.group({
+      reason: ['', Validators.required],
+      details: ['']
+    });
   }
 
-  submitReport() {
-    if (!this.reason.trim()) {
-      this.error = 'Please provide a reason for reporting';
+  async submitReport(): Promise<void> {
+    if (!this.reportForm.valid) {
+      this.toastService.error('Please fill in all required fields.', 'Close');
+      return;
+    }
+
+    if (!this.data.conversationId) {
+      this.toastService.error('Conversation ID is required.', 'Close');
       return;
     }
 
     this.isSubmitting = true;
-    this.error = null;
 
-    const input: CreateReportInput = {
-      reportedUserId: this.data.reportedUserId,
-      conversationId: this.data.conversationId,
-      messageId: this.data.messageId,
-      reason: this.reason
-    };
+    try {
+      const input: CreateReportInput = {
+        reportedUserId: this.data.reportedUserId,
+        conversationId: this.data.conversationId,
+        messageId: this.data.messageId,
+        reason: this.reportForm.get('reason')?.value,
+        details: this.reportForm.get('details')?.value
+      };
 
-    this.reportService.createReport(input).subscribe({
-      next: () => {
-        this.dialogRef.close(true);
-      },
-      error: (err) => {
-        this.error = 'Failed to submit report. Please try again.';
-        this.isSubmitting = false;
-      }
-    });
-  }
-
-  cancel() {
-    this.dialogRef.close(false);
+      await this.reportService.createReport(input).toPromise();
+      this.toastService.success('Report submitted successfully.', 'Close');
+      this.dialogRef.close(true);
+    } catch (error) {
+      console.error('Error submitting report:', error);
+      this.toastService.error('Failed to submit report. Please try again.', 'Close');
+    } finally {
+      this.isSubmitting = false;
+    }
   }
 } 

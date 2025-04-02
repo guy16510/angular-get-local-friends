@@ -9,7 +9,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { CommonModule } from '@angular/common';
 import { UserProfileState } from '../../store/states/user-profile.state';
 import { EnrollPremium, RemovePremium } from '../../store/actions/premium.actions';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { ToastMessageService } from '../../services/toast-message.service';
 
 @Component({
   selector: 'app-premium-upgrade',
@@ -31,7 +31,7 @@ export class PremiumUpgradeComponent implements OnInit {
 
   constructor(
     private store: Store,
-    private snackBar: MatSnackBar
+    private toastService: ToastMessageService
   ) {
     this.isPremium$ = this.store.select(UserProfileState.isPremium);
   }
@@ -43,17 +43,11 @@ export class PremiumUpgradeComponent implements OnInit {
     this.store.dispatch(new EnrollPremium()).subscribe({
       next: () => {
         this.isLoading = false;
-        this.snackBar.open('Successfully upgraded to premium!', 'Close', {
-          duration: 5000,
-          panelClass: ['success-snackbar']
-        });
+        this.toastService.success('Successfully upgraded to premium!', 'Close');
       },
       error: (error) => {
         this.isLoading = false;
-        this.snackBar.open('Failed to upgrade to premium. Please try again.', 'Close', {
-          duration: 5000,
-          panelClass: ['error-snackbar']
-        });
+        this.toastService.error('Failed to upgrade to premium. Please try again.', 'Close');
       }
     });
   }
@@ -63,17 +57,11 @@ export class PremiumUpgradeComponent implements OnInit {
     this.store.dispatch(new RemovePremium()).subscribe({
       next: () => {
         this.isLoading = false;
-        this.snackBar.open('Successfully cancelled premium subscription.', 'Close', {
-          duration: 5000,
-          panelClass: ['success-snackbar']
-        });
+        this.toastService.success('Successfully cancelled premium subscription.', 'Close');
       },
       error: (error) => {
         this.isLoading = false;
-        this.snackBar.open('Failed to cancel premium subscription. Please try again.', 'Close', {
-          duration: 5000,
-          panelClass: ['error-snackbar']
-        });
+        this.toastService.error('Failed to cancel premium subscription. Please try again.', 'Close');
       }
     });
   }

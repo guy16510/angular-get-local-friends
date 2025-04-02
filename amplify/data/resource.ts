@@ -218,7 +218,7 @@ const schema = a.schema({
     .authorization(allow => [allow.authenticated()]),
 
   createReport: a.mutation()
-    .arguments({
+    .arguments({ 
       reportedUserId: a.string().required(),
       conversationId: a.string().required(),
       messageId: a.string(),

@@ -17,6 +17,7 @@ import { FetchUnreadMessages, IncrementUnreadCount, ResetUnreadCount } from './s
 import { ChatMessage } from './models/chat';
 import { ProgressBarComponent } from './components/shared/progress-bar/progress-bar.component';
 import { CommonModule } from '@angular/common';
+import { ToastMessageService } from './services/toast-message.service';
 
 Amplify.configure(outputs);
 
@@ -43,7 +44,7 @@ export class AppComponent implements OnInit, OnDestroy {
   constructor(
     public authenticator: AuthenticatorService,
     private store: Store,
-    private snackBar: MatSnackBar,
+    private toastService: ToastMessageService,
     private chatService: ChatService,
     private router: Router
   ) {
@@ -77,7 +78,7 @@ export class AppComponent implements OnInit, OnDestroy {
           // Setup subscription to unread count
           this.unreadSub = this.store.select(ChatState.unreadCount).subscribe(count => {
             if (count > 0) {
-              this.snackBar.open(`You have ${count} unread messages`, 'Dismiss', {  panelClass: 'message-snackbar', duration: 3000 });
+              this.toastService.info(`You have ${count} unread messages`, 'Dismiss');
             }
           });
           

@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
-import { Report, CreateReportInput } from '../models/report.model';
-import { generateClient } from 'aws-amplify/data';
+import { generateClient } from 'aws-amplify/api';
 import type { Schema } from '../../../amplify/data/resource';
 import { Observable, from } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, catchError } from 'rxjs/operators';
+import { ToastMessageService } from './toast-message.service';
+import { CreateReportInput } from '../models/report.model';
 
 const client = generateClient<Schema>();
 
@@ -11,13 +12,25 @@ const client = generateClient<Schema>();
   providedIn: 'root'
 })
 export class ReportService {
-  createReport(input: CreateReportInput): Observable<Report> {
-    return from(client.mutations.createReport(input)).pipe(
-      map(result => {
-        if (result.errors?.length) {
-          throw new Error('GraphQL error: ' + result.errors.join(', '));
+  constructor(private toastService: ToastMessageService) {}
+
+  createReport(input: CreateReportInput): Observable<any> {
+    return from(client.mutations.createReport({
+      reportedUserId: input.reportedUserId,
+      conversationId: input.conversationId,
+      messageId: input.messageId,
+      reason: input.reason
+    })).pipe(
+      map(response => {
+        if (response.errors?.length) {
+          throw new Error('GraphQL error: ' + response.errors.join(', '));
         }
-        return result.data as Report;
+        return response.data;
+      }),
+      catchError(error => {
+        console.error('Error creating report:', error);
+        this.toastService.error('Failed to submit report. Please try again.', 'Close');
+        throw error;
       })
     );
   }

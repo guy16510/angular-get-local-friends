@@ -17,4 +17,5 @@ export interface CreateReportInput {
   conversationId: string;
   messageId?: string;
   reason: string;
+  details?: string;
 } 
