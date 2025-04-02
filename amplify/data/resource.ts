@@ -15,6 +15,7 @@ import { listUnreadMessages } from '../functions/list-unread-messages/resource';
 import { getCallerIdentity } from '../functions/get-caller-identity/resource';
 import { enrollPremium } from '../functions/enroll-premium/resource';
 import { removePremium } from '../functions/remove-premium/resource';
+import { createReport } from '../functions/create-report/resource';
 
 /* --- Define Models --- */
 export const ChatMessage = a.model({
@@ -87,6 +88,26 @@ const NearbyUsersResponse = a.model({
   nextToken: a.string()
 })
   .identifier(['id'])
+  .authorization(allow => [allow.authenticated()]);
+
+const Report = a.model({
+  id: a.id().required(),
+  reporterId: a.string().required(),
+  reportedUserId: a.string().required(),
+  conversationId: a.string().required(),
+  messageId: a.string(),
+  timestamp: a.datetime().required(),
+  reason: a.string().required(),
+  status: a.string().default('pending'),
+  adminNotes: a.string(),
+  createdAt: a.datetime(),
+  updatedAt: a.datetime()
+})
+  .secondaryIndexes(index => [
+    index('reporterId').sortKeys(['createdAt']),
+    index('reportedUserId').sortKeys(['createdAt']),
+    index('status').sortKeys(['createdAt'])
+  ])
   .authorization(allow => [allow.authenticated()]);
 
 /* --- Define Operations --- */
@@ -196,12 +217,24 @@ const schema = a.schema({
     .handler(a.handler.function(removePremium))
     .authorization(allow => [allow.authenticated()]),
 
+  createReport: a.mutation()
+    .arguments({
+      reportedUserId: a.string().required(),
+      conversationId: a.string().required(),
+      messageId: a.string(),
+      reason: a.string().required()
+    })
+    .returns(a.ref('Report'))
+    .handler(a.handler.function(createReport))
+    .authorization(allow => [allow.authenticated()]),
+
   ChatMessage,
   Conversation,
   Contact,
   NearbyUsersResponse,
   TypingStatus,
   UserPresence,
+  Report,
 });
 
 export type Schema = ClientSchema<typeof schema>;

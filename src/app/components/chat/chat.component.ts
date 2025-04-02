@@ -16,6 +16,8 @@ import { ImageDisplayComponent } from '../image-display/image-display.component'
 import { LoadingComponent } from '../shared/loading/loading.component';
 import { UserProfileState } from '../../store/states/user-profile.state';
 import { LoadUserProfile } from '../../store/actions/user-profile.actions';
+import { MatDialog } from '@angular/material/dialog';
+import { ReportUserComponent } from '../report-user/report-user.component';
 // import { ChatReactionComponent } from './chat-reaction/chat-reaction.component'; // adjust path if needed
 
 @Component({
@@ -50,7 +52,8 @@ export class ChatComponent implements OnInit, OnDestroy {
     private store: Store,
     private chatService: ChatService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -204,4 +207,21 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.store.dispatch(new ReactToMessage(messageId, emoji));
   }
   
+  openReportDialog(message?: ChatMessage): void {
+    const dialogRef = this.dialog.open(ReportUserComponent, {
+      data: {
+        reportedUserId: this.recipientId,
+        conversationId: this.conversationId,
+        messageId: message?.id,
+        userName: this.store.selectSnapshot(UserProfileState.getUserNameById)?.(this.recipientId) || 'User'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        // Show success message
+        // You might want to add a snackbar service for this
+      }
+    });
+  }
 }

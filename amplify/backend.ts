@@ -18,6 +18,7 @@ import { listUnreadMessages } from './functions/list-unread-messages/resource';
 import { enrollPremium } from './functions/enroll-premium/resource';
 import { checkMessageLimit } from './functions/check-message-limit/resource';
 import { removePremium } from './functions/remove-premium/resource';
+import { createReport } from './functions/create-report/resource';
 
 import * as iam from 'aws-cdk-lib/aws-iam';
 
@@ -40,7 +41,8 @@ const backend = defineBackend({
   listUnreadMessages,
   enrollPremium,
   checkMessageLimit,
-  removePremium
+  removePremium,
+  createReport
 });
 
 
@@ -133,10 +135,12 @@ backend.listUnreadMessages.resources.lambda.addToRolePolicy(new iam.PolicyStatem
 backend.enrollPremium.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
   actions: [
     'dynamodb:UpdateItem',
+    'dynamodb:Query',
     'cognito-idp:AdminAddUserToGroup'
   ],
   resources: [
     userProfileTableArn,
+    `${userProfileTableArn}/index/identityId-index`,
     `arn:aws:cognito-idp:us-east-1:${process.env['AWS_ACCOUNT_ID']}:userpool/${process.env['AMPLIFY_USER_POOL_ID']}`
   ]
 }));
@@ -162,4 +166,16 @@ backend.removePremium.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
   resources: [
     `arn:aws:cognito-idp:us-east-1:${process.env['AWS_ACCOUNT_ID']}:userpool/${process.env['AMPLIFY_USER_POOL_ID']}`
   ]
+}));
+
+const reportTableArn = `arn:aws:dynamodb:us-east-1:${process.env['AWS_ACCOUNT_ID']}:table/${process.env['AMPLIFY_REPORT_TABLE_NAME']}`;
+
+backend.createReport.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
+  actions: ['dynamodb:PutItem'],
+  resources: [reportTableArn]
+}));
+
+backend.createReport.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
+  actions: ['ses:SendEmail'],
+  resources: ['*']
 }));

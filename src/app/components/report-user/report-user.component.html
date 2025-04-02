@@ -1,0 +1,39 @@
+<h2 mat-dialog-title>Report User</h2>
+
+<mat-dialog-content>
+  <p>You are reporting <strong>{{ data.userName }}</strong> for inappropriate behavior.</p>
+  
+  <p>Please provide details about why you are reporting this user (minimum 25 characters):</p>
+  
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Reason for reporting</mat-label>
+    <textarea
+      matInput
+      [(ngModel)]="reason"
+      placeholder="Please describe the issue..."
+      rows="4"
+      required
+      #reasonInput
+      (input)="onReasonInput()"
+    ></textarea>
+    <mat-hint align="end">{{ reason.length }}/25 characters</mat-hint>
+  </mat-form-field>
+
+  <div *ngIf="error" class="error-message">
+    {{ error }}
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Cancel</button>
+  <button
+    mat-raised-button
+    color="warn"
+    (click)="submitReport()"
+    [disabled]="!isValidLength || isSubmitting"
+    [class.disabled]="!isValidLength"
+  >
+    <span *ngIf="!isSubmitting">Submit Report</span>
+    <span *ngIf="isSubmitting">Submitting...</span>
+  </button>
+</mat-dialog-actions> 

@@ -31,6 +31,7 @@
     "@aws-amplify/ui-angular": "^5.0.37",
     "@aws-sdk/client-cognito-identity-provider": "^3.760.0",
     "@aws-sdk/client-dynamodb": "^3.767.0",
+    "@aws-sdk/client-ses": "^3.777.0",
     "@aws-sdk/lib-dynamodb": "^3.767.0",
     "@aws-sdk/util-dynamodb": "^3.767.0",
     "@ngxs/devtools-plugin": "19.0.0",

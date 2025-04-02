@@ -11,6 +11,24 @@
     #messagesContainer
     *ngIf="!(loading$ | async) || !initialLoading"
   >
+    <!-- Safety Message -->
+    <div class="safety-message">
+      <mat-icon class="safety-icon">security</mat-icon>
+      <div class="safety-content">
+        <h3>Safe Meetup Tips</h3>
+        <p>
+          <em>Remember: This is a platform for making friends, not dating.</em>
+        </p>
+        <ul>
+          <li>Always meet in public places</li>
+          <li>Tell a friend or family member about your plans</li>
+          <li>Don't share personal information too quickly</li>
+          <li>Trust your instincts - if something feels off, it probably is</li>
+          <li>Report any suspicious behavior using the report button <mat-icon class="report-icon">flag</mat-icon></li>
+        </ul>
+      </div>
+    </div>
+
     <!-- Error -->
     <ng-container *ngIf="error$ | async as error">
       <div class="error-message">Error: {{ error }}</div>
@@ -30,13 +48,24 @@
       </app-image-display>
 
       <mat-card class="message-bubble">
-        <div 
-          class="recipientUserName" 
-          *ngIf="msg.senderId !== currentUserId"
-          (click)="openUserProfile(msg.senderId)"
-          style="cursor: pointer;"
+        <div class="message-header">
+          <div 
+            class="recipientUserName" 
+            *ngIf="msg.senderId !== currentUserId"
+            (click)="openUserProfile(msg.senderId)"
+            style="cursor: pointer;"
           >
-          {{ recipientUserName$ | async }}
+            {{ recipientUserName$ | async }}
+          </div>
+          <button 
+            *ngIf="msg.senderId !== currentUserId"
+            mat-icon-button 
+            class="report-button"
+            (click)="openReportDialog(msg)"
+            matTooltip="Report this message"
+          >
+            <mat-icon>flag</mat-icon>
+          </button>
         </div>
         <div class="text">{{ msg.text }}</div>
         <div class="timestamp">{{ msg.timestamp | date: 'shortTime' }}</div>
@@ -47,27 +76,7 @@
         }" class="read-status-icon">
           {{ msg.status === 'read' ? 'done_all' : 'done' }}
         </mat-icon>
-      </mat-card> 
-<!-- 
-      <mat-card class="message-bubble" (click)="reaction.toggle($event)">
-        <div class="recipientUserName" (click)="openUserProfile(msg.senderId); $event.stopPropagation()">
-          {{ recipientUserName$ | async }}
-        </div>
-        <div class="text">{{ msg.text }}</div>
-        <div class="timestamp">{{ msg.timestamp | date: 'shortTime' }}</div>
-        <app-chat-reaction #reaction
-                           [messageId]="msg.id"
-                           [reactions]="msg.reactions"
-                           (addReaction)="handleAddReaction($event, msg.id)">
-        </app-chat-reaction>
-        <mat-icon *ngIf="msg.senderId === currentUserId" [ngClass]="{
-          'read': msg.status === 'read',
-          'delivered': msg.status === 'delivered',
-          'sent': msg.status === 'sent'
-        }" class="read-status-icon">
-          {{ msg.status === 'read' ? 'done_all' : 'done' }}
-        </mat-icon>
-      </mat-card> -->
+      </mat-card>
       
       <app-image-display
         *ngIf="msg.senderId === currentUserId"
