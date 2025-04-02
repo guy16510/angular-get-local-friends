@@ -43,7 +43,6 @@
     "@ngxs/store": "^19.0.0",
     "@ngxs/websocket-plugin": "19.0.0",
     "aws-amplify": "^6.6.6",
-    "crypto": "^1.0.1",
     "d3": "^7.9.0",
     "dynamodb-geo": "^0.4.0",
     "dynamodb-geo-v3": "^1.0.0",
