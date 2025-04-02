@@ -1,9 +1,11 @@
 <mat-card class="chat-list-card">
-  <mat-card-title><h1>Your Conversations</h1></mat-card-title>
-  <mat-card-content>
+  <mat-card-title>
+    <h1>Your Conversations</h1>
     <button mat-icon-button color="primary" style="float:right" (click)="refreshConversations()" matTooltip="Refresh Conversations">
       <mat-icon>refresh</mat-icon>
     </button>
+  </mat-card-title>
+  <mat-card-content>
     <app-loading *ngIf="loading$ | async"></app-loading>
     <div *ngIf="error$ | async as err" class="error-msg">
       Error: {{ err }}
@@ -11,34 +13,43 @@
     <ng-container *ngIf="conversations$ | async as conversations">
       <ng-container *ngIf="conversations.length > 0; else noChats">
         <mat-list>
-          <mat-list-item style="height:auto;"
+          <mat-list-item
             *ngFor="let convo of conversations"
             (click)="openConversation(convo)"
             class="chat-item"
+            [ngClass]="{'unread': hasUnreadMessages(getConversationId(convo))}"
           >
-          <div class="left">
+            <div class="left">
               <app-image-display 
-              [identityId]="getRecipientId(convo)"
-              class="chat-avatar"
-              style="cursor:pointer">
-            </app-image-display>
-          </div>
-          <div class="right">
-            <div mat-line class="chat-user">
-              {{ getRecipientName(convo) }}
+                [identityId]="getRecipientId(convo)"
+                class="chat-avatar">
+              </app-image-display>
+              <div class="unread-dot" *ngIf="hasUnreadMessages(getConversationId(convo))"></div>
             </div>
-            <div mat-line class="chat-preview">
-              {{ convo.lastMessage }}
+            <div class="right">
+              <div class="chat-user">
+                {{ getRecipientName(convo) }}
+                <span class="unread-badge" *ngIf="hasUnreadMessages(getConversationId(convo))">
+                  <mat-icon>mark_email_unread</mat-icon>
+                  <span class="unread-count" *ngIf="convo.unreadCount && convo.unreadCount > 1">{{ convo.unreadCount }}</span>
+                </span>
+              </div>
+              <div class="chat-preview" [ngClass]="{'bold-text': hasUnreadMessages(getConversationId(convo))}">
+                {{ convo.lastMessage }}
+              </div>
+              <div class="chat-timestamp">
+                {{ convo.lastTimestamp | date: 'short' }}
+              </div>
             </div>
-            <div mat-line class="chat-timestamp">
-              {{ convo.lastTimestamp | date: 'short' }}
-            </div>
-          </div>
           </mat-list-item>
         </mat-list>
       </ng-container>
       <ng-template #noChats>
-        <p class="no-results">You have no past conversations.</p>
+        <div class="no-results">
+          <mat-icon>chat</mat-icon>
+          <p>You have no past conversations.</p>
+          <p>Find friends to chat with using the search feature!</p>
+        </div>
       </ng-template>
     </ng-container>
   </mat-card-content>

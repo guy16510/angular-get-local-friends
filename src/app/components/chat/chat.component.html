@@ -1,6 +1,6 @@
 <div class="chat-container">
-  <!-- Loading -->
-  <div class="loading-indicator" *ngIf="loading$ | async">
+  <!-- Loading - Only show during initial loading -->
+  <div class="loading-indicator" *ngIf="(loading$ | async) && initialLoading">
     <app-loading></app-loading>
   </div>
 
@@ -9,7 +9,7 @@
     class="chat-messages"
     [style.paddingBottom.px]="isOtherUserTyping ? 80 : 16"
     #messagesContainer
-    *ngIf="!(loading$ | async)"
+    *ngIf="!(loading$ | async) || !initialLoading"
   >
     <!-- Error -->
     <ng-container *ngIf="error$ | async as error">
@@ -100,5 +100,12 @@
     <button mat-icon-button color="primary" (click)="sendMessage()" [disabled]="!newMessageText.trim()">
       <mat-icon>send</mat-icon>
     </button>
+  </div>
+  
+  <!-- Message sending indicator - subtle UI at the bottom -->
+  <div class="sending-indicator" *ngIf="(loading$ | async) && !initialLoading">
+    <div class="sending-dots">
+      <span></span><span></span><span></span>
+    </div>
   </div>
 </div>

@@ -3,7 +3,7 @@ import { ActivatedRoute, Router, ParamMap } from '@angular/router';
 import { Store } from '@ngxs/store';
 import { Observable, Subject, Subscription, of } from 'rxjs';
 import { debounceTime, takeUntil, map, switchMap } from 'rxjs/operators';
-import { AppendMessage, LoadMessages, MarkMessagesAsRead, ReactToMessage, SendMessage, SetTypingStatus } from '../../store/actions/chat.actions';
+import { AppendMessage, LoadMessages, MarkMessagesAsRead, ReactToMessage, SendMessage, SetTypingStatus, LoadConversations, SetActiveConversation, FetchUnreadMessages } from '../../store/actions/chat.actions';
 import { ChatService } from '../../services/chat.service';
 import { ChatMessage } from '../../models/chat';
 import { ChatState } from '../../store/states/chat.state';
@@ -39,6 +39,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   recipientId!: string;
   messages$!: Observable<ChatMessage[]>;
   loading$: Observable<boolean> = this.store.select(ChatState.getLoading);
+  initialLoading: boolean = true;
   error$: Observable<string | null> = this.store.select(ChatState.getError);
   currentUserId: string | null = null;
   recipientUserName$!: Observable<string | null>;
@@ -54,6 +55,8 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe((params: ParamMap) => {
+      // Reset initialLoading when navigating to a new conversation
+      this.initialLoading = true;
       this.recipientId = params.get('recipientId') || '';
       this.initializeConversation();
     });
@@ -70,11 +73,18 @@ export class ChatComponent implements OnInit, OnDestroy {
     if (!this.conversationId) return;
   
     console.log(`[ChatComponent] Initializing chat for conversation: ${this.conversationId}`);
-    this.store.dispatch(new LoadMessages(this.conversationId));
+    
+    // Set this as the active conversation
+    this.store.dispatch(new SetActiveConversation(this.conversationId));
+    
+    this.store.dispatch(new LoadMessages(this.conversationId)).subscribe(() => {
+      // Mark messages as read after loading
+      this.markMessagesAsRead();
+      
+      // Set initialLoading to false after first load
+      this.initialLoading = false;
+    });
   
-    // Dispatch the NGXS action to mark messages as read 
-    this.store.dispatch(new MarkMessagesAsRead(this.conversationId));
-
     const recipientUserName = this.store.selectSnapshot(UserProfileState.getUserNameById)(this.recipientId);
     if (!recipientUserName) {
       this.store.dispatch(new LoadUserProfile(this.recipientId));
@@ -88,6 +98,11 @@ export class ChatComponent implements OnInit, OnDestroy {
       const currentCount = messages?.length ?? 0;
       if (currentCount > this.lastMessageCount) {
         setTimeout(() => this.scrollToBottom(), 0);
+        
+        // Check if we received new messages that should be marked as read
+        if (this.lastMessageCount > 0) {
+          this.markMessagesAsRead();
+        }
       }
       this.lastMessageCount = currentCount;
     });
@@ -96,7 +111,13 @@ export class ChatComponent implements OnInit, OnDestroy {
       .subscribeToMessagesForConversation(this.conversationId)
       .subscribe({
         next: (message: ChatMessage) => {
-          if (message) this.store.dispatch(new AppendMessage(message));
+          if (message) {
+            this.store.dispatch(new AppendMessage(message));
+            // If the message is from the other user, mark it as read
+            if (message.senderId === this.recipientId) {
+              this.markMessagesAsRead();
+            }
+          }
         },
         error: (err) => console.error('[ChatComponent] Message subscription error:', err)
       });
@@ -124,10 +145,24 @@ export class ChatComponent implements OnInit, OnDestroy {
       map(selector => selector?.(this.recipientId) || null)
     );
   }
+  
+  markMessagesAsRead(): void {
+    this.store.dispatch(new MarkMessagesAsRead(this.conversationId)).subscribe(() => {
+      // Also trigger a refresh of the conversations list to update unread counts
+      if (this.currentUserId) {
+        this.store.dispatch(new LoadConversations(this.currentUserId));
+        this.store.dispatch(new FetchUnreadMessages());
+      }
+    });
+  }
 
   sendMessage(): void {
     if (!this.newMessageText.trim()) return;
+    
+    // Send the message
     this.store.dispatch(new SendMessage(this.recipientId, this.newMessageText));
+    
+    // Clear the input
     this.newMessageText = '';
     this.typingSubject.next(false);
   }
@@ -147,6 +182,9 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    // Clear the active conversation on leaving
+    this.store.dispatch(new SetActiveConversation(null as any));
+    
     this.destroy$.next();
     this.destroy$.complete();
     this.messageSubscription?.unsubscribe();

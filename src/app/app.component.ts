@@ -13,7 +13,7 @@ import { Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged, filter } from 'rxjs/operators';
 import { ChatService } from './services/chat.service';
 import { ChatState } from './store/states/chat.state';
-import { IncrementUnreadCount, ResetUnreadCount } from './store/actions/chat.actions';
+import { FetchUnreadMessages, IncrementUnreadCount, ResetUnreadCount } from './store/actions/chat.actions';
 import { ChatMessage } from './models/chat';
 import { ProgressBarComponent } from './components/shared/progress-bar/progress-bar.component';
 import { CommonModule } from '@angular/common';
@@ -73,18 +73,17 @@ export class AppComponent implements OnInit, OnDestroy {
               this.store.dispatch(new UpdateUserOnlineStatus());
             }, 120000); // every 2 minutes
           }
-          // Fetch unread messages
-          this.chatService.getUnreadMessages().subscribe({
-            next: (messages: ChatMessage[]) => {
-              this.store.dispatch(new ResetUnreadCount());
-              if (messages.length > 0) {
-                this.store.dispatch(new IncrementUnreadCount(messages.length));
-                this.snackBar.open(`You have ${messages.length} unread messages`, 'Dismiss', { duration: 3000 });
-              }
-            },
-            error: (err: any) => console.error('[AppComponent] getUnreadMessages error:', err)
+          
+          // Setup subscription to unread count
+          this.unreadSub = this.store.select(ChatState.unreadCount).subscribe(count => {
+            if (count > 0) {
+              this.snackBar.open(`You have ${count} unread messages`, 'Dismiss', { duration: 3000 });
+            }
           });
-          // Optionally subscribe to live messages if needed...
+          
+          // Fetch unread messages through NGXS action
+          this.store.dispatch(new FetchUnreadMessages());
+          
         } else {
           // Clear heartbeat and unsubscribe when identity becomes null
           if (this.heartbeatInterval) {

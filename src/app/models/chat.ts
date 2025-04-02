@@ -22,12 +22,13 @@ export interface ChatMessage {
 }
 
 export interface Conversation {
-  conversationId: string;
   id: string;
+  conversationId?: string; // Some APIs return id, some return conversationId
   participantA: string;
   participantB: string;
   lastMessage: string;
   lastTimestamp: string;
+  unreadCount?: number; // Add this field to track unread messages per conversation
 }
 
 export interface ChatStateModel {
@@ -38,4 +39,5 @@ export interface ChatStateModel {
   lastFetched: number | null;
   activeConversationId: string | null;
   unreadCount: number;
+  unreadMessages: ChatMessage[];
 }

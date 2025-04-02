@@ -48,3 +48,7 @@ export class IncrementUnreadCount {
 export class ResetUnreadCount {
   static readonly type = '[Chat] Reset Unread Count';
 }
+
+export class FetchUnreadMessages {
+  static readonly type = '[Chat] Fetch Unread Messages';
+}

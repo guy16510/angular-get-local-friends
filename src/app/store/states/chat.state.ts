@@ -1,7 +1,7 @@
 import { State, Action, StateContext, Selector, Store } from '@ngxs/store';
 import { Injectable } from '@angular/core';
 import { ChatService } from '../../services/chat.service';
-import { AppendMessage, LoadConversations, LoadMessages, MarkMessagesAsRead, ReactToMessage, SendMessage, SetTypingStatus, SetActiveConversation, IncrementUnreadCount, ResetUnreadCount } from '../actions/chat.actions';
+import { AppendMessage, LoadConversations, LoadMessages, MarkMessagesAsRead, ReactToMessage, SendMessage, SetTypingStatus, SetActiveConversation, IncrementUnreadCount, ResetUnreadCount, FetchUnreadMessages } from '../actions/chat.actions';
 import { getNormalizedConversationId } from '../../utils/chat-utils';
 import { tap } from 'rxjs/operators';
 import { from, EMPTY, Observable } from 'rxjs';
@@ -18,7 +18,8 @@ import { ChatMessage, Conversation, ChatStateModel, MessageStatus } from '../../
     error: null,
     lastFetched: null,
     activeConversationId: null,
-    unreadCount: 0
+    unreadCount: 0,
+    unreadMessages: []
   }
 })
 @Injectable()
@@ -61,6 +62,32 @@ export class ChatState {
   static unreadCount(state: ChatStateModel) {
     return state.unreadCount;
   }
+
+  @Selector()
+  static unreadMessages(state: ChatStateModel) {
+    return state.unreadMessages;
+  }
+
+  @Selector()
+  static unreadMessageCountForConversation(state: ChatStateModel) {
+    return (conversationId: string): number => {
+      const messages = state.messages?.[conversationId] || [];
+      return messages.filter(msg => 
+        msg.status === 'sent'
+      ).length;
+    };
+  }
+
+  @Selector()
+  static isConversationUnread(state: ChatStateModel) {
+    return (conversationId: string): boolean => {
+      // Try to find by conversationId first, then by id
+      const conversation = state.conversations.find(c => 
+        (c.conversationId === conversationId) || (c.id === conversationId)
+      );
+      return (conversation?.unreadCount || 0) > 0;
+    };
+  }
   
   @Action(IncrementUnreadCount)
   incrementUnreadCount(ctx: StateContext<ChatStateModel>, action: IncrementUnreadCount) {
@@ -73,6 +100,59 @@ export class ChatState {
     ctx.patchState({ unreadCount: 0 });
   }
 
+  @Action(FetchUnreadMessages)
+  fetchUnreadMessages(ctx: StateContext<ChatStateModel>) {
+    ctx.patchState({ loading: true, error: null });
+    
+    return this.chatService.getUnreadMessages().pipe(
+      tap((unreadMessages: ChatMessage[]) => {
+        ctx.patchState({ 
+          unreadMessages,
+          unreadCount: unreadMessages.length,
+          loading: false
+        });
+        
+        // Update conversation unread counts
+        if (unreadMessages.length > 0) {
+          const state = ctx.getState();
+          const currentUserId = this.store.selectSnapshot(AuthState.identityId);
+          
+          // Group unread messages by conversation
+          const unreadByConversation = new Map<string, ChatMessage[]>();
+          unreadMessages.forEach(msg => {
+            const conversationId = getNormalizedConversationId(msg.senderId, msg.recipientId);
+            const messages = unreadByConversation.get(conversationId) || [];
+            messages.push(msg);
+            unreadByConversation.set(conversationId, messages);
+          });
+          
+          // Update conversation unread counts
+          const updatedConversations = state.conversations.map(convo => {
+            const conversationId = convo.conversationId || convo.id;
+            const unreadMessages = unreadByConversation.get(conversationId) || [];
+            
+            return {
+              ...convo,
+              unreadCount: unreadMessages.length
+            };
+          });
+          
+          ctx.patchState({
+            conversations: updatedConversations
+          });
+        }
+      }),
+      catchError(err => {
+        console.error('[ChatState] FetchUnreadMessages failed:', err);
+        ctx.patchState({
+          loading: false,
+          error: err?.message || 'Failed to fetch unread messages'
+        });
+        return EMPTY;
+      })
+    );
+  }
+
   @Action(SetActiveConversation)
   setActiveConversation(ctx: StateContext<ChatStateModel>, { conversationId }: SetActiveConversation) {
     ctx.patchState({ activeConversationId: conversationId });
@@ -81,11 +161,30 @@ export class ChatState {
   @Action(LoadConversations)
   loadConversations(ctx: StateContext<ChatStateModel>) {
     ctx.patchState({ loading: true, error: null });
+    const currentUserId = this.store.selectSnapshot(AuthState.identityId);
 
     return this.chatService.listConversations().pipe(
       tap((conversations: Conversation[]) => {
+        // Enhance conversations with unread counts and ensure conversationId is properly set
+        const conversationsWithUnreadCounts = conversations.map(convo => {
+          // Ensure each conversation has a proper conversationId field
+          const conversationId = convo.conversationId || convo.id;
+          const messages = ctx.getState().messages[conversationId] || [];
+          
+          // Count unread messages (status === 'sent' && recipientId === currentUserId)
+          const unreadCount = messages.filter(
+            msg => msg.status === 'sent' && msg.recipientId === currentUserId
+          ).length;
+          
+          return {
+            ...convo,
+            conversationId, // Ensure conversationId is set
+            unreadCount
+          };
+        });
+
         ctx.patchState({
-          conversations,
+          conversations: conversationsWithUnreadCounts,
           loading: false,
           error: null,
           lastFetched: Date.now()
@@ -134,12 +233,46 @@ export class ChatState {
     const normalizedId = getNormalizedConversationId(msg.senderId, msg.recipientId);
     const updated = [...(state.messages[normalizedId] || []), msg];
 
+    // Update the messages
     ctx.patchState({
       messages: {
         ...state.messages,
         [normalizedId]: updated
       }
     });
+
+    // If this is a message from another user to the current user and it's the active conversation,
+    // we should also update the unread count of that conversation
+    const currentUserId = this.store.selectSnapshot(AuthState.identityId);
+    const activeConversationId = state.activeConversationId;
+
+    // Update conversation's unread count if needed
+    if (msg.senderId !== currentUserId && msg.recipientId === currentUserId) {
+      const conversations = state.conversations.map(convo => {
+        if (convo.conversationId === normalizedId) {
+          // If the conversation is not active, increment unread count
+          if (activeConversationId !== normalizedId) {
+            return {
+              ...convo,
+              unreadCount: (convo.unreadCount || 0) + 1,
+              lastMessage: msg.text || 'New message',
+              lastTimestamp: msg.timestamp
+            };
+          }
+          // Otherwise, leave unread count at 0 and update last message
+          return {
+            ...convo,
+            lastMessage: msg.text || 'New message',
+            lastTimestamp: msg.timestamp
+          };
+        }
+        return convo;
+      });
+
+      ctx.patchState({
+        conversations
+      });
+    }
   }
 
   @Action(SendMessage)
@@ -213,6 +346,7 @@ export class ChatState {
             : msg;
         });
 
+        // Update the messages with read status
         ctx.patchState({
           messages: {
             ...state.messages,
@@ -220,7 +354,23 @@ export class ChatState {
           }
         });
 
-        console.log(`[ChatState] Marked ${updatedMessages.length} messages as read`);
+        // Update the unread count in the conversation
+        const currentConversations = state.conversations;
+        const updatedConversations = currentConversations.map(convo => {
+          if (convo.conversationId === conversationId) {
+            return {
+              ...convo,
+              unreadCount: 0 // Reset unread count for this conversation
+            };
+          }
+          return convo;
+        });
+
+        ctx.patchState({
+          conversations: updatedConversations
+        });
+
+        console.log(`[ChatState] Marked ${updatedMessages.length} messages as read and updated conversation`);
       }),
       catchError((err) => {
         console.error('[ChatState] Failed to mark messages as read', err);

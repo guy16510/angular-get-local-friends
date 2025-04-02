@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { Observable } from 'rxjs';
-import { LoadConversations } from '../../store/actions/chat.actions';
+import { FetchUnreadMessages, LoadConversations } from '../../store/actions/chat.actions';
 import { ChatState } from '../../store/states/chat.state';
 import { Conversation, ChatStateModel } from '../../models/chat';
 import { MaterialModule } from '../../shared/material.module';
@@ -60,6 +60,9 @@ export class ChatListComponent implements OnInit {
       } else {
         console.log('Using cached conversations.');
       }
+      
+      // Fetch unread messages to update the badges
+      this.store.dispatch(new FetchUnreadMessages());
     }
   }
 
@@ -67,6 +70,7 @@ export class ChatListComponent implements OnInit {
     if (this.currentUserId) {
       console.log('Refreshing conversations...');
       this.store.dispatch(new LoadConversations(this.currentUserId));
+      this.store.dispatch(new FetchUnreadMessages());
     }
   }
 
@@ -78,6 +82,8 @@ export class ChatListComponent implements OnInit {
 
   getRecipientId(convo: Conversation): string {
     if (!this.currentUserId) return '';
+    // Get conversation ID in the proper format
+    const id = convo.conversationId || convo.id;
     // Determine the recipient by comparing participantA to the current user's ID.
     return convo.participantA === this.currentUserId ? convo.participantB : convo.participantA;
   }
@@ -87,5 +93,15 @@ export class ChatListComponent implements OnInit {
     // Lookup the recipient's username from the NGXS state.
     return this.store.selectSnapshot(UserProfileState.getUserNameById)?.(recipientId) || recipientId;
   }
-  
+
+  getConversationId(convo: Conversation): string {
+    // Return either conversationId or id, defaulting to empty string if both are undefined
+    return convo.conversationId || convo.id || '';
+  }
+
+  hasUnreadMessages(conversationId: string): boolean {
+    // Use the selector from ChatState
+    const isUnreadSelector = this.store.selectSnapshot(ChatState.isConversationUnread);
+    return isUnreadSelector(conversationId || '');
+  }
 }
