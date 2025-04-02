@@ -10,7 +10,7 @@ import { ImageDisplayComponent } from '../image-display/image-display.component'
 import { LoadingComponent } from '../shared/loading/loading.component';
 import { FormsModule } from '@angular/forms';
 import { Observable, Subject, takeUntil } from 'rxjs';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -81,7 +81,7 @@ export class SearchComponent implements OnInit, OnDestroy {
   
   cols: number = 3;
 
-  constructor(private store: Store) {}
+  constructor(private store: Store, private router: Router) {}
 
   async ngOnInit() {
     // Try to get precise location first
@@ -152,8 +152,7 @@ export class SearchComponent implements OnInit, OnDestroy {
 
   // New methods for premium filters
   upgradeToPremium() {
-    // Mock premium upgrade action
-    console.log('Upgrade to premium clicked');
+    this.router.navigate(['/premium-upgrade']);
   }
 
   clearFilters() {

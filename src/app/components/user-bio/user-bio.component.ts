@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Store } from '@ngxs/store';
 import { map, Observable } from 'rxjs';
 import { SearchState } from '../../store/states/search.state';
@@ -25,7 +25,7 @@ export class UserBioComponent implements OnInit {
   isPremiumUser: boolean = false; // Fetch this from user state or subscription state
   compatibilityInsights: string = '';
 
-  constructor(private route: ActivatedRoute, private store: Store) {}
+  constructor(private route: ActivatedRoute, private store: Store, private router: Router) {}
 
   ngOnInit(): void {
     this.identityId = this.route.snapshot.paramMap.get('id') || '';
@@ -89,6 +89,6 @@ export class UserBioComponent implements OnInit {
   }
 
   promptUpgrade(): void {
-    alert('Upgrade to Premium to unlock personalized compatibility insights!');
+    this.router.navigate(['/premium-upgrade']);
   }
 }

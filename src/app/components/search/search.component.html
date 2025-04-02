@@ -38,7 +38,7 @@
                   <mat-panel-title>
                     <mat-icon>filter_list</mat-icon>
                     Premium Filters
-                    <span class="premium-badge" *ngIf="!(isPremium$ | async)">
+                    <span class="premium-badge" *ngIf="!(isPremium$ | async)" (click)="upgradeToPremium(); $event.stopPropagation()">
                       <mat-icon>star</mat-icon>
                       Premium
                     </span>

@@ -14,6 +14,7 @@ backend:
         - export AMPLIFY_CONVERSATION_TABLE_NAME="Conversation-${AMPLIFY_API_ID_DEFAULT}-NONE"
         - export AMPLIFY_GRAPHQL_API_ID="${AMPLIFY_API_ID_DEFAULT}"
         - export AMPLIFY_MESSAGE_REACTION_TABLE_NAME="MessageReaction-${AMPLIFY_API_ID_DEFAULT}-NONE"
+        - export AMPLIFY_USER_POOL_ID="us-east-1_umKqVLpV8"
         - >
           if [[ "$AWS_BRANCH" == "main" ]]; then
             export AMPLIFY_TYPING_STATUS_TABLE_NAME="";
@@ -24,6 +25,7 @@ backend:
             export AMPLIFY_CONVERSATION_TABLE_NAME="";
             export AMPLIFY_GRAPHQL_API_ID="PUT-YOUR-MAIN-ID-HERE";
             export AMPLIFY_MESSAGE_REACTION_TABLE_NAME="";
+            export AMPLIFY_USER_POOL_ID="us-east-1_FRi7I83Nf"
           fi
         - "echo 'Using AMPLIFY_GRAPHQL_API_ID: $AMPLIFY_GRAPHQL_API_ID'"
         - "npx ampx pipeline-deploy --branch \"$AWS_BRANCH\" --app-id \"$AWS_APP_ID\""
