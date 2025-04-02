@@ -1,5 +1,5 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, UpdateCommand } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, UpdateCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
 import { getIdentityId } from '../../shared/utils/identity';
 import { CognitoIdentityProviderClient, AdminAddUserToGroupCommand } from '@aws-sdk/client-cognito-identity-provider';
 
@@ -40,12 +40,34 @@ export const handler = async (event: any) => {
     const groupAddResponse = await cognitoClient.send(addToGroupCommand);
     console.log('Successfully added user to premium group. Response:', groupAddResponse);
 
+    // First, query the user profile to get the primary key
+    console.log(`Querying user profile for identityId: ${identityId}`);
+    const queryCommand = new QueryCommand({
+      TableName: process.env['USER_PROFILE_TABLE'],
+      IndexName: 'identityId-index',
+      KeyConditionExpression: 'identityId = :identityId',
+      ExpressionAttributeValues: {
+        ':identityId': identityId
+      }
+    });
+
+    const queryResponse = await docClient.send(queryCommand);
+    if (!queryResponse.Items || queryResponse.Items.length === 0) {
+      throw new Error(`No user profile found for identityId: ${identityId}`);
+    }
+
+    const userProfile = queryResponse.Items[0];
+    const primaryKey = {
+      id: userProfile['id'],
+      // Add any other primary key attributes here if needed
+    };
+
     // Update user profile with enrollment timestamp
     const premiumEnrolledAt = new Date().toISOString();
     console.log(`Updating DynamoDB table "${process.env['USER_PROFILE_TABLE']}" for user "${identityId}" with premiumEnrolledAt: ${premiumEnrolledAt}`);
     const updateCommand = new UpdateCommand({
       TableName: process.env['USER_PROFILE_TABLE'],
-      Key: { identityId },
+      Key: primaryKey,
       UpdateExpression: 'SET premiumEnrolledAt = :premiumEnrolledAt',
       ExpressionAttributeValues: {
         ':premiumEnrolledAt': premiumEnrolledAt
