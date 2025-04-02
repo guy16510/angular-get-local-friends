@@ -5,5 +5,6 @@ export const createReport = defineFunction({
   entry: './handler.ts',
   environment: {
     ADMIN_EMAIL: process.env['ADMIN_EMAIL'] || 'getlocalfriends@gmail.com',
+    AMPLIFY_REPORT_TABLE_NAME: 'Report'
   }
 }); 

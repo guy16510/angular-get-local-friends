@@ -26,9 +26,6 @@
   padding: 16px;
   display: flex;
   flex-direction: column;
-  /* Optionally, if you want the messages to appear at the bottom when there are none,
-     uncomment the following line.*/
-  justify-content: flex-end;
 }
 
 /* Each message row: "mine" or "theirs" */
