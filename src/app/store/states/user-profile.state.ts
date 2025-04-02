@@ -20,7 +20,7 @@ import {
   RemovePremiumSuccess,
   RemovePremiumFail
 } from '../actions/premium.actions';
-import { tap, catchError } from 'rxjs/operators';
+import { tap, catchError, switchMap, map } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { AuthState } from './auth.state';
 import { PremiumService } from '../../services/premium.service';
@@ -257,16 +257,85 @@ export class UserProfileState {
   enrollPremium(ctx: StateContext<UserProfileStateModel>) {
     ctx.patchState({ loading: true, error: null });
     
+    const identityId = this.store.selectSnapshot(AuthState.identityId);
+    if (!identityId) {
+      ctx.dispatch(new EnrollPremiumFail('User not authenticated'));
+      return of();
+    }
+
+    const currentUser = UserProfileState.currentUserProfile(ctx.getState(), identityId);
+    if (!currentUser) {
+      // If no profile found, load it first
+      return this.userProfileService.getUserProfile(identityId).pipe(
+        switchMap(loadedProfile => {
+          if (!loadedProfile) {
+            throw new Error('Failed to load user profile');
+          }
+
+          let parsedProfile;
+          try {
+            parsedProfile = typeof loadedProfile === 'string' ? JSON.parse(loadedProfile) : loadedProfile;
+          } catch (err) {
+            console.error('Failed to parse user profile:', loadedProfile, err);
+            throw new Error('Invalid user profile format');
+          }
+
+          if (!parsedProfile || typeof parsedProfile !== 'object' || !parsedProfile.identityId) {
+            throw new Error('Invalid user profile data');
+          }
+
+          // Update state with loaded profile
+          ctx.patchState({
+            profilesById: {
+              ...ctx.getState().profilesById,
+              [identityId]: parsedProfile
+            }
+          });
+          // Proceed with premium enrollment
+          return this.premiumService.enrollPremium().pipe(
+            map(response => ({ response, profile: parsedProfile }))
+          );
+        }),
+        tap(({ response, profile }) => {
+          if (!response || response.statusCode === 500) {
+            throw new Error(response?.body?.message || 'Failed to enroll in premium');
+          }
+
+          const updatedProfile = {
+            ...profile,
+            premiumEnrolledAt: new Date().toISOString()
+          };
+
+          ctx.dispatch(new EnrollPremiumSuccess());
+          ctx.patchState({
+            profilesById: {
+              ...ctx.getState().profilesById,
+              [identityId]: updatedProfile
+            },
+            loading: false
+          });
+        }),
+        catchError(error => {
+          console.error('Premium enrollment error:', error);
+          ctx.dispatch(new EnrollPremiumFail(error.message));
+          ctx.patchState({
+            loading: false,
+            error: error.message
+          });
+          return of(error);
+        })
+      );
+    }
+
+    // If profile exists, proceed with premium enrollment
     return this.premiumService.enrollPremium().pipe(
-      tap(() => {
-        const identityId = this.store.selectSnapshot(AuthState.identityId);
-        const currentUser = UserProfileState.currentUserProfile(ctx.getState(), identityId);
-        if (!currentUser) {
-          throw new Error('No user profile found');
+      tap((response) => {
+        if (!response || response.statusCode === 500) {
+          throw new Error(response?.body?.message || 'Failed to enroll in premium');
         }
 
         const updatedProfile = {
-          ...currentUser,
+          ...currentUser, // currentUser is guaranteed to exist here
           premiumEnrolledAt: new Date().toISOString()
         };
 
@@ -274,12 +343,13 @@ export class UserProfileState {
         ctx.patchState({
           profilesById: {
             ...ctx.getState().profilesById,
-            [currentUser.identityId]: updatedProfile
+            [identityId]: updatedProfile
           },
           loading: false
         });
       }),
       catchError(error => {
+        console.error('Premium enrollment error:', error);
         ctx.dispatch(new EnrollPremiumFail(error.message));
         ctx.patchState({
           loading: false,

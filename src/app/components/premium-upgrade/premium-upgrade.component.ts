@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { Observable } from 'rxjs';
 import { MatCardModule } from '@angular/material/card';
@@ -10,6 +10,8 @@ import { CommonModule } from '@angular/common';
 import { UserProfileState } from '../../store/states/user-profile.state';
 import { EnrollPremium, RemovePremium } from '../../store/actions/premium.actions';
 import { ToastMessageService } from '../../services/toast-message.service';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-premium-upgrade',
@@ -25,9 +27,11 @@ import { ToastMessageService } from '../../services/toast-message.service';
     MatExpansionModule
   ]
 })
-export class PremiumUpgradeComponent implements OnInit {
+export class PremiumUpgradeComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
   isPremium$: Observable<boolean>;
-  isLoading = false;
+  loading$ = this.store.select(UserProfileState.loading);
+  error$ = this.store.select(UserProfileState.error);
 
   constructor(
     private store: Store,
@@ -36,33 +40,42 @@ export class PremiumUpgradeComponent implements OnInit {
     this.isPremium$ = this.store.select(UserProfileState.isPremium);
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.error$.pipe(takeUntil(this.destroy$)).subscribe(error => {
+      if (error) {
+        this.toastService.error(error, 'Close');
+      }
+    });
+  }
 
-  onUpgradeClick(): void {
-    this.isLoading = true;
+  enrollPremium(): void {
     this.store.dispatch(new EnrollPremium()).subscribe({
       next: () => {
-        this.isLoading = false;
-        this.toastService.success('Successfully upgraded to premium!', 'Close');
+        if (!this.store.selectSnapshot(UserProfileState.error)) {
+          this.toastService.success('Successfully enrolled in premium!', 'Close');
+        }
       },
       error: (error) => {
-        this.isLoading = false;
-        this.toastService.error('Failed to upgrade to premium. Please try again.', 'Close');
+        this.toastService.error(error.message, 'Close');
       }
     });
   }
 
   cancelPremium(): void {
-    this.isLoading = true;
     this.store.dispatch(new RemovePremium()).subscribe({
       next: () => {
-        this.isLoading = false;
-        this.toastService.success('Successfully cancelled premium subscription.', 'Close');
+        if (!this.store.selectSnapshot(UserProfileState.error)) {
+          this.toastService.success('Successfully cancelled premium subscription.', 'Close');
+        }
       },
       error: (error) => {
-        this.isLoading = false;
-        this.toastService.error('Failed to cancel premium subscription. Please try again.', 'Close');
+        this.toastService.error(error.message, 'Close');
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 } 

@@ -57,9 +57,13 @@ export const handler = async (event: any) => {
     }
 
     const userProfile = queryResponse.Items[0];
+
+    if (!userProfile || !userProfile['id']) {
+      throw new Error(`Queried user profile missing 'id': ${JSON.stringify(userProfile, null, 2)}`);
+    }
+    
     const primaryKey = {
       id: userProfile['id'],
-      // Add any other primary key attributes here if needed
     };
 
     // Update user profile with enrollment timestamp

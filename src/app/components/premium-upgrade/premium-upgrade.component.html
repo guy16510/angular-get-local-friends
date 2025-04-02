@@ -3,7 +3,7 @@
   <div class="hero-section">
     <div class="hero-content">
       <h1>Find Real Friends, Nearby</h1>
-      <p class="hero-subtitle">Join thousands who’ve built authentic local connections</p>
+      <p class="hero-subtitle">Join thousands who've built authentic local connections</p>
       <div class="social-proof">
         <div class="rating">
           <mat-icon>star</mat-icon>
@@ -83,7 +83,7 @@
             <div class="testimonial-item">
               <div class="testimonial-content">
                 <mat-icon class="quote-icon">format_quote</mat-icon>
-                <p>"I moved to a new city and didn’t know anyone. Within a week, I met someone for coffee. We now host board game nights together!"</p>
+                <p>"I moved to a new city and didn't know anyone. Within a week, I met someone for coffee. We now host board game nights together!"</p>
               </div>
               <div class="testimonial-author">
                 <img src="assets/images/renee.png" alt="Renee" class="author-image">
@@ -97,7 +97,7 @@
             <div class="testimonial-item">
               <div class="testimonial-content">
                 <mat-icon class="quote-icon">format_quote</mat-icon>
-                <p>"I’m a stay-at-home dad and felt super isolated. I met another local parent here, and now our kids play while we catch up."</p>
+                <p>"I'm a stay-at-home dad and felt super isolated. I met another local parent here, and now our kids play while we catch up."</p>
               </div>
               <div class="testimonial-author">
                 <img src="assets/images/marco.png" alt="Marco" class="author-image">
@@ -149,9 +149,8 @@
             </div>
           </div>
 
-          <button mat-raised-button color="primary" class="upgrade-button" (click)="onUpgradeClick()" [disabled]="isLoading">
-            <mat-spinner diameter="20" *ngIf="isLoading"></mat-spinner>
-            <span *ngIf="!isLoading">Upgrade Now</span>
+          <button mat-raised-button color="primary" (click)="enrollPremium()" [disabled]="loading$ | async">
+            Enroll in Premium
           </button>
 
           <div class="guarantee-section">
@@ -184,9 +183,9 @@
 
             <mat-expansion-panel>
               <mat-expansion-panel-header>
-                <mat-panel-title>What if I’m not satisfied?</mat-panel-title>
+                <mat-panel-title>What if I'm not satisfied?</mat-panel-title>
               </mat-expansion-panel-header>
-              <p>No worries — you’re covered by a 30-day refund policy. Just reach out.</p>
+              <p>No worries — you're covered by a 30-day refund policy. Just reach out.</p>
             </mat-expansion-panel>
           </mat-accordion>
         </mat-card-content>
