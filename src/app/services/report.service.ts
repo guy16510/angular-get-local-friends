@@ -15,7 +15,7 @@ export class ReportService {
   constructor(private toastService: ToastMessageService) {}
 
   createReport(input: CreateReportInput): Observable<any> {
-    return from(client.mutations.createReport({
+    return from(client.mutations.customCreateReport({
       reportedUserId: input.reportedUserId,
       conversationId: input.conversationId,
       messageId: input.messageId,

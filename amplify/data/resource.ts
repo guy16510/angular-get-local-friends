@@ -217,7 +217,7 @@ const schema = a.schema({
     .handler(a.handler.function(removePremium))
     .authorization(allow => [allow.authenticated()]),
 
-  createReport: a.mutation()
+  customCreateReport: a.mutation()
     .arguments({ 
       reportedUserId: a.string().required(),
       conversationId: a.string().required(),
