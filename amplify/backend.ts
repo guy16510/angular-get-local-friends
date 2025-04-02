@@ -168,10 +168,17 @@ backend.removePremium.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
   ]
 }));
 
-const reportTableArn = `arn:aws:dynamodb:us-east-1:${process.env['AWS_ACCOUNT_ID']}:table/${process.env['AMPLIFY_REPORT_TABLE_NAME']}`;
+const reportTableArn = `arn:aws:dynamodb:us-east-1:${process.env['AWS_ACCOUNT_ID']}:table/Report`;
 
 backend.createReport.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
-  actions: ['dynamodb:PutItem'],
+  actions: [
+    'dynamodb:PutItem',
+    'dynamodb:GetItem',
+    'dynamodb:UpdateItem',
+    'dynamodb:DeleteItem',
+    'dynamodb:Query',
+    'dynamodb:Scan'
+  ],
   resources: [reportTableArn]
 }));
 

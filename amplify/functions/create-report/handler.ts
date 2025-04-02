@@ -3,10 +3,13 @@ import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 import { getIdentityId } from '../../shared/utils/identity';
 import crypto from 'crypto';
+import { sanitizeBigInts } from '../../shared/utils/sanitize';
 
 const dynamoClient = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(dynamoClient);
 const sesClient = new SESClient({});
+
+const ADMIN_EMAIL = process.env['ADMIN_EMAIL'] || 'getlocalfriends@gmail.com';
 
 type CreateReportEvent = {
   arguments: {
@@ -35,7 +38,10 @@ export const handler = async (event: CreateReportEvent) => {
 
   if (!reporterId) {
     console.error('No reporterId found - unauthorized');
-    throw new Error('Unauthorized');
+    return {
+      statusCode: 401,
+      body: JSON.stringify(sanitizeBigInts({ message: 'Unauthorized' }))
+    };
   }
 
   try {
@@ -49,6 +55,7 @@ export const handler = async (event: CreateReportEvent) => {
       timestamp: new Date().toISOString(),
       reason,
       status: 'pending',
+      adminNotes: null,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -64,47 +71,46 @@ export const handler = async (event: CreateReportEvent) => {
     console.log('DynamoDB PutCommand result:', JSON.stringify(putResult, null, 2));
 
     // Send email notification to admin
-    const adminEmail = process.env['ADMIN_EMAIL'];
-    console.log('Admin email configured:', adminEmail);
-    
-    if (adminEmail) {
-      console.log('Attempting to send email notification to admin');
-      const emailCommand = new SendEmailCommand({
-        Destination: {
-          ToAddresses: [adminEmail]
+    console.log('Attempting to send email notification to admin');
+    const emailCommand = new SendEmailCommand({
+      Source: ADMIN_EMAIL,
+      Destination: {
+        ToAddresses: [ADMIN_EMAIL]
+      },
+      Message: {
+        Subject: {
+          Data: 'New User Report Submitted'
         },
-        Message: {
-          Subject: {
-            Data: 'New User Report Submitted'
-          },
-          Body: {
-            Text: {
-              Data: `
-                A new report has been submitted:
-                
-                Reporter ID: ${reporterId}
-                Reported User ID: ${reportedUserId}
-                Conversation ID: ${conversationId}
-                Message ID: ${messageId}
-                Reason: ${reason}
-                Timestamp: ${report.timestamp}
-                
-                Please review this report in the admin dashboard.
-              `
-            }
+        Body: {
+          Text: {
+            Data: `
+              A new report has been submitted:
+              
+              Reporter ID: ${reporterId}
+              Reported User ID: ${reportedUserId}
+              Conversation ID: ${conversationId}
+              Message ID: ${messageId}
+              Reason: ${reason}
+              Timestamp: ${report.timestamp}
+              
+              Please review this report in the admin dashboard.
+            `
           }
-        },
-        Source: adminEmail
-      });
+        }
+      }
+    });
 
-      const emailResult = await sesClient.send(emailCommand);
-      console.log('SES SendEmail result:', JSON.stringify(emailResult, null, 2));
-    } else {
-      console.log('No admin email configured, skipping email notification');
-    }
+    const emailResult = await sesClient.send(emailCommand);
+    console.log('SES SendEmail result:', JSON.stringify(emailResult, null, 2));
 
     console.log('Successfully completed report creation');
-    return report;
+    return {
+      statusCode: 200,
+      body: JSON.stringify(sanitizeBigInts({ 
+        message: 'Report submitted successfully',
+        report
+      }))
+    };
   } catch (error: any) {
     console.error('Error creating report:', error);
     console.error('Error details:', {
@@ -112,6 +118,9 @@ export const handler = async (event: CreateReportEvent) => {
       message: error?.message,
       stack: error?.stack
     });
-    throw error;
+    return {
+      statusCode: 500,
+      body: JSON.stringify(sanitizeBigInts({ message: 'Failed to create report' }))
+    };
   }
 }; 

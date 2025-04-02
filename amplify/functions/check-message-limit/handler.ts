@@ -2,6 +2,7 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, GetCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
 import { getIdentityId } from '../../shared/utils/identity';
 import { CognitoIdentityProviderClient, AdminListGroupsForUserCommand } from '@aws-sdk/client-cognito-identity-provider';
+import { sanitizeBigInts } from '../../shared/utils/sanitize';
 
 const dynamoClient = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(dynamoClient);
@@ -13,13 +14,17 @@ const PREMIUM_GROUP = process.env['PREMIUM_GROUP_NAME'];
 const DAILY_MESSAGE_LIMIT = 5;
 
 export const handler = async (event: any) => {
+  console.log('Handler triggered with event:', JSON.stringify(event));
+
   try {
     const identityId = getIdentityId(event.identity);
+    console.log('Extracted identityId:', identityId);
     
     if (!identityId) {
+      console.error('No identityId found in event. Aborting process.');
       return {
         statusCode: 401,
-        body: JSON.stringify({ message: 'Unauthorized' })
+        body: JSON.stringify(sanitizeBigInts({ message: 'Unauthorized' }))
       };
     }
 
@@ -35,11 +40,11 @@ export const handler = async (event: any) => {
     if (isPremium) {
       return {
         statusCode: 200,
-        body: JSON.stringify({ 
+        body: JSON.stringify(sanitizeBigInts({
           canSendMessage: true,
           isPremium: true,
           message: 'Premium users have unlimited messages'
-        })
+        }))
       };
     }
 
@@ -65,7 +70,7 @@ export const handler = async (event: any) => {
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ 
+      body: JSON.stringify(sanitizeBigInts({
         canSendMessage,
         isPremium: false,
         messagesSentToday,
@@ -73,13 +78,13 @@ export const handler = async (event: any) => {
         message: canSendMessage 
           ? `You can send ${DAILY_MESSAGE_LIMIT - messagesSentToday} more messages today`
           : 'You have reached your daily message limit. Upgrade to premium for unlimited messages'
-      })
+      }))
     };
   } catch (error) {
     console.error('Error checking message limit:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ message: 'Failed to check message limit' })
+      body: JSON.stringify(sanitizeBigInts({ message: 'Failed to check message limit' }))
     };
   }
 }; 

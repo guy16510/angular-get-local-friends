@@ -2,6 +2,7 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, UpdateCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
 import { getIdentityId } from '../../shared/utils/identity';
 import { CognitoIdentityProviderClient, AdminAddUserToGroupCommand } from '@aws-sdk/client-cognito-identity-provider';
+import { sanitizeBigInts } from '../../shared/utils/sanitize';
 
 const dynamoClient = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(dynamoClient);
@@ -25,7 +26,7 @@ export const handler = async (event: any) => {
       console.error('No identityId found in event. Aborting process.');
       return {
         statusCode: 401,
-        body: JSON.stringify({ message: 'Unauthorized' })
+        body: JSON.stringify(sanitizeBigInts({ message: 'Unauthorized' }))
       };
     }
 
@@ -59,7 +60,7 @@ export const handler = async (event: any) => {
     const userProfile = queryResponse.Items[0];
 
     if (!userProfile || !userProfile['id']) {
-      throw new Error(`Queried user profile missing 'id': ${JSON.stringify(userProfile, null, 2)}`);
+      throw new Error(`Queried user profile missing 'id': ${JSON.stringify(sanitizeBigInts(userProfile), null, 2)}`);
     }
     
     const primaryKey = {
@@ -83,16 +84,16 @@ export const handler = async (event: any) => {
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ 
+      body: JSON.stringify(sanitizeBigInts({ 
         message: 'Successfully enrolled in premium',
         isPremium: true
-      })
+      }))
     };
   } catch (error) {
     console.error('Error enrolling in premium:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ message: 'Failed to enroll in premium' })
+      body: JSON.stringify(sanitizeBigInts({ message: 'Failed to enroll in premium' }))
     };
   }
 };

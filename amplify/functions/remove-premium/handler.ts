@@ -2,6 +2,7 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, UpdateCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
 import { getIdentityId } from '../../shared/utils/identity';
 import { CognitoIdentityProviderClient, AdminRemoveUserFromGroupCommand } from '@aws-sdk/client-cognito-identity-provider';
+import { sanitizeBigInts } from '../../shared/utils/sanitize';
 
 const dynamoClient = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(dynamoClient);
@@ -25,7 +26,7 @@ export const handler = async (event: any) => {
       console.error('No identityId found in event. Aborting process.');
       return {
         statusCode: 401,
-        body: JSON.stringify({ message: 'Unauthorized' })
+        body: JSON.stringify(sanitizeBigInts({ message: 'Unauthorized' }))
       };
     }
 
@@ -59,36 +60,36 @@ export const handler = async (event: any) => {
     const userProfile = queryResponse.Items[0];
 
     if (!userProfile || !userProfile['id']) {
-      throw new Error(`Queried user profile missing 'id': ${JSON.stringify(userProfile, null, 2)}`);
+      throw new Error(`Queried user profile missing 'id': ${JSON.stringify(sanitizeBigInts(userProfile), null, 2)}`);
     }
     
     const primaryKey = {
-      id: userProfile['id']
+      id: userProfile['id'],
     };
 
-    // Remove premiumEnrolledAt from user profile
-    console.log(`Removing premiumEnrolledAt from DynamoDB table "${process.env['USER_PROFILE_TABLE']}" for user "${identityId}"`);
+    // Update user profile to remove premium enrollment
+    console.log(`Updating DynamoDB table "${process.env['USER_PROFILE_TABLE']}" for user "${identityId}" to remove premium enrollment`);
     const updateCommand = new UpdateCommand({
       TableName: process.env['USER_PROFILE_TABLE'],
       Key: primaryKey,
-      UpdateExpression: 'REMOVE premiumEnrolledAt',
+      UpdateExpression: 'REMOVE premiumEnrolledAt'
     });
 
     const updateResponse = await docClient.send(updateCommand);
-    console.log('Successfully removed premium enrollment from user profile. Response:', updateResponse);
+    console.log('Successfully updated user profile to remove premium enrollment. Response:', updateResponse);
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ 
-        message: 'Successfully removed premium status',
+      body: JSON.stringify(sanitizeBigInts({ 
+        message: 'Successfully removed premium subscription',
         isPremium: false
-      })
+      }))
     };
   } catch (error) {
-    console.error('Error removing premium status:', error);
+    console.error('Error removing premium:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ message: 'Failed to remove premium status' })
+      body: JSON.stringify(sanitizeBigInts({ message: 'Failed to remove premium subscription' }))
     };
   }
 }; 
