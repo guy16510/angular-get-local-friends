@@ -59,12 +59,13 @@ export const handler = async (event: any) => {
 
     const userProfile = queryResponse.Items[0];
 
-    if (!userProfile || !userProfile['id']) {
+    if (!userProfile || !userProfile['hashKey']) {
       throw new Error(`Queried user profile missing 'id': ${JSON.stringify(sanitizeBigInts(userProfile), null, 2)}`);
     }
     
     const primaryKey = {
-      id: userProfile['id'],
+      hashKey: userProfile['hashKey'],
+      rangeKey: userProfile['rangeKey'],
     };
 
     // Update user profile to remove premium enrollment

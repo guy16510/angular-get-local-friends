@@ -37,30 +37,29 @@ export const handler = async (event: CreateReportEvent) => {
   console.log('Extracted identityId:', reporterId);
 
   if (!reporterId) {
-    console.error('No reporterId found - unauthorized');
-    return {
-      statusCode: 401,
-      body: JSON.stringify(sanitizeBigInts({ message: 'Unauthorized' }))
-    };
+    // Throw an error so that AppSync correctly handles an unauthorized request.
+    throw new Error('Unauthorized');
   }
 
   try {
     // Create the report record
+    const now = new Date().toISOString();
     const report = {
       id: crypto.randomUUID(),
       reporterId,
       reportedUserId,
       conversationId,
       messageId,
-      timestamp: new Date().toISOString(),
+      timestamp: now,
       reason,
       status: 'pending',
       adminNotes: null,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      createdAt: now,
+      updatedAt: now
     };
     console.log('Created report object:', JSON.stringify(report, null, 2));
 
+    // Write the report to DynamoDB.
     console.log('Attempting to write to DynamoDB table:', process.env['AMPLIFY_REPORT_TABLE_NAME']);
     const putCommand = new PutCommand({
       TableName: process.env['AMPLIFY_REPORT_TABLE_NAME']!,
@@ -70,7 +69,7 @@ export const handler = async (event: CreateReportEvent) => {
     const putResult = await docClient.send(putCommand);
     console.log('DynamoDB PutCommand result:', JSON.stringify(putResult, null, 2));
 
-    // Send email notification to admin
+    // Send email notification to the admin.
     console.log('Attempting to send email notification to admin');
     const emailCommand = new SendEmailCommand({
       Source: ADMIN_EMAIL,
@@ -84,17 +83,17 @@ export const handler = async (event: CreateReportEvent) => {
         Body: {
           Text: {
             Data: `
-              A new report has been submitted:
-              
-              Reporter ID: ${reporterId}
-              Reported User ID: ${reportedUserId}
-              Conversation ID: ${conversationId}
-              Message ID: ${messageId}
-              Reason: ${reason}
-              Timestamp: ${report.timestamp}
-              
-              Please review this report in the admin dashboard.
-            `
+A new report has been submitted:
+
+Reporter ID: ${reporterId}
+Reported User ID: ${reportedUserId}
+Conversation ID: ${conversationId}
+Message ID: ${messageId ?? 'N/A'}
+Reason: ${reason}
+Timestamp: ${report.timestamp}
+
+Please review this report in the admin dashboard.
+            `.trim()
           }
         }
       }
@@ -104,13 +103,8 @@ export const handler = async (event: CreateReportEvent) => {
     console.log('SES SendEmail result:', JSON.stringify(emailResult, null, 2));
 
     console.log('Successfully completed report creation');
-    return {
-      statusCode: 200,
-      body: JSON.stringify(sanitizeBigInts({ 
-        message: 'Report submitted successfully',
-        report
-      }))
-    };
+    // Return the report directly so that AppSync sees all required fields.
+    return sanitizeBigInts(report);
   } catch (error: any) {
     console.error('Error creating report:', error);
     console.error('Error details:', {
@@ -118,9 +112,7 @@ export const handler = async (event: CreateReportEvent) => {
       message: error?.message,
       stack: error?.stack
     });
-    return {
-      statusCode: 500,
-      body: JSON.stringify(sanitizeBigInts({ message: 'Failed to create report' }))
-    };
+    // Propagate the error for AppSync to handle.
+    throw new Error('Failed to create report');
   }
-}; 
+};
