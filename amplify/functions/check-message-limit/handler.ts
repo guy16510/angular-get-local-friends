@@ -7,7 +7,7 @@ const dynamoClient = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(dynamoClient);
 const cognitoClient = new CognitoIdentityProviderClient({});
 
-const USER_POOL_ID = process.env['AMPLIFY_USER_POOL_ID'] as string;
+const USER_POOL_ID = process.env['USER_POOL_ID'] as string;
 const PREMIUM_GROUP = `PREMIUM-${process.env['AWS_BRANCH']}`;
 
 const DAILY_MESSAGE_LIMIT = 5;

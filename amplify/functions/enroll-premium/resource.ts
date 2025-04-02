@@ -5,5 +5,6 @@ export const enrollPremium = defineFunction({
   entry: './handler.ts',
   environment: {
     USER_PROFILE_TABLE: process.env['AMPLIFY_USER_PROFILE_TABLE_NAME'] as string,
+    USER_POOL_ID: process.env['AMPLIFY_USER_POOL_ID'] as string,
   }
 }); 
