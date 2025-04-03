@@ -1,15 +1,15 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
-import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
+// import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 import { getIdentityId } from '../../shared/utils/identity';
 import crypto from 'crypto';
 import { sanitizeBigInts } from '../../shared/utils/sanitize';
 
 const dynamoClient = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(dynamoClient);
-const sesClient = new SESClient({});
+// const sesClient = new SESClient({});
 
-const ADMIN_EMAIL = process.env['ADMIN_EMAIL'] || 'getlocalfriends@gmail.com';
+// const ADMIN_EMAIL = process.env['ADMIN_EMAIL'] || 'getlocalfriends@gmail.com';
 const REPORT_TABLE_NAME = process.env['AMPLIFY_REPORT_TABLE_NAME'];
 
 if (!REPORT_TABLE_NAME) {
@@ -74,6 +74,7 @@ export const handler = async (event: CreateReportEvent) => {
     console.log('DynamoDB PutCommand result:', JSON.stringify(putResult, null, 2));
 
     // Send email notification to the admin.
+    /*
     console.log('Attempting to send email notification to admin');
     const emailCommand = new SendEmailCommand({
       Source: ADMIN_EMAIL,
@@ -105,6 +106,7 @@ Please review this report in the admin dashboard.
 
     const emailResult = await sesClient.send(emailCommand);
     console.log('SES SendEmail result:', JSON.stringify(emailResult, null, 2));
+    */
 
     console.log('Successfully completed report creation');
     return {

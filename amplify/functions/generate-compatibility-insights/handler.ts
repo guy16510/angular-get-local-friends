@@ -50,22 +50,28 @@ type SurveyAnswersMap = Record<number, SurveyAnswerValue>;
  */
 function parseSurveyAnswers(answersString: string): SurveyAnswersMap {
   try {
-    console.log('Parsing survey answers string:', answersString);
+    console.log('Parsing survey answers string length:', answersString?.length || 0);
     
     if (!answersString) {
       console.warn('Empty survey answers string provided');
       return {};
     }
     
+    // Safely parse the JSON string
     const parsed = JSON.parse(answersString);
-    console.log('Parsed survey answers:', JSON.stringify(parsed, null, 2));
+    
+    // Log a summary instead of the full parsed object
+    console.log('Parsed survey answers summary:', {
+      keys: Object.keys(parsed).length,
+      sampleKeys: Object.keys(parsed).slice(0, 5)
+    });
     
     const result: SurveyAnswersMap = {};
     for (const [questionId, answer] of Object.entries(parsed)) {
       result[parseInt(questionId)] = answer as SurveyAnswerValue;
     }
     
-    console.log('Processed survey answers map with keys:', Object.keys(result));
+    console.log('Processed survey answers map with keys:', Object.keys(result).length);
     return result;
   } catch (err) {
     console.error('Failed to parse survey answers:', err);
@@ -188,8 +194,9 @@ export const handler = async (event: GenerateCompatibilityInsightsEvent) => {
       })
     ]);
 
-    console.log('User profile query result:', JSON.stringify(userProfile, null, 2));
-    console.log('Target profile query result:', JSON.stringify(targetProfile, null, 2));
+    // Safely log query results without BigInt serialization issues
+    console.log('User profile query result count:', userProfile.Items?.length || 0);
+    console.log('Target profile query result count:', targetProfile.Items?.length || 0);
 
     if (!userProfile.Items?.[0] || !targetProfile.Items?.[0]) {
       console.error('One or both user profiles not found:', { 
@@ -201,7 +208,7 @@ export const handler = async (event: GenerateCompatibilityInsightsEvent) => {
 
     // Check if the requesting user has premium access
     const userData = sanitizeBigInts(userProfile.Items[0]);
-    console.log('User data:', JSON.stringify(userData, null, 2));
+    console.log('User data premium status:', !!userData.premiumEnrolledAt);
     
     if (!userData.premiumEnrolledAt) {
       console.error('Premium subscription required for compatibility insights');
@@ -237,7 +244,14 @@ export const handler = async (event: GenerateCompatibilityInsightsEvent) => {
     // Generate compatibility insights
     console.log('Generating compatibility insights');
     const insights = compareAnswers(userAnswers, targetAnswers);
-    console.log('Generated insights:', JSON.stringify(insights, null, 2));
+    
+    // Safely log insights without BigInt serialization issues
+    console.log('Generated insights summary:', {
+      totalMatches: insights.totalMatches,
+      totalQuestions: insights.totalQuestions,
+      overallPercentage: insights.overallPercentage,
+      categoryCount: insights.categoryMatches.length
+    });
 
     const now = new Date().toISOString();
     const result = {
@@ -250,7 +264,8 @@ export const handler = async (event: GenerateCompatibilityInsightsEvent) => {
       }
     };
     
-    console.log('Returning result:', JSON.stringify(result, null, 2));
+    // Safely log result without BigInt serialization issues
+    console.log('Returning result with id:', result.data.id);
     return result;
   } catch (err: any) {
     console.error('Error generating compatibility insights:', err);
