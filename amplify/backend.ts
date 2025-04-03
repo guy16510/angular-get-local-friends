@@ -19,6 +19,7 @@ import { enrollPremium } from './functions/enroll-premium/resource';
 import { checkMessageLimit } from './functions/check-message-limit/resource';
 import { removePremium } from './functions/remove-premium/resource';
 import { createReport } from './functions/create-report/resource';
+import { generateCompatibilityInsights } from './functions/generate-compatibility-insights/resource';
 
 import * as iam from 'aws-cdk-lib/aws-iam';
 
@@ -42,7 +43,8 @@ const backend = defineBackend({
   enrollPremium,
   checkMessageLimit,
   removePremium,
-  createReport
+  createReport,
+  generateCompatibilityInsights
 });
 
 
@@ -185,4 +187,10 @@ backend.createReport.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
 backend.createReport.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
   actions: ['ses:SendEmail'],
   resources: ['*']
+}));
+
+// Grant DynamoDB access to the generateCompatibilityInsights function
+backend.generateCompatibilityInsights.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
+  actions: ['dynamodb:Query'],
+  resources: [userProfileTableArn, `${userProfileTableArn}/index/identityId-index`]
 }));

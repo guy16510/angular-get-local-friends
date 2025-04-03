@@ -16,6 +16,7 @@ import { getCallerIdentity } from '../functions/get-caller-identity/resource';
 import { enrollPremium } from '../functions/enroll-premium/resource';
 import { removePremium } from '../functions/remove-premium/resource';
 import { createReport } from '../functions/create-report/resource';
+import { generateCompatibilityInsights } from '../functions/generate-compatibility-insights/resource';
 
 /* --- Define Models --- */
 export const ChatMessage = a.model({
@@ -109,6 +110,13 @@ const Report = a.model({
     index('status').sortKeys(['createdAt'])
   ])
   .authorization(allow => [allow.authenticated()]);
+
+const CompatibilityInsights = a.model({
+  totalMatches: a.integer().required(),
+  totalQuestions: a.integer().required(),
+  overallPercentage: a.float().required(),
+  categoryMatches: a.json().array().required()
+}).authorization(allow => [allow.authenticated()]);
 
 /* --- Define Operations --- */
 const schema = a.schema({
@@ -228,6 +236,14 @@ const schema = a.schema({
     .handler(a.handler.function(createReport))
     .authorization(allow => [allow.authenticated()]),
 
+  generateCompatibilityInsights: a.query()
+    .arguments({ 
+      targetUserId: a.string().required()
+    })
+    .returns(a.ref('CompatibilityInsights'))
+    .handler(a.handler.function(generateCompatibilityInsights))
+    .authorization(allow => [allow.group('Premium')]),
+
   ChatMessage,
   Conversation,
   Contact,
@@ -235,6 +251,7 @@ const schema = a.schema({
   TypingStatus,
   UserPresence,
   Report,
+  CompatibilityInsights
 });
 
 export type Schema = ClientSchema<typeof schema>;
