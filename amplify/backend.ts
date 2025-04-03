@@ -194,3 +194,6 @@ backend.generateCompatibilityInsights.resources.lambda.addToRolePolicy(new iam.P
   actions: ['dynamodb:Query'],
   resources: [userProfileTableArn, `${userProfileTableArn}/index/identityId-index`]
 }));
+
+// Add this after the reportTableArn definition
+backend.createReport.addEnvironment("USER_REPORT_TABLE", backend.data.resources.tables["Report"].tableName);

@@ -242,7 +242,7 @@ const schema = a.schema({
     })
     .returns(a.ref('CompatibilityInsights'))
     .handler(a.handler.function(generateCompatibilityInsights))
-    .authorization(allow => [allow.group('Premium')]),
+    .authorization(allow => [allow.group(`PREMIUM-${process.env['AWS_BRANCH']}`)]),
 
   ChatMessage,
   Conversation,

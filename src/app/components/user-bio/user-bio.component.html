@@ -51,15 +51,25 @@
       <div class="premium-compatibility">
         <h3 class="label">✨ Premium Compatibility Insights ✨</h3>
         <div *ngIf="isPremiumUser; else upgradePrompt">
-          <p>{{ compatibilityInsights }}</p>
+          <p>{{ compatibilityInsights$ | async | json }}</p>
         </div>
         <ng-template #upgradePrompt>
           <button (click)="promptUpgrade()" class="premium-button">
             Unlock Compatibility Insights
           </button>
         </ng-template>
-        <div class="premiumInsights">
-          <!--INSERT CHARTS HERE..-->
+        <div class="premiumInsights" *ngIf="isPremiumUser">
+          <ng-container *ngIf="loading$ | async">
+            <p>Loading compatibility insights...</p>
+          </ng-container>
+
+          <ng-container *ngIf="error$ | async as error">
+            <p class="error">Error: {{ error }}</p>
+          </ng-container>
+
+          <ng-container *ngIf="compatibilityInsights$ | async as insights">
+            <pre>{{ insights | json }}</pre>
+          </ng-container>
         </div>
       </div>
     </section>

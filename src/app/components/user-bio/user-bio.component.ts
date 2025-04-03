@@ -10,6 +10,8 @@ import { MaterialModule } from '../../shared/material.module';
 import { ImageDisplayComponent } from '../image-display/image-display.component';
 import { LoadUserProfile } from '../../store/actions/user-profile.actions';
 import { UserProfileState } from '../../store/states/user-profile.state';
+import { CompatibilityState } from '../../store/states/compatibility.state';
+import { GenerateCompatibilityInsights } from '../../store/actions/compatibility.actions';
 
 @Component({
   selector: 'app-user-bio',
@@ -22,22 +24,19 @@ export class UserBioComponent implements OnInit {
   profile$!: Observable<any>;
   conversationId: string = '';
   currentUserId: string = '';
-  isPremiumUser: boolean = false; // Fetch this from user state or subscription state
-  compatibilityInsights: string = '';
+  isPremiumUser: boolean = false;
+  compatibilityInsights$ = this.store.select(CompatibilityState.insights);
+  loading$ = this.store.select(CompatibilityState.loading);
+  error$ = this.store.select(CompatibilityState.error);
 
   constructor(private route: ActivatedRoute, private store: Store, private router: Router) {}
 
   ngOnInit(): void {
     this.identityId = this.route.snapshot.paramMap.get('id') || '';
     this.currentUserId = this.store.selectSnapshot(AuthState.identityId) || '';
-    this.isPremiumUser = this.store.selectSnapshot(AuthState.user)?.isPremium || false;
+    // this.isPremiumUser = this.store.selectSnapshot(AuthState.user)?.isPremium || false; //TODO
+    this.isPremiumUser = true;
 
-
-    /**
-     * TODO setup to look up both user and my own profile..
-     * Needs to read state, then dispatch it.
-     * Then do personality assessment.
-     */
 
     this.store.dispatch(new LoadUserProfile(this.identityId));
     this.profile$ = this.store.select(UserProfileState.getProfileById).pipe(
@@ -47,45 +46,43 @@ export class UserBioComponent implements OnInit {
     this.conversationId = this.getConversationId(this.identityId, this.currentUserId);
 
     if (this.isPremiumUser) {
-      this.generateCompatibilityInsights();
+      this.store.dispatch(new GenerateCompatibilityInsights(this.identityId));
     }
   }
 
-  getConversationId(a: string, b: string): string {
-    return [a, b].sort().join('#');
+  // generateCompatibilityInsights() {
+  //   if (this.isPremiumUser) {
+  //     this.store.dispatch(new GenerateCompatibilityInsights(this.identityId));
+  //   }
+  // }
+
+  getConversationId(userId1: string, userId2: string): string {
+    const [participantA, participantB] = [userId1, userId2].sort();
+    return `${participantA}#${participantB}`;
   }
 
   getBioFromSurvey(answers: any[]): string {
-    const bio = answers?.find(a => a.questionId === 91);
-    return bio?.answer || 'No bio provided yet.';
+    return answers['91'] || 'No bio provided yet.';
   }
 
-  getLikesFromSurvey(answers: any[]): string[] {
+  /**
+   * TODO move this to the API.. I will not have the answers being sent back soon.
+   */
+  getLikesFromSurvey(answers: Record<number, string | string[] | boolean | number>): string[] {
     const interestingQs = [16, 17, 14, 60, 70];
-    const likes = [];
-    for (let qId of interestingQs) {
-      const entry = answers.find(ans => ans.questionId === qId);
-      if (entry) {
-        if (Array.isArray(entry.answer)) likes.push(...entry.answer);
-        else if (typeof entry.answer === 'string') likes.push(entry.answer);
+    const likes: string[] = [];
+    for (const qId of interestingQs) {
+      const entry = answers[qId];
+      if (entry !== undefined) {
+        if (Array.isArray(entry)) {
+          // Ensure only strings are added
+          likes.push(...entry.filter(item => typeof item === 'string') as string[]);
+        } else if (typeof entry === 'string') {
+          likes.push(entry);
+        }
       }
     }
     return likes.slice(0, 6);
-  }
-
-  generateCompatibilityInsights(): void {
-
-    // const currentUserAnswers = this.store.selectSnapshot(SurveyState.answers);
-    let matches = 0;
-
-    // currentUserAnswers.forEach(cuAns => {
-    //   const matched = profile.surveyAnswers.some(userAns =>
-    //     userAns.questionId === cuAns.questionId && userAns.answer === cuAns.answer
-    //   );
-    //   if (matched) matches++;
-    // });
-    this.compatibilityInsights = "hello World";
-    // this.compatibilityInsights = `You share ${matches} common interests with ${profile.userName}.`;
   }
 
   promptUpgrade(): void {

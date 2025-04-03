@@ -10,6 +10,11 @@ const docClient = DynamoDBDocumentClient.from(dynamoClient);
 const sesClient = new SESClient({});
 
 const ADMIN_EMAIL = process.env['ADMIN_EMAIL'] || 'getlocalfriends@gmail.com';
+const REPORT_TABLE_NAME = process.env['USER_REPORT_TABLE'];
+
+if (!REPORT_TABLE_NAME) {
+  throw new Error('Report table name not found in environment');
+}
 
 type CreateReportEvent = {
   arguments: {
@@ -21,14 +26,11 @@ type CreateReportEvent = {
   identity: {
     sub: string;
   };
-  tableName: string;
 };
 
 export const handler = async (event: CreateReportEvent) => {
   console.log('Handler triggered with event:', JSON.stringify(event, null, 2));
-  console.log('USER_POOL_ID:', process.env['USER_POOL_ID']);
-  console.log('AWS_BRANCH:', process.env['AWS_BRANCH']);
-  console.log('Constructed PREMIUM_GROUP:', process.env['PREMIUM_GROUP']);
+  console.log('Using table name:', REPORT_TABLE_NAME);
 
   const { reportedUserId, conversationId, messageId, reason } = event.arguments;
   console.log('Extracted arguments:', { reportedUserId, conversationId, messageId, reason });
@@ -63,9 +65,9 @@ export const handler = async (event: CreateReportEvent) => {
     console.log('Created report object:', JSON.stringify(report, null, 2));
 
     // Write the report to DynamoDB.
-    console.log('Attempting to write to DynamoDB table:', event.tableName);
+    console.log('Attempting to write to DynamoDB table:', REPORT_TABLE_NAME);
     const putCommand = new PutCommand({
-      TableName: event.tableName,
+      TableName: REPORT_TABLE_NAME,
       Item: report
     });
     
