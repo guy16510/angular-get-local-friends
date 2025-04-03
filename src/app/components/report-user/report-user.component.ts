@@ -49,12 +49,12 @@ export class ReportUserComponent {
 
   async submitReport(): Promise<void> {
     if (!this.reportForm.valid) {
-      this.toastService.error('Please fill in all required fields.', 'Close');
+      this.toastService.error('Please fill in all required fields.', 'Close', 5000);
       return;
     }
 
     if (!this.data.conversationId) {
-      this.toastService.error('Conversation ID is required.', 'Close');
+      this.toastService.error('Conversation ID is required.', 'Close', 5000);
       return;
     }
 
@@ -74,7 +74,7 @@ export class ReportUserComponent {
       this.dialogRef.close(true);
     } catch (error) {
       console.error('Error submitting report:', error);
-      this.toastService.error('Failed to submit report. Please try again.', 'Close');
+      this.toastService.error('Failed to submit report. Please try again.', 'Close', 5000);
     } finally {
       this.isSubmitting = false;
     }
