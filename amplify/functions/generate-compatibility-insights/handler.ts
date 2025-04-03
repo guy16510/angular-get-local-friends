@@ -3,6 +3,7 @@ import { DynamoDB } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
 import { sanitizeBigInts } from '../../shared/utils/sanitize';
 import { getIdentityId } from '../../shared/utils/identity';
+import crypto from 'crypto';
 
 const TABLE_NAME = process.env['USER_PROFILE_TABLE_NAME']!;
 if (!TABLE_NAME) throw new Error("Missing environment variable: USER_PROFILE_TABLE_NAME");
@@ -169,9 +170,15 @@ export const handler = async (event: GenerateCompatibilityInsightsEvent) => {
     // Generate compatibility insights
     const insights = compareAnswers(userAnswers, targetAnswers);
 
+    const now = new Date().toISOString();
     return {
       success: true,
-      data: insights
+      data: {
+        id: crypto.randomUUID(),
+        ...insights,
+        createdAt: now,
+        updatedAt: now
+      }
     };
   } catch (err) {
     console.error('Error generating compatibility insights:', err);

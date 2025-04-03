@@ -196,4 +196,4 @@ backend.generateCompatibilityInsights.resources.lambda.addToRolePolicy(new iam.P
 }));
 
 // Add this after the reportTableArn definition
-backend.createReport.addEnvironment("USER_REPORT_TABLE", backend.data.resources.tables["Report"].tableName);
+backend.createReport.addEnvironment("AMPLIFY_REPORT_TABLE_NAME", backend.data.resources.tables["Report"].tableName);

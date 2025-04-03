@@ -10,7 +10,7 @@ const docClient = DynamoDBDocumentClient.from(dynamoClient);
 const sesClient = new SESClient({});
 
 const ADMIN_EMAIL = process.env['ADMIN_EMAIL'] || 'getlocalfriends@gmail.com';
-const REPORT_TABLE_NAME = process.env['USER_REPORT_TABLE'];
+const REPORT_TABLE_NAME = process.env['AMPLIFY_REPORT_TABLE_NAME'];
 
 if (!REPORT_TABLE_NAME) {
   throw new Error('Report table name not found in environment');
@@ -48,19 +48,18 @@ export const handler = async (event: CreateReportEvent) => {
 
   try {
     // Create the report record
-    const now = new Date().toISOString();
     const report = {
       id: crypto.randomUUID(),
       reporterId,
       reportedUserId,
       conversationId,
       messageId,
-      timestamp: now,
+      timestamp: new Date().toISOString(),
       reason,
       status: 'pending',
       adminNotes: null,
-      createdAt: now,
-      updatedAt: now
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     };
     console.log('Created report object:', JSON.stringify(report, null, 2));
 
