@@ -11,7 +11,6 @@ const docClient = DynamoDBDocumentClient.from(dynamoClient);
 
 // const ADMIN_EMAIL = process.env['ADMIN_EMAIL'] || 'getlocalfriends@gmail.com';
 const REPORT_TABLE_NAME = process.env['AMPLIFY_REPORT_TABLE_NAME'];
-
 if (!REPORT_TABLE_NAME) {
   throw new Error('Report table name not found in environment');
 }
@@ -37,29 +36,26 @@ export const handler = async (event: CreateReportEvent) => {
 
   const reporterId = getIdentityId(event.identity);
   console.log('[getIdentityId] Using Cognito User Pool unique identifier (sub):', reporterId);
-  console.log('Extracted identityId:', reporterId);
-
+  
   if (!reporterId) {
-    return {
-      statusCode: 401,
-      body: JSON.stringify(sanitizeBigInts({ message: 'Unauthorized' }))
-    };
+    throw new Error("Unauthorized: Reporter not found");
   }
 
   try {
-    // Create the report record
+    // Use a consistent timestamp for the report record.
+    const now = new Date().toISOString();
     const report = {
       id: crypto.randomUUID(),
       reporterId,
       reportedUserId,
       conversationId,
       messageId,
-      timestamp: new Date().toISOString(),
+      timestamp: now,
       reason,
       status: 'pending',
       adminNotes: null,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      createdAt: now,
+      updatedAt: now
     };
     console.log('Created report object:', JSON.stringify(report, null, 2));
 
@@ -69,11 +65,10 @@ export const handler = async (event: CreateReportEvent) => {
       TableName: REPORT_TABLE_NAME,
       Item: report
     });
-    
     const putResult = await docClient.send(putCommand);
     console.log('DynamoDB PutCommand result:', JSON.stringify(putResult, null, 2));
 
-    // Send email notification to the admin.
+    // Optionally, send email notification to the admin.
     /*
     console.log('Attempting to send email notification to admin');
     const emailCommand = new SendEmailCommand({
@@ -103,19 +98,13 @@ Please review this report in the admin dashboard.
         }
       }
     });
-
     const emailResult = await sesClient.send(emailCommand);
     console.log('SES SendEmail result:', JSON.stringify(emailResult, null, 2));
     */
 
     console.log('Successfully completed report creation');
-    return {
-      statusCode: 200,
-      body: JSON.stringify(sanitizeBigInts({ 
-        message: 'Report submitted successfully',
-        report
-      }))
-    };
+    // Return the report object directly to match the GraphQL schema.
+    return sanitizeBigInts(report);
   } catch (error: any) {
     console.error('Error creating report:', error);
     console.error('Error details:', {
@@ -123,9 +112,6 @@ Please review this report in the admin dashboard.
       message: error?.message,
       stack: error?.stack
     });
-    return {
-      statusCode: 500,
-      body: JSON.stringify(sanitizeBigInts({ message: 'Failed to create report' }))
-    };
+    throw new Error("Failed to create report");
   }
 };

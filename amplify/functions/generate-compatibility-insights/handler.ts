@@ -44,10 +44,6 @@ const QUESTION_CATEGORIES = [
 type SurveyAnswerValue = string | string[] | boolean;
 type SurveyAnswersMap = Record<number, SurveyAnswerValue>;
 
-/**
- * Parse the JSON string of survey answers into an object map.
- * Keys are numbers (question IDs) for O(1) lookups.
- */
 function parseSurveyAnswers(answersString: string): SurveyAnswersMap {
   try {
     console.log('Parsing survey answers string length:', answersString?.length || 0);
@@ -57,10 +53,7 @@ function parseSurveyAnswers(answersString: string): SurveyAnswersMap {
       return {};
     }
     
-    // Safely parse the JSON string
     const parsed = JSON.parse(answersString);
-    
-    // Log a summary instead of the full parsed object
     console.log('Parsed survey answers summary:', {
       keys: Object.keys(parsed).length,
       sampleKeys: Object.keys(parsed).slice(0, 5)
@@ -79,10 +72,6 @@ function parseSurveyAnswers(answersString: string): SurveyAnswersMap {
   }
 }
 
-/**
- * Compare two users' survey answers by iterating over pre-defined question ranges.
- * Directly looks up answers from the maps (O(1) per question).
- */
 function compareAnswers(
   user1Answers: SurveyAnswersMap,
   user2Answers: SurveyAnswersMap
@@ -112,7 +101,6 @@ function compareAnswers(
       }
     }
 
-    // Only add categories that have questions answered by both users
     if (total > 0) {
       categoryMatches.push({
         category: category.name,
@@ -126,7 +114,6 @@ function compareAnswers(
     totalQuestions += total;
   }
 
-  // Ensure we have at least one category match
   if (categoryMatches.length === 0) {
     categoryMatches.push({
       category: "No matching categories",
@@ -153,7 +140,7 @@ interface GenerateCompatibilityInsightsEvent {
   };
 }
 
-export const handler = async (event: GenerateCompatibilityInsightsEvent) => {
+export const handler = async (event: GenerateCompatibilityInsightsEvent): Promise<CompatibilityInsights> => {
   console.log('Handler triggered with event:', JSON.stringify(event, null, 2));
   
   const { targetUserId } = event.arguments;
@@ -162,124 +149,93 @@ export const handler = async (event: GenerateCompatibilityInsightsEvent) => {
     throw new Error("Missing required parameter: targetUserId");
   }
 
-  try {
-    // Get the caller's identity from the event signature
-    const identityId = getIdentityId(event.identity);
-    console.log('[getIdentityId] Using Cognito User Pool unique identifier (sub):', identityId);
-    
-    if (!identityId) {
-      console.error('Unauthorized: No identity found in event signature');
-      throw new Error("Unauthorized: No identity found in event signature");
-    }
-
-    console.log('Fetching user profiles for:', { identityId, targetUserId });
-    
-    // Get both user profiles in parallel
-    const [userProfile, targetProfile] = await Promise.all([
-      docClient.query({
-        TableName: TABLE_NAME,
-        IndexName: 'identityId-index',
-        KeyConditionExpression: 'identityId = :identityId',
-        ExpressionAttributeValues: {
-          ':identityId': identityId
-        }
-      }),
-      docClient.query({
-        TableName: TABLE_NAME,
-        IndexName: 'identityId-index',
-        KeyConditionExpression: 'identityId = :identityId',
-        ExpressionAttributeValues: {
-          ':identityId': targetUserId
-        }
-      })
-    ]);
-
-    // Safely log query results without BigInt serialization issues
-    console.log('User profile query result count:', userProfile.Items?.length || 0);
-    console.log('Target profile query result count:', targetProfile.Items?.length || 0);
-
-    if (!userProfile.Items?.[0] || !targetProfile.Items?.[0]) {
-      console.error('One or both user profiles not found:', { 
-        userProfileFound: !!userProfile.Items?.[0], 
-        targetProfileFound: !!targetProfile.Items?.[0] 
-      });
-      throw new Error("One or both user profiles not found");
-    }
-
-    // Check if the requesting user has premium access
-    const userData = sanitizeBigInts(userProfile.Items[0]);
-    console.log('User data premium status:', !!userData.premiumEnrolledAt);
-    
-    if (!userData.premiumEnrolledAt) {
-      console.error('Premium subscription required for compatibility insights');
-      throw new Error("Premium subscription required for compatibility insights");
-    }
-
-    // Parse survey answers using our efficient map approach
-    console.log('Parsing survey answers');
-    
-    // Check if survey answers exist
-    if (!userData.surveyAnswers) {
-      console.error('User has no survey answers');
-      throw new Error("User has not completed the survey");
-    }
-    
-    if (!targetProfile.Items[0]['surveyAnswers']) {
-      console.error('Target user has no survey answers');
-      throw new Error("Target user has not completed the survey");
-    }
-    
-    const userAnswers = parseSurveyAnswers(userData.surveyAnswers);
-    const targetAnswers = parseSurveyAnswers(targetProfile.Items[0]['surveyAnswers']);
-    
-    console.log('User answers count:', Object.keys(userAnswers).length);
-    console.log('Target answers count:', Object.keys(targetAnswers).length);
-    
-    // Check if we have enough answers to generate insights
-    if (Object.keys(userAnswers).length === 0 || Object.keys(targetAnswers).length === 0) {
-      console.error('Not enough survey answers to generate insights');
-      throw new Error("Not enough survey answers to generate insights");
-    }
-
-    // Generate compatibility insights
-    console.log('Generating compatibility insights');
-    const insights = compareAnswers(userAnswers, targetAnswers);
-    
-    // Safely log insights without BigInt serialization issues
-    console.log('Generated insights summary:', {
-      totalMatches: insights.totalMatches,
-      totalQuestions: insights.totalQuestions,
-      overallPercentage: insights.overallPercentage,
-      categoryCount: insights.categoryMatches.length
-    });
-
-    const now = new Date().toISOString();
-    const result = {
-      success: true,
-      data: {
-        id: crypto.randomUUID(),
-        ...insights,
-        createdAt: now,
-        updatedAt: now
-      }
-    };
-    
-    // Safely log result without BigInt serialization issues
-    console.log('Returning result with id:', result.data.id);
-    return result;
-  } catch (err: any) {
-    console.error('Error generating compatibility insights:', err);
-    console.error('Error details:', {
-      name: err?.name,
-      message: err?.message,
-      stack: err?.stack
-    });
-    
-    // Return a properly structured error response
-    return {
-      success: false,
-      error: err instanceof Error ? err.message : 'Unknown error occurred',
-      data: null
-    };
+  const identityId = getIdentityId(event.identity);
+  console.log('[getIdentityId] Using Cognito User Pool unique identifier (sub):', identityId);
+  
+  if (!identityId) {
+    console.error('Unauthorized: No identity found in event signature');
+    throw new Error("Unauthorized: No identity found in event signature");
   }
+
+  console.log('Fetching user profiles for:', { identityId, targetUserId });
+  
+  const [userProfile, targetProfile] = await Promise.all([
+    docClient.query({
+      TableName: TABLE_NAME,
+      IndexName: 'identityId-index',
+      KeyConditionExpression: 'identityId = :identityId',
+      ExpressionAttributeValues: {
+        ':identityId': identityId
+      }
+    }),
+    docClient.query({
+      TableName: TABLE_NAME,
+      IndexName: 'identityId-index',
+      KeyConditionExpression: 'identityId = :identityId',
+      ExpressionAttributeValues: {
+        ':identityId': targetUserId
+      }
+    })
+  ]);
+
+  console.log('User profile query result count:', userProfile.Items?.length || 0);
+  console.log('Target profile query result count:', targetProfile.Items?.length || 0);
+
+  if (!userProfile.Items?.[0] || !targetProfile.Items?.[0]) {
+    console.error('One or both user profiles not found:', { 
+      userProfileFound: !!userProfile.Items?.[0], 
+      targetProfileFound: !!targetProfile.Items?.[0] 
+    });
+    throw new Error("One or both user profiles not found");
+  }
+
+  const userData = sanitizeBigInts(userProfile.Items[0]);
+  console.log('User data premium status:', !!userData.premiumEnrolledAt);
+  
+  if (!userData.premiumEnrolledAt) {
+    console.error('Premium subscription required for compatibility insights');
+    throw new Error("Premium subscription required for compatibility insights");
+  }
+
+  if (!userData.surveyAnswers) {
+    console.error('User has no survey answers');
+    throw new Error("User has not completed the survey");
+  }
+  
+  if (!targetProfile.Items[0]['surveyAnswers']) {
+    console.error('Target user has no survey answers');
+    throw new Error("Target user has not completed the survey");
+  }
+  
+  console.log('Parsing survey answers');
+  const userAnswers = parseSurveyAnswers(userData.surveyAnswers);
+  const targetAnswers = parseSurveyAnswers(targetProfile.Items[0]['surveyAnswers']);
+  
+  console.log('User answers count:', Object.keys(userAnswers).length);
+  console.log('Target answers count:', Object.keys(targetAnswers).length);
+  
+  if (Object.keys(userAnswers).length === 0 || Object.keys(targetAnswers).length === 0) {
+    console.error('Not enough survey answers to generate insights');
+    throw new Error("Not enough survey answers to generate insights");
+  }
+
+  console.log('Generating compatibility insights');
+  const insights = compareAnswers(userAnswers, targetAnswers);
+  console.log('Generated insights summary:', {
+    totalMatches: insights.totalMatches,
+    totalQuestions: insights.totalQuestions,
+    overallPercentage: insights.overallPercentage,
+    categoryCount: insights.categoryMatches.length
+  });
+
+  const now = new Date().toISOString();
+  const result: CompatibilityInsights = {
+    id: crypto.randomUUID(),
+    ...insights,
+    createdAt: now,
+    updatedAt: now
+  };
+
+  console.log('Returning result with id:', result.id);
+  return result;
 };

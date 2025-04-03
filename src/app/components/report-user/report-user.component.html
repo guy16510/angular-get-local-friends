@@ -26,7 +26,7 @@
 
 <mat-dialog-actions align="end" class="flex gap-2">
   <button mat-button mat-dialog-close [disabled]="isSubmitting">Cancel</button>
-  <button mat-raised-button color="warn" (click)="submitReport()" [disabled]="!reportForm.valid || isSubmitting">
+  <button mat-raised-button color="accent" (click)="submitReport()" [disabled]="!reportForm.valid || isSubmitting">
     <span *ngIf="!isSubmitting">Submit Report</span>
     <span *ngIf="isSubmitting">Submitting...</span>
   </button>
