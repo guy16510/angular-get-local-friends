@@ -1,6 +1,6 @@
-// ===== amplify/functions/get-animal-profile/handler.ts =====
+// amplify/functions/get-animal-profile/handler.ts
 import { DynamoDB } from 'aws-sdk';
-import { SurveyAnswers } from './types';
+import type { SurveyAnswers } from './types';
 import { calculatePersonalityTraits } from './traits-calculator';
 import { generateSelfProfile, generateSeekingProfile } from './profile-generator';
 import { generateDeepProfileInsights } from './deep-profile-insights';
@@ -72,11 +72,30 @@ export const handler = async (event: any): Promise<HandlerResponse> => {
 };
 
 function validateSurveyAnswers(answers: SurveyAnswers): void {
-  const requiredQuestions = [16, 18, 20, 22, 25, 26, 27, 29, 30];
+  const requiredQuestions = ['16', '18', '20', '22', '25', '26', '27', '29', '30'];
   for (const questionId of requiredQuestions) {
-    if (answers[questionId] === undefined) {
+    if (!(questionId in answers)) {
       throw new Error(`Missing required answer for question ${questionId}`);
     }
+  }
+}
+
+function parseSurveyAnswers(userProfile: any): SurveyAnswers | null {
+  try {
+    const raw = typeof userProfile.surveyAnswers === 'string'
+      ? userProfile.surveyAnswers
+      : unwrapString(userProfile.surveyAnswers);
+
+    const parsed = JSON.parse(raw);
+
+    if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+      throw new Error('SurveyAnswers must be an object');
+    }
+
+    return parsed as SurveyAnswers;
+  } catch (err) {
+    logger.error('Failed to parse survey answers', { error: err });
+    return null;
   }
 }
 
@@ -107,21 +126,9 @@ async function getUserProfileByIdentity(identityId: string): Promise<any | null>
       }
     }).promise();
 
-    return result.Items && result.Items.length > 0 ? result.Items[0] : null;
+    return result.Items?.[0] ?? null;
   } catch (err) {
     logger.error('Error querying user profile by identity', { error: err });
     throw err;
-  }
-}
-
-function parseSurveyAnswers(userProfile: any): SurveyAnswers | null {
-  try {
-    const raw = typeof userProfile.surveyAnswers === 'string'
-      ? userProfile.surveyAnswers
-      : unwrapString(userProfile.surveyAnswers);
-    return JSON.parse(raw);
-  } catch (err) {
-    logger.error('Failed to parse survey answers', { error: err });
-    return null;
   }
 }

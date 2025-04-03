@@ -12,13 +12,18 @@ geoConfig.hashKeyLength = 5;
 
 const geoTableManager = new ddbGeo.GeoDataManager(geoConfig);
 
-function extractProfileAttributes(surveyAnswers: any[]) {
-  const get = (id: number) =>
-    surveyAnswers
-      .filter(q => q.questionId === id)
-      .map(q => q.answer);
+function extractProfileAttributes(surveyAnswers: Record<string, string | string[]>) {
+  const get = (id: number): string[] => {
+    const val = surveyAnswers[id.toString()];
+    if (Array.isArray(val)) return val;
+    if (typeof val === 'string') return [val];
+    return [];
+  };
 
-  const single = (id: number) => get(id)[0]; // For multiple-choice, true/false, etc.
+  const single = (id: number): string | undefined => {
+    const vals = get(id);
+    return vals.length > 0 ? vals[0] : undefined;
+  };
 
   const ageRange = single(1);
   const desiredFriendAgeRanges = get(2); // multi-select
@@ -27,7 +32,7 @@ function extractProfileAttributes(surveyAnswers: any[]) {
   const hasKids = single(5) === 'Yes' || single(5) === 'Expecting';
   const wantsFriendsWithKids = single(6) === 'Yes';
   const childAgeGroups = get(7); // multi-select
-  const wantsSimilarChildAges = single(8) === true || single(8) === 'true';
+  const wantsSimilarChildAges = ['true', true].includes(single(8) as any);
 
   return {
     ageRange,

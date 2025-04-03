@@ -21,6 +21,7 @@ type CreateReportEvent = {
   identity: {
     sub: string;
   };
+  tableName: string;
 };
 
 export const handler = async (event: CreateReportEvent) => {
@@ -37,8 +38,10 @@ export const handler = async (event: CreateReportEvent) => {
   console.log('Extracted identityId:', reporterId);
 
   if (!reporterId) {
-    // Throw an error so that AppSync correctly handles an unauthorized request.
-    throw new Error('Unauthorized');
+    return {
+      statusCode: 401,
+      body: JSON.stringify(sanitizeBigInts({ message: 'Unauthorized' }))
+    };
   }
 
   try {
@@ -60,9 +63,9 @@ export const handler = async (event: CreateReportEvent) => {
     console.log('Created report object:', JSON.stringify(report, null, 2));
 
     // Write the report to DynamoDB.
-    console.log('Attempting to write to DynamoDB table:', process.env['AMPLIFY_REPORT_TABLE_NAME']);
+    console.log('Attempting to write to DynamoDB table:', event.tableName);
     const putCommand = new PutCommand({
-      TableName: process.env['AMPLIFY_REPORT_TABLE_NAME']!,
+      TableName: event.tableName,
       Item: report
     });
     
@@ -103,8 +106,13 @@ Please review this report in the admin dashboard.
     console.log('SES SendEmail result:', JSON.stringify(emailResult, null, 2));
 
     console.log('Successfully completed report creation');
-    // Return the report directly so that AppSync sees all required fields.
-    return sanitizeBigInts(report);
+    return {
+      statusCode: 200,
+      body: JSON.stringify(sanitizeBigInts({ 
+        message: 'Report submitted successfully',
+        report
+      }))
+    };
   } catch (error: any) {
     console.error('Error creating report:', error);
     console.error('Error details:', {
@@ -112,7 +120,9 @@ Please review this report in the admin dashboard.
       message: error?.message,
       stack: error?.stack
     });
-    // Propagate the error for AppSync to handle.
-    throw new Error('Failed to create report');
+    return {
+      statusCode: 500,
+      body: JSON.stringify(sanitizeBigInts({ message: 'Failed to create report' }))
+    };
   }
 };

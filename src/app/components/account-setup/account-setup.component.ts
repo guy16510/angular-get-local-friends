@@ -138,13 +138,21 @@ export class AccountSetupComponent implements OnInit {
     });
   }
 
-  formatSurveyAnswers(obj: any) {
-    return Object.entries(obj).flatMap(([key, value]) => {
+  formatSurveyAnswers(obj: Record<string, unknown>) {
+    const compact: Record<string, string | string[]> = {};
+  
+    for (const [key, value] of Object.entries(obj)) {
       if (Array.isArray(value)) {
-        return value.map(answer => ({ questionId: Number(key), answer }));
-      } 
-      return { questionId: Number(key), answer: value };
-    });
+        const filtered = value.filter(v => typeof v === 'string') as string[];
+        const unique = [...new Set(filtered)];
+        compact[key] = unique.length === 1 ? unique[0] : unique;
+      } else if (typeof value === 'string') {
+        compact[key] = value;
+      } else {
+        console.warn(`Unexpected value for questionId ${key}:`, value);
+      }
+    }
+    return compact;
   }
 
 }

@@ -59,7 +59,6 @@ export class SearchState {
     const identityId = this.store.selectSnapshot(AuthState.identityId);
   
     ctx.patchState({ loading: true });
-    debugger;
     //todo add identityId to the query, or may not need to do anything?
     const result = await client.queries.findNearbyUsers({
       lat: action.lat,
