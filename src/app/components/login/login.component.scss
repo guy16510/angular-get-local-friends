@@ -1,201 +1,166 @@
-.login {
+.login-container {
   display: flex;
-  justify-content: center;
-  align-items: center;
   min-height: 100vh;
-  padding: 20px;
   background-color: var(--bio-layout-bg);
-  margin-top:80px;
 }
 
-// Style the Amplify Authenticator tabs first
-::ng-deep {
-  .amplify-tabs {
-    margin-bottom: 24px;
-    width: 100%;
-    max-width: 400px;
-    
-    .amplify-tabs__list {
-      display: flex;
-      justify-content: center;
-      gap: 16px;
-    }
+.left-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 40px;
+  background-color: rgb(248,248,247);
+}
+// .left-panel {
+//   background-image: url("../../../assets/images/loginHero.png");
+//   background-position: center;
+//   background-size: cover;
+//   background-repeat: no-repeat;
+//   width: 100%;
+//   height: 100vh;
+//   position: relative;
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+//   background-color: rgba(255,255,255,0.2);
+//   background-blend-mode: lighten;
+// }
 
-    .amplify-tabs__item {
-      padding: 8px 16px;
-      border-radius: 4px;
-      color: var(--meta-color);
-      font-family: var(--font-family);
-      font-size: 16px;
-      transition: all 0.3s ease;
-
-      &:hover {
-        color: var(--theme-primary);
-        background-color: rgba(255, 0, 85, 0.04);
-      }
-
-      &[data-state="active"] {
-        color: var(--theme-primary);
-        background-color: rgba(255, 0, 85, 0.08);
-        font-weight: 500;
-      }
-    }
+.branding {
+  text-align: center;
+  margin-bottom: 30px;
+  
+  .logo {
+    max-width: 150px;
+    margin-bottom: 10px;
   }
 
-  // Style the Amplify Authenticator container
-  .amplify-authenticator {
-    width: 100%;
-    max-width: 400px;
+  h2 {
+    color: var(--theme-primary);
+    font-family: var(--font-family);
+    margin: 0;
+  }
+
+  p {
+    color: var(--meta-color);
+    font-family: var(--font-family);
   }
 }
 
-.signup-card {
+.form-container {
+  max-width: 400px;
   width: 100%;
+  margin: 0 auto;
   padding: 20px;
   background-color: var(--mdc-elevated-card-container-color);
-  border-radius: var(--mdc-elevated-card-container-shape);
-  box-shadow: var(--mdc-elevated-card-container-elevation);
+  border: 1px solid #ddd;
+  border-radius: 8px;
+
+  h3 {
+    text-align: center;
+    color: var(--theme-primary);
+    margin-bottom: 20px;
+    font-family: var(--font-family);
+  }
 }
 
-mat-card-header {
-  margin-bottom: 24px;
-  text-align: center;
-}
-
-mat-card-title {
-  font-size: 24px;
-  font-weight: 500;
-  color: var(--theme-primary);
-  font-family: var(--font-family);
-}
-
-.full-width {
-  width: 100%;
-  margin-bottom: 16px;
-}
-
-.password-requirements {
-  margin-top: 8px;
-  padding: 8px;
-  background-color: var(--bio-image-bg);
-  border-radius: 4px;
-}
-
-.requirement-title {
-  font-size: 14px;
-  font-weight: 500;
-  margin-bottom: 8px;
-  color: var(--meta-color);
-}
-
-.requirement-item {
+.form-field {
+  margin-bottom: 20px;
   display: flex;
-  align-items: center;
-  margin: 4px 0;
-  font-size: 12px;
-  color: var(--meta-color);
-  list-style: none;
-  padding: 0;
+  flex-direction: column;
+
+  label {
+    font-size: 14px;
+    margin-bottom: 5px;
+    color: var(--meta-color);
+    font-family: var(--font-family);
+  }
+
+  input {
+    padding: 10px;
+    font-size: 16px;
+    font-family: var(--font-family);
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+
+  button {
+    margin-top: 5px;
+    align-self: flex-end;
+    background: none;
+    border: none;
+    color: var(--theme-primary);
+    cursor: pointer;
+    font-family: var(--font-family);
+  }
 }
 
-.requirement-icon {
-  font-size: 16px;
-  width: 16px;
-  height: 16px;
-  margin-right: 8px;
+.error {
   color: var(--theme-warn);
+  font-size: 12px;
+  margin-top: 5px;
+  font-family: var(--font-family);
 }
 
 .button-container {
-  display: flex;
-  justify-content: center;
-  margin-top: 24px;
+  text-align: center;
+  margin-top: 20px;
+
+  button {
+    padding: 10px 20px;
+    background-color: var(--theme-primary);
+    color: var(--theme-primary-contrast);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    font-family: var(--font-family);
+  }
+
+  button:disabled {
+    background-color: rgba(0, 0, 0, 0.12);
+    color: rgba(0, 0, 0, 0.38);
+    cursor: not-allowed;
+  }
 }
 
-button[type="submit"] {
-  min-width: 200px;
+.switch-form-link {
+  text-align: center;
+  margin-top: 15px;
+  font-size: 14px;
   font-family: var(--font-family);
 
-  &:disabled {
-    background-color: rgba(0, 0, 0, 0.12) !important;
-    color: rgba(0, 0, 0, 0.38) !important;
+  a {
+    color: var(--theme-primary);
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
   }
 }
 
-mat-form-field {
-  .mat-form-field-wrapper {
-    margin-bottom: 16px;
-  }
+.right-panel {
+  flex: 1;
+  background-color: #f8f8f8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
 
-  &.mat-focused {
-    .mat-form-field-label {
-      color: var(--theme-primary);
-    }
-    .mat-form-field-ripple {
-      background-color: var(--theme-primary);
-    }
-  }
-}
-
-mat-error {
-  font-size: 12px;
-  margin-top: 4px;
-  color: var(--theme-warn);
-}
-
-// Dark theme adjustments
-.dark-theme {
-  .signup-card {
-    background-color: var(--mdc-elevated-card-container-color);
-  }
-
-  .password-requirements {
-    background-color: var(--bio-image-bg);
-  }
-
-  .requirement-title,
-  .requirement-item {
-    color: var(--meta-color);
-  }
-
-  button[type="submit"] {
-    &:disabled {
-      background-color: rgba(255, 255, 255, 0.12) !important;
-      color: rgba(255, 255, 255, 0.38) !important;
-    }
-  }
-
-  ::ng-deep {
-    .amplify-tabs {
-      .amplify-tabs__item {
-        &:hover {
-          background-color: rgba(255, 255, 255, 0.04);
-        }
-
-        &[data-state="active"] {
-          background-color: rgba(255, 255, 255, 0.08);
-        }
-      }
-    }
+  .hero-image {
+    width: 100%;
+    height:100%;
+    object-fit: cover;
   }
 }
 
-// Update responsive adjustments
-@media (max-width: 480px) {
-  .login {
-    padding: 16px;
+@media (max-width: 768px) {
+  .login-container {
+    flex-direction: column;
   }
-
-  .signup-card {
-    padding: 16px;
-  }
-
-  mat-card-title {
-    font-size: 20px;
-  }
-
-  button[type="submit"] {
-    min-width: 100%;
+  .right-panel {
+    display: none;
   }
 }
-

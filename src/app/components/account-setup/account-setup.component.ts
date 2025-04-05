@@ -41,7 +41,6 @@ export class AccountSetupComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     const identityId = this.store.selectSnapshot(AuthState.identityId);
     const userName = this.store.selectSnapshot(AuthState.userName);
-    debugger;
     if (!identityId || !userName) {
       console.warn("🚨 No authenticated user detected, fetching authentication state...");
       await firstValueFrom(this.store.dispatch(new CheckAuth()));
@@ -58,7 +57,8 @@ export class AccountSetupComponent implements OnInit {
 
     if (!identityId || !userName) {
       console.error("User authentication state missing or incomplete.");
-      this.router.navigate(['/login']);
+      debugger;
+      this.router.navigate(['/login'], { queryParams: { createAccount: true } });
       return;
     }
 

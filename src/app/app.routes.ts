@@ -1,7 +1,5 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './guards/auth.guard';
-import { AnimalShareComponent } from './components/animal-share/animal-share.component';
-import { PremiumUpgradeComponent } from './components/premium-upgrade/premium-upgrade.component';
 
 export const routes: Routes = [
   {
@@ -10,14 +8,17 @@ export const routes: Routes = [
   },
   {
     path: 'account-setup',
+    canActivate: [authGuard],
     loadComponent: () => import('./components/account-setup/account-setup.component').then(m => m.AccountSetupComponent)
   },
   {
     path: 'chat/:conversationId/:recipientId',
+    canActivate: [authGuard],
     loadComponent: () => import('./components/chat/chat.component').then(m => m.ChatComponent)
   },
   {
     path: 'chatList',
+    canActivate: [authGuard],
     loadComponent: () => import('./components/chat-list/chat-list.component').then(m => m.ChatListComponent)
   },
   {
@@ -44,7 +45,8 @@ export const routes: Routes = [
   },
   {
     path: 'login',
-    loadComponent: () => import('./components/login/login.component').then(m => m.LoginComponent)
+    loadComponent: () => import('./components/login/login.component').then(m => m.LoginComponent),
+    data: { acceptsQueryParams: true }
   },
   {
     path: 'search',
@@ -53,6 +55,7 @@ export const routes: Routes = [
   },
   {
     path: 'user-bio/:id',
+    canActivate: [authGuard],
     loadComponent: () => import('./components/user-bio/user-bio.component').then(m => m.UserBioComponent)
   },
   {
@@ -81,6 +84,7 @@ export const routes: Routes = [
   },
   {
     path: 'premium-upgrade',
+    canActivate: [authGuard],
     loadComponent: () => import('./components/premium-upgrade/premium-upgrade.component').then(m => m.PremiumUpgradeComponent)
   },
   {

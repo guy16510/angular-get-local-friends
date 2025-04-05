@@ -1,120 +1,105 @@
-<div class="login">
-  <amplify-authenticator>
-    <!-- Override the default sign-up slot with a custom form -->
-    <ng-template amplifySlot="sign-up">
-      <mat-card class="signup-card">
-        <mat-card-header>
-          <mat-card-title>Create Account</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <form [formGroup]="signUpForm" (ngSubmit)="onSignUp()">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Nickname</mat-label>
-              <input matInput formControlName="nickname" placeholder="Enter your nickname">
-              <mat-error *ngIf="signUpForm.controls['nickname'].touched && signUpForm.controls['nickname'].invalid">
-                Nickname is required
-              </mat-error>
-            </mat-form-field>
+<div class="login-container">
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+    <div class="branding">
+      <h1>Welcome to GetLocalFriends</h1>
+      <p>Connect with people near you and make new friends.</p>
+    </div>
 
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Email</mat-label>
-              <input matInput formControlName="email" type="email" placeholder="Enter your email">
-              <mat-error *ngIf="signUpForm.controls['email'].touched && signUpForm.controls['email'].invalid">
-                <span *ngIf="signUpForm.controls['email'].errors?.['required']">Email is required</span>
-                <span *ngIf="signUpForm.controls['email'].errors?.['email']">Please enter a valid email</span>
-              </mat-error>
-            </mat-form-field>
+    <!-- Conditional Form Rendering -->
+    <ng-container *ngIf="isSignUp; else signInTemplate">
+      <div class="form-container sign-up">
+        <h3>Create Account</h3>
+        <form [formGroup]="signUpForm" (ngSubmit)="onSignUp()">
+          <div class="form-field">
+            <label for="nickname">Nickname</label>
+            <input id="nickname" type="text" formControlName="nickname" placeholder="Enter your nickname" />
+            <div class="error" *ngIf="signUpForm.controls['nickname'].touched && signUpForm.controls['nickname'].invalid">
+              Nickname is required.
+            </div>
+          </div>
 
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Password</mat-label>
-              <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password">
-              <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" type="button">
-                <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
-              </button>
-              <mat-error *ngIf="signUpForm.controls['password'].touched && signUpForm.controls['password'].invalid">
-                <div *ngIf="signUpForm.controls['password'].errors?.['required']">Password is required</div>
-                <div *ngIf="signUpForm.controls['password'].errors?.['minlength']">Password must be at least 8 characters long</div>
-                <div *ngIf="signUpForm.controls['password'].errors?.['passwordStrength']">
-                  <div class="password-requirements">
-                    <div class="requirement-title">Password must contain:</div>
-                    <ul>
-                      <li *ngFor="let error of getPasswordStrengthErrors()" class="requirement-item">
-                        <mat-icon class="requirement-icon">error</mat-icon>
-                        {{ error }}
-                      </li>
-                    </ul>
-                  </div>
+          <div class="form-field">
+            <label for="signup-email">Email</label>
+            <input id="signup-email" type="email" formControlName="email" placeholder="Enter your email" />
+            <div class="error" *ngIf="signUpForm.controls['email'].touched && signUpForm.controls['email'].invalid">
+              <span *ngIf="signUpForm.controls['email'].errors?.['required']">Email is required.</span>
+              <span *ngIf="signUpForm.controls['email'].errors?.['email']">Please enter a valid email.</span>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label for="signup-password">Password</label>
+            <input id="signup-password" [type]="hidePassword ? 'password' : 'text'" formControlName="password" placeholder="Enter your password" />
+            <button type="button" (click)="hidePassword = !hidePassword">{{ hidePassword ? 'Show' : 'Hide' }}</button>
+            <div class="error" *ngIf="signUpForm.controls['password'].touched && signUpForm.controls['password'].invalid">
+              <div *ngIf="signUpForm.controls['password'].errors?.['required']">Password is required.</div>
+              <div *ngIf="signUpForm.controls['password'].errors?.['minlength']">Password must be at least 8 characters long.</div>
+              <div *ngIf="signUpForm.controls['password'].errors?.['passwordStrength']">
+                <div class="password-requirements">
+                  <p>Your password must include:</p>
+                  <ul>
+                    <li *ngFor="let error of getPasswordStrengthErrors()">{{ error }}</li>
+                  </ul>
                 </div>
-              </mat-error>
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Confirm Password</mat-label>
-              <input matInput [type]="hideConfirmPassword ? 'password' : 'text'" formControlName="confirmPassword">
-              <button mat-icon-button matSuffix (click)="hideConfirmPassword = !hideConfirmPassword" type="button">
-                <mat-icon>{{hideConfirmPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
-              </button>
-              <mat-error *ngIf="getPasswordMatchError()">
-                {{ getPasswordMatchError() }}
-              </mat-error>
-            </mat-form-field>
-
-            <div class="button-container">
-              <button mat-raised-button type="submit" [disabled]="signUpForm.invalid">
-                <mat-icon>person_add</mat-icon>
-                Sign Up
-              </button>
+              </div>
             </div>
-          </form>
-        </mat-card-content>
-      </mat-card>
-    </ng-template>
+          </div>
 
-    <!-- Override the default sign-in slot with a custom form -->
-    <ng-template amplifySlot="sign-in">
-      <mat-card class="signup-card">
-        <mat-card-header>
-          <mat-card-title>Sign In</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <form [formGroup]="signInForm" (ngSubmit)="onSignIn()">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Email</mat-label>
-              <input matInput formControlName="email" type="email" placeholder="Enter your email">
-              <mat-error *ngIf="signInForm.controls['email'].touched && signInForm.controls['email'].invalid">
-                <span *ngIf="signInForm.controls['email'].errors?.['required']">Email is required</span>
-                <span *ngIf="signInForm.controls['email'].errors?.['email']">Please enter a valid email</span>
-              </mat-error>
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Password</mat-label>
-              <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password">
-              <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" type="button">
-                <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
-              </button>
-              <mat-error *ngIf="signInForm.controls['password'].touched && signInForm.controls['password'].invalid">
-                Password is required
-              </mat-error>
-            </mat-form-field>
-
-            <div class="button-container">
-              <button mat-raised-button type="submit" [disabled]="signInForm.invalid">
-                <mat-icon>login</mat-icon>
-                Sign In
-              </button>
+          <div class="form-field">
+            <label for="confirmPassword">Confirm Password</label>
+            <input id="confirmPassword" [type]="hideConfirmPassword ? 'password' : 'text'" formControlName="confirmPassword" placeholder="Re-enter your password" />
+            <div class="error" *ngIf="getPasswordMatchError()">
+              {{ getPasswordMatchError() }}
             </div>
-          </form>
-        </mat-card-content>
-      </mat-card>
-    </ng-template>
+          </div>
 
-    <!-- Use the default authenticated slot for logged in users -->
-    <ng-template amplifySlot="authenticated" let-user="user" let-signOut="signOut">
-      <button mat-raised-button color="warn" (click)="handleSignOut(signOut)">
-        <mat-icon>logout</mat-icon>
-        Sign Out
-      </button>
+          <div class="button-container">
+            <button type="submit" [disabled]="signUpForm.invalid">Create Account</button>
+          </div>
+        </form>
+        <div class="switch-form-link">
+          Already have an account? <a [routerLink]="['/login']">Sign In</a>
+        </div>
+      </div>
+    </ng-container>
+
+    <ng-template #signInTemplate>
+      <div class="form-container sign-in">
+        <h3>Sign In</h3>
+        <form [formGroup]="signInForm" (ngSubmit)="onSignIn()">
+          <div class="form-field">
+            <label for="signin-email">Email</label>
+            <input id="signin-email" type="email" formControlName="email" placeholder="Enter your email" />
+            <div class="error" *ngIf="signInForm.controls['email'].touched && signInForm.controls['email'].invalid">
+              <span *ngIf="signInForm.controls['email'].errors?.['required']">Email is required.</span>
+              <span *ngIf="signInForm.controls['email'].errors?.['email']">Please enter a valid email.</span>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label for="signin-password">Password</label>
+            <input id="signin-password" [type]="hidePassword ? 'password' : 'text'" formControlName="password" placeholder="Enter your password" />
+            <button type="button" (click)="hidePassword = !hidePassword">{{ hidePassword ? 'Show' : 'Hide' }}</button>
+            <div class="error" *ngIf="signInForm.controls['password'].touched && signInForm.controls['password'].invalid">
+              Password is required.
+            </div>
+          </div>
+
+          <div class="button-container">
+            <button type="submit" [disabled]="signInForm.invalid">Sign In</button>
+          </div>
+        </form>
+        <div class="switch-form-link">
+          Don't have an account? <a [routerLink]="['/login']" [queryParams]="{ createAccount: true }">Create Account</a>
+        </div>
+      </div>
     </ng-template>
-  </amplify-authenticator>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <!-- Replace with your actual hero image -->
+    <img src="assets/images/loginHero.png" alt="People making friends" class="hero-image" />
+  </div>
 </div>
