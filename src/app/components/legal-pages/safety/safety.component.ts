@@ -1,12 +1,18 @@
-import { Component } from '@angular/core';
-import { MaterialModule } from '../../../shared/material.module';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MaterialModule } from '../../../utils/material.module';
+import { scrollToTop } from '../../../utils/window.utils';
+
 
 @Component({
   selector: 'app-safety',
-  imports: [MaterialModule],
   templateUrl: './safety.component.html',
-  styleUrl: './safety.component.css'
+  styleUrls: ['./safety.component.css'],
+  standalone: true,
+  imports: [CommonModule, MaterialModule]
 })
-export class SafetyComponent {
-
+export class SafetyComponent implements OnInit {
+  ngOnInit(): void {
+    scrollToTop();
+  }
 }

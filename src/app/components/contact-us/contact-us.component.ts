@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { CommonModule } from '@angular/common';
 import { generateClient } from 'aws-amplify/api';
 import type { Schema } from '../../../../amplify/data/resource';
-import { MaterialModule } from '../../shared/material.module';
+import { MaterialModule } from '../../utils/material.module';
 import { MatError } from '@angular/material/form-field';
 
 @Component({

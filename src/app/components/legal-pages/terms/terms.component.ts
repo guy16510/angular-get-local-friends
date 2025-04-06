@@ -1,12 +1,17 @@
-import { Component } from '@angular/core';
-import { MaterialModule } from '../../../shared/material.module';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MaterialModule } from '../../../utils/material.module';
+import { scrollToTop } from '../../../utils/window.utils';
 
 @Component({
   selector: 'app-terms',
-  imports: [MaterialModule],
   templateUrl: './terms.component.html',
-  styleUrl: './terms.component.css'
+  styleUrls: ['./terms.component.css'],
+  standalone: true,
+  imports: [CommonModule, MaterialModule]
 })
-export class TermsComponent {
-
+export class TermsComponent implements OnInit {
+  ngOnInit(): void {
+    scrollToTop();
+  }
 }

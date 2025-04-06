@@ -1,12 +1,18 @@
-import { Component } from '@angular/core';
-import { MaterialModule } from '../../../shared/material.module';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { scrollToTop } from '../../../utils/window.utils';
+import { MaterialModule } from '../../../utils/material.module';
+
 
 @Component({
   selector: 'app-privacy',
-  imports: [MaterialModule],
   templateUrl: './privacy.component.html',
-  styleUrl: './privacy.component.css'
+  styleUrls: ['./privacy.component.css'],
+  standalone: true,
+  imports: [CommonModule, MaterialModule]
 })
-export class PrivacyComponent {
-
+export class PrivacyComponent implements OnInit {
+  ngOnInit(): void {
+    scrollToTop();
+  }
 }

@@ -8,7 +8,7 @@ export const routes: Routes = [
   },
   {
     path: 'account-setup',
-    canActivate: [authGuard],
+    // canActivate: [authGuard], maybe pass query params in the future?
     loadComponent: () => import('./components/account-setup/account-setup.component').then(m => m.AccountSetupComponent)
   },
   {

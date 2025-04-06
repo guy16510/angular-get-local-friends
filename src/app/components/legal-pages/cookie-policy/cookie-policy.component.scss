@@ -1,4 +1,6 @@
 .cookie-policy-container {
+  padding-bottom: 10px;
+  
     mat-card {
       word-wrap: break-word;
       overflow-wrap: break-word;
@@ -25,5 +27,11 @@
       display: inline-block;
       max-width: 100%;
       text-overflow: ellipsis;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .cookie-policy-container  {
+      width: 100%;
     }
   }

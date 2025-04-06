@@ -5,7 +5,7 @@ import { SearchState } from '../../store/states/search.state';
 import { GeolocationState } from '../../store/states/geolocation.state';
 import { FetchPreciseLocation, FetchIPLocation } from '../../store/actions/geolocation.action';
 import { CommonModule } from '@angular/common';
-import { MaterialModule } from '../../shared/material.module';
+import { MaterialModule } from '../../utils/material.module';
 import { ImageDisplayComponent } from '../image-display/image-display.component';
 import { LoadingComponent } from '../shared/loading/loading.component';
 import { FormsModule } from '@angular/forms';

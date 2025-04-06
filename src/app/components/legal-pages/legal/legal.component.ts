@@ -1,12 +1,17 @@
-import { Component } from '@angular/core';
-import { MaterialModule } from '../../../shared/material.module';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MaterialModule } from '../../../utils/material.module';
+import { scrollToTop } from '../../../utils/window.utils';
 
 @Component({
   selector: 'app-legal',
-  imports: [MaterialModule],
   templateUrl: './legal.component.html',
-  styleUrl: './legal.component.css'
+  styleUrls: ['./legal.component.css'],
+  standalone: true,
+  imports: [CommonModule, MaterialModule]
 })
-export class LegalComponent {
-
+export class LegalComponent implements OnInit {
+  ngOnInit(): void {
+    scrollToTop();
+  }
 }

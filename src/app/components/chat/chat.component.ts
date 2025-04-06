@@ -10,7 +10,7 @@ import { ChatState } from '../../store/states/chat.state';
 import { AuthState } from '../../store/states/auth.state';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { MaterialModule } from '../../shared/material.module';
+import { MaterialModule } from '../../utils/material.module';
 import { getNormalizedConversationId } from '../../utils/chat-utils';
 import { ImageDisplayComponent } from '../image-display/image-display.component';
 import { LoadingComponent } from '../shared/loading/loading.component';

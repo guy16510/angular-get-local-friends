@@ -13,9 +13,9 @@ p.disclaimer{
   line-height: 1.4;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .survey-container {
-    width: 90%;
+    width: 100%;
   }
 }
 

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { SURVEY_QUESTIONS, SurveyQuestion, QuestionType } from '../../data/surveyQuestions'; // adjust path as needed
-import { MaterialModule } from '../../shared/material.module';
+import { MaterialModule } from '../../utils/material.module';
 import { CommonModule } from '@angular/common';
 import { ChartD3Component } from '../shared/chart/chart-d3.component';
 

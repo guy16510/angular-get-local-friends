@@ -1,12 +1,17 @@
-import { Component } from '@angular/core';
-import { MaterialModule } from '../../../shared/material.module';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MaterialModule } from '../../../utils/material.module';
+import { scrollToTop } from '../../../utils/window.utils';
 
 @Component({
   selector: 'app-cookie-policy',
-  imports: [MaterialModule],
   templateUrl: './cookie-policy.component.html',
-  styleUrl: './cookie-policy.component.scss'
+  styleUrls: ['./cookie-policy.component.scss'],
+  standalone: true,
+  imports: [CommonModule, MaterialModule]
 })
-export class CookiePolicyComponent {
-
+export class CookiePolicyComponent implements OnInit {
+  ngOnInit(): void {
+    scrollToTop();
+  }
 }

@@ -1,6 +1,6 @@
 import { Component, Input, OnChanges, ElementRef, ViewChild, SimpleChanges, AfterViewInit } from '@angular/core';
 import * as d3 from 'd3';
-import { MaterialModule } from '../../../shared/material.module';
+import { MaterialModule } from '../../../utils/material.module';
 @Component({
   selector: 'app-chart-d3',
   template: `

@@ -6,7 +6,7 @@ import { CheckAuth } from '../../store/actions/auth.actions';
 import { GeolocationService } from '../../services/geolocation.service';
 import { SubmitUserProfile } from '../../store/actions/user-profile.actions';
 import { CommonModule } from '@angular/common';
-import { MaterialModule } from '../../shared/material.module';
+import { MaterialModule } from '../../utils/material.module';
 import { LoadingComponent } from '../shared/loading/loading.component';
 import { firstValueFrom, Observable } from 'rxjs';
 import { UserProfileState } from '../../store/states/user-profile.state';
@@ -41,6 +41,7 @@ export class AccountSetupComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     const identityId = this.store.selectSnapshot(AuthState.identityId);
     const userName = this.store.selectSnapshot(AuthState.userName);
+
     if (!identityId || !userName) {
       console.warn("🚨 No authenticated user detected, fetching authentication state...");
       await firstValueFrom(this.store.dispatch(new CheckAuth()));
@@ -48,7 +49,7 @@ export class AccountSetupComponent implements OnInit {
 
     await this.initializeUser();
     await this.fetchSurveyData();
-    await this.fetchLocation();
+    await this.requestPreciseLocation();
   }
 
   private async initializeUser(): Promise<void> {
@@ -57,7 +58,6 @@ export class AccountSetupComponent implements OnInit {
 
     if (!identityId || !userName) {
       console.error("User authentication state missing or incomplete.");
-      debugger;
       this.router.navigate(['/login'], { queryParams: { createAccount: true } });
       return;
     }
@@ -108,8 +108,24 @@ export class AccountSetupComponent implements OnInit {
       this.preciseLocationGranted = true;
       this.locationMessage = "✅ Precise location enabled.";
     } catch (error: any) {
-      console.error("❌ Error fetching precise location:", error);
-      this.locationMessage = "Could not get precise location. Please allow access.";
+      console.error("❌ Error fetching location:", error);
+      
+      // Check if the error is specifically a permission denied error
+      if (error.code === error.PERMISSION_DENIED || 
+          (this.geoError$ && (await firstValueFrom(this.geoError$)) === 'location_permission_denied')) {
+        this.locationMessage = `
+          Location access is important for finding local friends who share your interests.
+          Without it, you'll miss out on:
+          • Meeting people in your area
+          • Finding friends with similar hobbies nearby
+          • Local events and activities
+          • Better match quality based on distance
+          
+          Please enable location access in your browser settings to get the best experience.
+        `;
+      } else {
+        this.locationMessage = "Could not get precise location. Please allow access.";
+      }
     }
   }
 

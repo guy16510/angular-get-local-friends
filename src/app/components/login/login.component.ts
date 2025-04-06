@@ -1,20 +1,11 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { FormGroup, Validators, FormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { Hub } from '@aws-amplify/core';
-import { signUp } from '@aws-amplify/auth';
-import { AmplifyAuthenticatorModule } from '@aws-amplify/ui-angular';
+import { signUp, confirmSignUp } from '@aws-amplify/auth';
 import { Store } from '@ngxs/store';
-import { CheckAuth, Logout } from '../../store/actions/auth.actions';
+import { switchMap } from 'rxjs/operators';
+import { CheckAuth, Login } from '../../store/actions/auth.actions';
 import { CommonModule } from '@angular/common';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatIconModule } from '@angular/material/icon';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { AuthService } from '../../services/auth.service';
-import { MaterialModule } from '../../shared/material.module';
 
 @Component({
   selector: 'app-login',
@@ -22,36 +13,28 @@ import { MaterialModule } from '../../shared/material.module';
   imports: [
     RouterModule,
     ReactiveFormsModule,
-    CommonModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatCardModule,
-    MatIconModule,
-    MatProgressBarModule,
-    MaterialModule
+    CommonModule
   ],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
-export class LoginComponent implements OnInit, OnDestroy {
+export class LoginComponent implements OnInit {
   // Forms
   signUpForm: FormGroup;
   signInForm: FormGroup;
+  confirmForm: FormGroup;
   hidePassword = true;
   hideConfirmPassword = true;
 
-  // Toggle between sign in and sign up
+  // State toggles
   isSignUp = false;
-  private unsubscribeHub?: () => void;
-  private hasDispatchedLogout = false;
+  isConfirming = false;
 
   constructor(
     private store: Store,
     private router: Router,
     private route: ActivatedRoute,
-    private fb: FormBuilder,
-    private authService: AuthService
+    private fb: FormBuilder
   ) {
     this.signUpForm = this.fb.group({
       nickname: ['', Validators.required],
@@ -68,35 +51,17 @@ export class LoginComponent implements OnInit, OnDestroy {
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required]
     });
+
+    this.confirmForm = this.fb.group({
+      confirmationCode: ['', Validators.required]
+    });
   }
 
   ngOnInit() {
-    // Set isSignUp based on the query parameter (e.g., ?createAccount=true)
+    // Determine whether to show sign-up based on query param (?createAccount=true)
     this.route.queryParams.subscribe(params => {
-      this.isSignUp = params['createAccount'] ? true : false;
+      this.isSignUp = !!params['createAccount'];
     });
-
-    // Listen for Amplify authentication events
-    this.unsubscribeHub = Hub.listen('auth', ({ payload }) => {
-      if (payload.event === 'signedIn') {
-        this.store.dispatch(new CheckAuth()).subscribe(() => {
-          const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
-          this.router.navigate([returnUrl]);
-        });
-      }
-
-      if (payload.event === 'signedOut' && !this.hasDispatchedLogout) {
-        console.log('User signed out');
-        this.hasDispatchedLogout = true;
-        this.store.dispatch(new Logout());
-      }
-    });
-  }
-
-  ngOnDestroy() {
-    if (this.unsubscribeHub) {
-      this.unsubscribeHub();
-    }
   }
 
   async onSignUp() {
@@ -118,39 +83,60 @@ export class LoginComponent implements OnInit, OnDestroy {
         }
       });
       console.log('Sign up successful:', result);
-      // Optionally transition to a confirmation screen.
+      // After sign-up, set isConfirming to true so the user can enter the confirmation code.
+      this.isConfirming = true;
     } catch (error) {
       console.error('Error during sign up:', error);
     }
   }
 
-  onSignIn(): void {
-    if (this.signInForm.valid) {
-      const { email, password } = this.signInForm.value;
-      this.authService.login(email, password).subscribe({
-        next: () => {
-          this.router.navigate(['/']);
-        },
-        error: (error: Error) => {
-          console.error('Sign in error:', error);
-        }
-      });
+  async onConfirmSignUp() {
+    if (this.confirmForm.invalid) {
+      this.confirmForm.markAllAsTouched();
+      return;
+    }
+    const { confirmationCode } = this.confirmForm.value;
+    const email = this.signUpForm.get('email')?.value;
+    try {
+      const result = await confirmSignUp({ username: email, confirmationCode });
+      console.log('Confirmation successful:', result);
+      // After successful confirmation, show the sign-in form.
+      this.isConfirming = false;
+      this.isSignUp = false;
+    } catch (error) {
+      console.error('Error during confirmation:', error);
     }
   }
 
-  // Validators and helper methods (unchanged)
+    onSignIn(): void {
+      if (this.signInForm.valid) {
+        const { email, password } = this.signInForm.value;
+        this.store.dispatch(new Login(email, password))
+          .pipe(
+            switchMap(() => this.store.dispatch(new CheckAuth()))
+          )
+          .subscribe({
+            next: () => {
+              const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
+              this.router.navigate([returnUrl]);
+            },
+            error: (error: Error) => {
+              console.error('Sign in error:', error);
+            }
+          });
+      }
+    }
+
+  // Validators and helper methods remain the same.
   private passwordStrengthValidator(control: any): { [key: string]: any } | null {
     const password = control.value;
     if (!password) return null;
-
     const hasUpperCase = /[A-Z]+/.test(password);
     const hasLowerCase = /[a-z]+/.test(password);
     const hasNumeric = /[0-9]+/.test(password);
     const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]+/.test(password);
     const isLongEnough = password.length >= 8;
-
     const valid = hasUpperCase && hasLowerCase && hasNumeric && hasSpecialChar && isLongEnough;
-
     return valid ? null : {
       passwordStrength: {
         hasUpperCase,

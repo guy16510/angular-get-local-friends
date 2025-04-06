@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { FetchUnreadMessages, LoadConversations } from '../../store/actions/chat.actions';
 import { ChatState } from '../../store/states/chat.state';
 import { Conversation, ChatStateModel } from '../../models/chat';
-import { MaterialModule } from '../../shared/material.module';
+import { MaterialModule } from '../../utils/material.module';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ChatService } from '../../services/chat.service';

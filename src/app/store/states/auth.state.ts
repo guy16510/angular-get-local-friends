@@ -2,7 +2,7 @@
 import { State, Action, StateContext, Selector } from '@ngxs/store';
 import { Injectable } from '@angular/core';
 import { signIn, signOut, getCurrentUser, fetchAuthSession, fetchUserAttributes } from 'aws-amplify/auth';
-import { CheckAuth, Login, Logout, FetchIdentityId, SetAuthenticatedUser, SetUserProfileImage } from '../actions/auth.actions';
+import { CheckAuth, Login, Logout, SetUserProfileImage } from '../actions/auth.actions';
 
 export interface AuthStateModel {
   user: any;
@@ -120,7 +120,15 @@ export class AuthState {
     patchState({ loading: true, error: null });
     try {
       await signOut();
-      patchState({ user: null, identityId: null, loading: false });
+      patchState({
+        user: null,
+        identityId: null,
+        cognitoId: null,
+        userName: null,
+        profileImageUrl: null,
+        error: null,
+        loading: false
+      });
     } catch (error: any) {
       patchState({ loading: false, error: error.message || 'Error signing out' });
       throw error;

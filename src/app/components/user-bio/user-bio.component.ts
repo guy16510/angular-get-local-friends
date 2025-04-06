@@ -6,7 +6,7 @@ import { SearchState } from '../../store/states/search.state';
 import { AuthState } from '../../store/states/auth.state';
 import { SurveyState } from '../../store/states/survey.state';
 import { CommonModule } from '@angular/common';
-import { MaterialModule } from '../../shared/material.module';
+import { MaterialModule } from '../../utils/material.module';
 import { ImageDisplayComponent } from '../image-display/image-display.component';
 import { LoadUserProfile } from '../../store/actions/user-profile.actions';
 import { UserProfileState } from '../../store/states/user-profile.state';

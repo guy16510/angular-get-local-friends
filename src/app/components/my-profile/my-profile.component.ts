@@ -4,7 +4,7 @@ import { map, Observable } from 'rxjs';
 import { UserProfile } from '../../models/user-profile.model';
 import { UserProfileState } from '../../store/states/user-profile.state';
 import { LoadAnimalProfile, LoadUserProfile, SubmitUserProfile } from '../../store/actions/user-profile.actions';
-import { MaterialModule } from '../../shared/material.module';
+import { MaterialModule } from '../../utils/material.module';
 import { UploadComponent } from '../image-upload/image-upload.component';
 import { LoadingComponent } from '../shared/loading/loading.component';
 import { CommonModule } from '@angular/common';

@@ -6,100 +6,122 @@
       <p>Connect with people near you and make new friends.</p>
     </div>
 
-    <!-- Conditional Form Rendering -->
-    <ng-container *ngIf="isSignUp; else signInTemplate">
-      <div class="form-container sign-up">
-        <h3>Create Account</h3>
-        <form [formGroup]="signUpForm" (ngSubmit)="onSignUp()">
+    <!-- If confirmation is pending, show the confirmation form -->
+    <ng-container *ngIf="isConfirming; else mainForm">
+      <div class="form-container confirm">
+        <h3>Confirm Your Account</h3>
+        <form [formGroup]="confirmForm" (ngSubmit)="onConfirmSignUp()">
           <div class="form-field">
-            <label for="nickname">Nickname</label>
-            <input id="nickname" type="text" formControlName="nickname" placeholder="Enter your nickname" />
-            <div class="error" *ngIf="signUpForm.controls['nickname'].touched && signUpForm.controls['nickname'].invalid">
-              Nickname is required.
+            <label for="confirmationCode">Confirmation Code</label>
+            <input id="confirmationCode" type="text" formControlName="confirmationCode" placeholder="Enter the confirmation code" />
+            <div class="error" *ngIf="confirmForm.controls['confirmationCode'].touched && confirmForm.controls['confirmationCode'].invalid">
+              Confirmation code is required.
             </div>
           </div>
-
-          <div class="form-field">
-            <label for="signup-email">Email</label>
-            <input id="signup-email" type="email" formControlName="email" placeholder="Enter your email" />
-            <div class="error" *ngIf="signUpForm.controls['email'].touched && signUpForm.controls['email'].invalid">
-              <span *ngIf="signUpForm.controls['email'].errors?.['required']">Email is required.</span>
-              <span *ngIf="signUpForm.controls['email'].errors?.['email']">Please enter a valid email.</span>
-            </div>
-          </div>
-
-          <div class="form-field">
-            <label for="signup-password">Password</label>
-            <input id="signup-password" [type]="hidePassword ? 'password' : 'text'" formControlName="password" placeholder="Enter your password" />
-            <button type="button" (click)="hidePassword = !hidePassword">{{ hidePassword ? 'Show' : 'Hide' }}</button>
-            <div class="error" *ngIf="signUpForm.controls['password'].touched && signUpForm.controls['password'].invalid">
-              <div *ngIf="signUpForm.controls['password'].errors?.['required']">Password is required.</div>
-              <div *ngIf="signUpForm.controls['password'].errors?.['minlength']">Password must be at least 8 characters long.</div>
-              <div *ngIf="signUpForm.controls['password'].errors?.['passwordStrength']">
-                <div class="password-requirements">
-                  <p>Your password must include:</p>
-                  <ul>
-                    <li *ngFor="let error of getPasswordStrengthErrors()">{{ error }}</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="form-field">
-            <label for="confirmPassword">Confirm Password</label>
-            <input id="confirmPassword" [type]="hideConfirmPassword ? 'password' : 'text'" formControlName="confirmPassword" placeholder="Re-enter your password" />
-            <div class="error" *ngIf="getPasswordMatchError()">
-              {{ getPasswordMatchError() }}
-            </div>
-          </div>
-
           <div class="button-container">
-            <button type="submit" [disabled]="signUpForm.invalid">Create Account</button>
+            <button type="submit" [disabled]="confirmForm.invalid">Confirm Account</button>
           </div>
         </form>
-        <div class="switch-form-link">
-          Already have an account? <a [routerLink]="['/login']">Sign In</a>
-        </div>
       </div>
     </ng-container>
 
-    <ng-template #signInTemplate>
-      <div class="form-container sign-in">
-        <h3>Sign In</h3>
-        <form [formGroup]="signInForm" (ngSubmit)="onSignIn()">
-          <div class="form-field">
-            <label for="signin-email">Email</label>
-            <input id="signin-email" type="email" formControlName="email" placeholder="Enter your email" />
-            <div class="error" *ngIf="signInForm.controls['email'].touched && signInForm.controls['email'].invalid">
-              <span *ngIf="signInForm.controls['email'].errors?.['required']">Email is required.</span>
-              <span *ngIf="signInForm.controls['email'].errors?.['email']">Please enter a valid email.</span>
+    <!-- Main Form (Sign-Up or Sign-In) -->
+    <ng-template #mainForm>
+      <ng-container *ngIf="isSignUp; else signInTemplate">
+        <!-- Sign-Up Form -->
+        <div class="form-container sign-up">
+          <h3>Create Account</h3>
+          <form [formGroup]="signUpForm" (ngSubmit)="onSignUp()">
+            <div class="form-field">
+              <label for="nickname">Nickname</label>
+              <input id="nickname" type="text" formControlName="nickname" placeholder="Enter your nickname" />
+              <div class="error" *ngIf="signUpForm.controls['nickname'].touched && signUpForm.controls['nickname'].invalid">
+                Nickname is required.
+              </div>
             </div>
-          </div>
 
-          <div class="form-field">
-            <label for="signin-password">Password</label>
-            <input id="signin-password" [type]="hidePassword ? 'password' : 'text'" formControlName="password" placeholder="Enter your password" />
-            <button type="button" (click)="hidePassword = !hidePassword">{{ hidePassword ? 'Show' : 'Hide' }}</button>
-            <div class="error" *ngIf="signInForm.controls['password'].touched && signInForm.controls['password'].invalid">
-              Password is required.
+            <div class="form-field">
+              <label for="signup-email">Email</label>
+              <input id="signup-email" type="email" formControlName="email" placeholder="Enter your email" />
+              <div class="error" *ngIf="signUpForm.controls['email'].touched && signUpForm.controls['email'].invalid">
+                <span *ngIf="signUpForm.controls['email'].errors?.['required']">Email is required.</span>
+                <span *ngIf="signUpForm.controls['email'].errors?.['email']">Please enter a valid email.</span>
+              </div>
             </div>
-          </div>
 
-          <div class="button-container">
-            <button type="submit" [disabled]="signInForm.invalid">Sign In</button>
+            <div class="form-field">
+              <label for="signup-password">Password</label>
+              <input id="signup-password" [type]="hidePassword ? 'password' : 'text'" formControlName="password" placeholder="Enter your password" />
+              <button type="button" (click)="hidePassword = !hidePassword">{{ hidePassword ? 'Show' : 'Hide' }}</button>
+              <div class="error" *ngIf="signUpForm.controls['password'].touched && signUpForm.controls['password'].invalid">
+                <div *ngIf="signUpForm.controls['password'].errors?.['required']">Password is required.</div>
+                <div *ngIf="signUpForm.controls['password'].errors?.['minlength']">Password must be at least 8 characters long.</div>
+                <div *ngIf="signUpForm.controls['password'].errors?.['passwordStrength']">
+                  <div class="password-requirements">
+                    <p>Your password must include:</p>
+                    <ul>
+                      <li *ngFor="let error of getPasswordStrengthErrors()">{{ error }}</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label for="confirmPassword">Confirm Password</label>
+              <input id="confirmPassword" [type]="hideConfirmPassword ? 'password' : 'text'" formControlName="confirmPassword" placeholder="Re-enter your password" />
+              <div class="error" *ngIf="getPasswordMatchError()">
+                {{ getPasswordMatchError() }}
+              </div>
+            </div>
+
+            <div class="button-container">
+              <button type="submit" [disabled]="signUpForm.invalid">Create Account</button>
+            </div>
+          </form>
+          <div class="switch-form-link">
+            Already have an account? <a [routerLink]="['/login']">Sign In</a>
           </div>
-        </form>
-        <div class="switch-form-link">
-          Don't have an account? <a [routerLink]="['/login']" [queryParams]="{ createAccount: true }">Create Account</a>
         </div>
-      </div>
+      </ng-container>
+
+      <ng-template #signInTemplate>
+        <!-- Sign-In Form -->
+        <div class="form-container sign-in">
+          <h3>Sign In</h3>
+          <form [formGroup]="signInForm" (ngSubmit)="onSignIn()">
+            <div class="form-field">
+              <label for="signin-email">Email</label>
+              <input id="signin-email" type="email" formControlName="email" placeholder="Enter your email" />
+              <div class="error" *ngIf="signInForm.controls['email'].touched && signInForm.controls['email'].invalid">
+                <span *ngIf="signInForm.controls['email'].errors?.['required']">Email is required.</span>
+                <span *ngIf="signInForm.controls['email'].errors?.['email']">Please enter a valid email.</span>
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label for="signin-password">Password</label>
+              <input id="signin-password" [type]="hidePassword ? 'password' : 'text'" formControlName="password" placeholder="Enter your password" />
+              <button type="button" (click)="hidePassword = !hidePassword">{{ hidePassword ? 'Show' : 'Hide' }}</button>
+              <div class="error" *ngIf="signInForm.controls['password'].touched && signInForm.controls['password'].invalid">
+                Password is required.
+              </div>
+            </div>
+
+            <div class="button-container">
+              <button type="submit" [disabled]="signInForm.invalid">Sign In</button>
+            </div>
+          </form>
+          <div class="switch-form-link">
+            Don't have an account? <a [routerLink]="['/login']" [queryParams]="{ createAccount: true }">Create Account</a>
+          </div>
+        </div>
+      </ng-template>
     </ng-template>
   </div>
 
   <!-- RIGHT PANEL -->
   <div class="right-panel">
-    <!-- Replace with your actual hero image -->
     <img src="assets/images/loginHero.png" alt="People making friends" class="hero-image" />
   </div>
 </div>
