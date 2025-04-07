@@ -1,28 +1,53 @@
-<main class="account-setup-containe container">
+<main class="account-setup-container container">
   <mat-card>
-    <mat-card-title>Almost There!</mat-card-title>
+    <mat-card-title>Just One More Step</mat-card-title>
     <mat-card-content>
       <p>
-        Great job finishing the survey! Enable your location so we can connect you with local friends.
+        Thanks for completing the survey! To connect you with local friends, we need your exact location.
       </p>
 
+      <!-- Show status and the Try Again button if precise location isn’t obtained -->
+      <div *ngIf="!preciseLocationGranted" class="location-warning">
+        <p>{{ locationMessage }}</p>
+        <button mat-button (click)="onTryAgain()">Try Again</button>
+      </div>
 
-      <mat-card class="alert alert-warning mt-3" *ngIf="!preciseLocationGranted">
-        <p>
-          📍 We estimated your location by IP, but it may not be precise.
-          <br />
-          For best results, please enable precise location.
-        </p>
-      </mat-card>
-
-      <!-- Loading and Error States -->
+      <!-- Loading Indicator -->
       <app-loading *ngIf="geoLoading$ | async"></app-loading>
-      <mat-card class="alert alert-danger mt-3" *ngIf="(geoError$ || error$) | async">
-        <p>❌ {{ geoError$ | async }}</p>
+
+      <!-- Error Message -->
+      <mat-card class="alert alert-danger mt-3" *ngIf="(geoError$ | async) as error">
+        <p>❌ {{ error }}</p>
       </mat-card>
 
-      <button mat-raised-button color="accent" (click)="onSubmit()" class="btn-submit" [disabled]="loading$ | async">
-        Continue & Meet Local Friends!
+      <!-- Fallback input: Allow user to enter address manually -->
+      <div *ngIf="fallbackInputVisible">
+        <h3>Enter your city, state or address</h3>
+        <mat-form-field appearance="fill" style="width: 85%; padding-right: 1rem">
+          <input matInput placeholder="e.g., San Francisco, CA" [(ngModel)]="fallbackAddress" />
+        </mat-form-field>
+        <button mat-raised-button color="primary" (click)="searchFallbackLocation()">Search</button>
+      </div>
+
+      <!-- Display fallback search results using Material UI -->
+      <mat-list *ngIf="(fallbackLocations$ | async)?.length">
+        <h3 mat-subheader>Select your location from the results</h3>
+        <mat-list-item 
+          *ngFor="let loc of (fallbackLocations$ | async)" 
+          (click)="selectFallbackLocation(loc)" 
+          style="cursor: pointer;">
+          {{ loc.displayName }}
+        </mat-list-item>
+      </mat-list>
+
+      <button
+        mat-raised-button
+        color="accent"
+        (click)="onSubmit()"
+        class="btn-submit"
+        [disabled]="!lat || !lng || (loading$ | async)"
+      >
+        Get Started & Meet Local Friends
       </button>
     </mat-card-content>
   </mat-card>

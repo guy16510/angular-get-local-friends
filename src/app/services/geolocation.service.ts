@@ -31,50 +31,67 @@ export class GeolocationService {
             navigator.geolocation.getCurrentPosition(resolvePosition, rejectPosition, {
               ...options,
               timeout: 10000, // 10 second timeout
-              enableHighAccuracy: true
+              enableHighAccuracy: true,
             });
           });
-
           this.loadingSubject.next(false);
           resolve({
             lat: position.coords.latitude,
-            lng: position.coords.longitude
+            lng: position.coords.longitude,
           });
         } catch (error: any) {
-          // Handle CoreLocation specific error
-          if (error.code === error.POSITION_UNAVAILABLE || 
-              (error.message && error.message.includes('kCLErrorLocationUnknown'))) {
+          // Retry for POSITION_UNAVAILABLE or known CoreLocation errors
+          if (
+            error.code === error.POSITION_UNAVAILABLE ||
+            (error.message && error.message.includes('kCLErrorLocationUnknown'))
+          ) {
             if (attempt < this.MAX_RETRIES) {
-              console.warn(`[Geolocation] Location unknown. Attempt ${attempt}/${this.MAX_RETRIES}. Retrying...`);
-              await new Promise(resolve => setTimeout(resolve, this.RETRY_DELAY));
+              console.warn(`[Geolocation] Location unavailable. Attempt ${attempt}/${this.MAX_RETRIES}. Retrying...`);
+              await new Promise(res => setTimeout(res, this.RETRY_DELAY));
               await attemptGetLocation(attempt + 1);
               return;
             }
           }
-
-          // Handle other error types
-          this.loadingSubject.next(false);
-          switch (error.code) {
-            case error.PERMISSION_DENIED:
-              this.errorSubject.next('Location permission denied. Please enable location services in your device settings.');
-              break;
-            case error.TIMEOUT:
-              this.errorSubject.next('Location request timed out. Please check your internet connection.');
-              break;
-            case error.POSITION_UNAVAILABLE:
-              this.errorSubject.next('Location information is unavailable. Falling back to IP-based location.');
-              // Try IP-based location as fallback
-              try {
-                const ipLocation = await this.getIPLocation();
-                resolve(ipLocation);
-                return;
-              } catch (ipError) {
-                this.errorSubject.next('Both GPS and IP-based location failed.');
-                break;
-              }
-            default:
-              this.errorSubject.next('Failed to get location. Please try again later.');
+          // For PERMISSION_DENIED, prompt user with benefits and fallback
+          if (error.code === error.PERMISSION_DENIED) {
+            console.warn('Location permission denied. Falling back to IP-based location.');
+            try {
+              const ipLocation = await this.getIPLocation();
+              resolve(ipLocation);
+              return;
+            } catch (ipError) {
+              this.errorSubject.next(
+                'Location permission denied. Precise location improves your matches by connecting you with nearby friends. Please enable location services in your browser.'
+              );
+              this.loadingSubject.next(false);
+              reject(error);
+              return;
+            }
           }
+          // For TIMEOUT errors, don't retry automatically.
+          if (error.code === error.TIMEOUT) {
+            this.errorSubject.next('Location request timed out. Please check your internet connection.');
+            this.loadingSubject.next(false);
+            reject(error);
+            return;
+          }
+          // For POSITION_UNAVAILABLE after retries, fall back to IP location.
+          if (error.code === error.POSITION_UNAVAILABLE) {
+            this.errorSubject.next('Location information is unavailable. Falling back to IP-based location.');
+            try {
+              const ipLocation = await this.getIPLocation();
+              resolve(ipLocation);
+              return;
+            } catch (ipError) {
+              this.errorSubject.next('Both GPS and IP-based location failed.');
+              this.loadingSubject.next(false);
+              reject(error);
+              return;
+            }
+          }
+          // Default error handling
+          this.errorSubject.next('Failed to get location. Please try again later.');
+          this.loadingSubject.next(false);
           reject(error);
         }
       };
@@ -98,7 +115,7 @@ export class GeolocationService {
         lat: data.latitude,
         lng: data.longitude,
         city: data.city,
-        region: data.region
+        region: data.region,
       };
     } catch (error) {
       this.loadingSubject.next(false);
@@ -106,4 +123,27 @@ export class GeolocationService {
       throw new Error('Failed to get IP-based location.');
     }
   }
+  // geolocation.service.ts
+async getNominatimLocations(query: string): Promise<Array<{ lat: number; lng: number; displayName: string }>> {
+  this.loadingSubject.next(true);
+  this.errorSubject.next(null);
+  try {
+    const response = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(query)}`);
+    if (!response.ok) {
+      throw new Error(`Nominatim HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    this.loadingSubject.next(false);
+    // Map response items to a simpler location object
+    return data.map((item: any) => ({
+      lat: parseFloat(item.lat),
+      lng: parseFloat(item.lon),
+      displayName: item.display_name
+    }));
+  } catch (error) {
+    this.loadingSubject.next(false);
+    this.errorSubject.next('Failed to fetch location from Nominatim.');
+    throw new Error('Failed to fetch location from Nominatim.');
+  }
+}
 }
