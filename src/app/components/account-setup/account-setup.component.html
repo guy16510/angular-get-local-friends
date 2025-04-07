@@ -23,10 +23,10 @@
       <!-- Fallback input: Allow user to enter address manually -->
       <div *ngIf="fallbackInputVisible">
         <h3>Enter your city, state or address</h3>
-        <mat-form-field appearance="fill" style="width: 85%; padding-right: 1rem">
+        <mat-form-field appearance="fill">
           <input matInput placeholder="e.g., San Francisco, CA" [(ngModel)]="fallbackAddress" />
         </mat-form-field>
-        <button mat-raised-button color="primary" (click)="searchFallbackLocation()">Search</button>
+        <button mat-raised-button color="primary" (click)="searchFallbackLocation()"><mat-icon>search</mat-icon>Search</button>
       </div>
 
       <!-- Display fallback search results using Material UI -->

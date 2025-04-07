@@ -9,7 +9,7 @@ import { MaterialModule } from '../../utils/material.module';
 import { ImageDisplayComponent } from '../image-display/image-display.component';
 import { LoadingComponent } from '../shared/loading/loading.component';
 import { FormsModule } from '@angular/forms';
-import { Observable, Subject, takeUntil } from 'rxjs';
+import { Observable, Subject, takeUntil, of, map } from 'rxjs';
 import { Router, RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -21,6 +21,12 @@ import { MatGridListModule } from '@angular/material/grid-list';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { User } from '../../models/user.model';
+import { AuthState } from '../../store/states/auth.state';
+import { UserProfileState } from '../../store/states/user-profile.state';
+import { LoadUserProfile } from '../../store/actions/user-profile.actions';
+import { UserProfile } from '../../models/user-profile.model';
+import { UserProfileFacade } from '../../facades/user-profile.facade';
+
 
 @Component({
   selector: 'app-search',
@@ -52,7 +58,10 @@ export class SearchComponent implements OnInit, OnDestroy {
   hasMore$: Observable<boolean> = this.store.select(state => state.search.hasMore);
   currentPage$: Observable<number> = this.store.select(state => state.search.currentPage);
   totalPages$: Observable<number> = this.store.select(state => state.search.totalPages);
-  isPremium$: Observable<boolean> = this.store.select(state => state.search.isPremium);
+  // isPremium$: Observable<boolean> = this.store.select(state => state.search.isPremium);
+  isPremium$: Observable<boolean> = of(true);
+  userProfile$!: Observable<UserProfile | null>;
+
   
   // Geolocation state selectors
   location$: Observable<{ lat: number | null; lng: number | null; city: string | null }> = this.store.select(GeolocationState.location);
@@ -81,9 +90,12 @@ export class SearchComponent implements OnInit, OnDestroy {
   
   cols: number = 3;
 
-  constructor(private store: Store, private router: Router) {}
+  constructor(private store: Store, private router: Router, private userProfileFacade: UserProfileFacade) {}
 
   async ngOnInit() {
+    // ensure user has completed the survey.
+    this.userProfile$ = this.userProfileFacade.getCurrentUserProfile();
+
     // Try to get precise location first
     await this.store.dispatch(new FetchPreciseLocation()).toPromise();
     
@@ -93,29 +105,15 @@ export class SearchComponent implements OnInit, OnDestroy {
       await this.store.dispatch(new FetchIPLocation()).toPromise();
     }
 
+
     // Get the final location state
     const finalLocation = this.store.selectSnapshot(GeolocationState.location);
     this.lat = finalLocation.lat!;
     this.lng = finalLocation.lng!;
     this.city = finalLocation.city;
-
-    this.updateGridCols();
-    window.addEventListener('resize', this.updateGridCols.bind(this));
   }
 
   ngOnDestroy() {
-    window.removeEventListener('resize', this.updateGridCols.bind(this));
-  }
-
-  updateGridCols() {
-    const width = window.innerWidth;
-    if (width < 600) {
-      this.cols = 1;
-    } else if (width < 960) {
-      this.cols = 2;
-    } else {
-      this.cols = 3;
-    }
   }
 
   isOnline(lastOnlineAt: string) {

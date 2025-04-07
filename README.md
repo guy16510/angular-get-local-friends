@@ -143,9 +143,9 @@ This project is licensed under the MIT License.
 
 
 ## TODOs
-- User Profile:
-    - add spirit animal that user is, and what they are looking for
 - add social share badge.
+
+- facades.. Use? or modify checkAuth?
 
 - add permisions back to S3.. 
     - Can't get identity userid to have permissions to PUT.. Tried everything.

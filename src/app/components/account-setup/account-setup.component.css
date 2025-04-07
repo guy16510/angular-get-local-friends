@@ -61,6 +61,26 @@ mat-card p {
   font-weight: 600;
 }
 
+.mat-mdc-raised-button[disabled].mat-mdc-button-disabled, .mat-mdc-raised-button.mat-mdc-button-disabled.mat-mdc-button-disabled{
+  
+}
+
 .location-warning{
   padding-bottom: 1rem;
+}
+
+button.mdc-button.mdc-button--raised.mat-mdc-raised-button.mat-primary.mat-mdc-button-base{
+  float: left;
+  height: 60px;
+  width: 25%;
+}
+
+mat-form-field{
+  width: 75%;
+  float: left;
+  padding-right: 2%;
+}
+
+.mdc-list-group__subheader{
+  clear:both;
 }

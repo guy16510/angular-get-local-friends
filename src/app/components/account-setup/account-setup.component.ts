@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { Store } from '@ngxs/store';
+import { MatIconModule } from '@angular/material/icon';
 import { CheckAuth } from '../../store/actions/auth.actions';
 import { SubmitUserProfile } from '../../store/actions/user-profile.actions';
 import { FetchPreciseLocation, FetchNominatimLocation, SetManualLocation } from '../../store/actions/geolocation.action';
@@ -16,7 +17,7 @@ import { MatDialog } from '@angular/material/dialog';
 @Component({
   selector: 'app-account-setup',
   standalone: true,
-  imports: [CommonModule, MaterialModule, LoadingComponent, RouterModule],
+  imports: [CommonModule, MaterialModule, LoadingComponent, RouterModule, MatIconModule],
   templateUrl: './account-setup.component.html',
   styleUrls: ['./account-setup.component.css']
 })
