@@ -47,31 +47,194 @@
     <!-- RIGHT COLUMN (Desktop only): IMAGE -->
     <section class="bio-image">
       <app-image-display [identityId]="identityId"></app-image-display>
-      <!-- Premium Compatibility Section -->
-      <div class="premium-compatibility">
-        <h3 class="label">✨ Premium Compatibility Insights ✨</h3>
-        <div *ngIf="isPremiumUser; else upgradePrompt">
-          <p>{{ compatibilityInsights$ | async | json }}</p>
-        </div>
-        <ng-template #upgradePrompt>
-          <button (click)="promptUpgrade()" class="premium-button">
-            Unlock Compatibility Insights
-          </button>
-        </ng-template>
-        <div class="premiumInsights" *ngIf="isPremiumUser">
-          <ng-container *ngIf="loading$ | async">
-            <p>Loading compatibility insights...</p>
-          </ng-container>
-
-          <ng-container *ngIf="error$ | async as error">
-            <p class="error">Error: {{ error }}</p>
-          </ng-container>
-
-          <ng-container *ngIf="compatibilityInsights$ | async as insights">
-            <pre>{{ insights | json }}</pre>
-          </ng-container>
-        </div>
-      </div>
     </section>
   </div>
+  
 </main>
+<!-- Premium Insights -->
+<!-- Premium Insights -->
+<div class="premium-compatibility">
+  <h3 class="label">✨ Premium Compatibility Insights ✨</h3>
+  <div *ngIf="isPremiumUser; else upgradePrompt">
+    <!-- A sample ChartD3 instance using insights from the API -->
+    <app-chart-d3
+      [title]="'Compatibility Insights'"
+      [insightText]="'Unlock the full picture of your compatibility scores!'"
+      [chartType]="'bar'"
+      [data]="insightsData"
+      [labels]="insightsLabels"
+      [width]="500"
+      [height]="400"
+      [preview]="!isPremiumUser"
+      [showLegend]="true">
+    </app-chart-d3>
+  </div>
+  <ng-template #upgradePrompt>
+    <button (click)="promptUpgrade()" class="premium-button">
+      Unlock Compatibility Insights
+    </button>
+  </ng-template>
+
+  <div class="insights-grid">
+    <!-- Overall Compatibility (Pie Chart) -->
+    <div class="chart-card preview">
+      <h3>Overall Compatibility</h3>
+      <app-chart-d3
+        [data]="previewData.overallCompatibility.data"
+        [labels]="previewData.overallCompatibility.labels"
+        [chartType]="'pie'"
+        [title]="'Overall Compatibility'"
+        [insightText]="'Your overall compatibility score'"
+        [width]="300"
+        [height]="300"
+        [preview]="true">
+      </app-chart-d3>
+    </div>
+
+    <!-- Category Breakdown (Bar Chart) -->
+    <div class="chart-card preview">
+      <h3>Category Breakdown</h3>
+      <app-chart-d3
+        [data]="previewData.categoryBreakdown.data"
+        [labels]="previewData.categoryBreakdown.labels"
+        [chartType]="'bar'"
+        [title]="'Category Breakdown'"
+        [insightText]="'Detailed breakdown by category'"
+        [width]="500"
+        [height]="400"
+        [preview]="true">
+      </app-chart-d3>
+    </div>
+
+    <!-- Compatibility Radar (Radar Chart) -->
+    <div class="chart-card preview">
+      <h3>Compatibility Radar</h3>
+      <app-chart-d3
+        [data]="previewData.compatibilityRadar.data"
+        [labels]="previewData.compatibilityRadar.labels"
+        [chartType]="'radar'"
+        [title]="'Compatibility Radar'"
+        [insightText]="'Visual representation of compatibility'"
+        [width]="500"
+        [height]="500"
+        [preview]="true">
+      </app-chart-d3>
+    </div>
+
+    <!-- Match Analysis (Bubble Chart) -->
+    <div class="chart-card preview">
+      <h3>Match Analysis</h3>
+      <app-chart-d3
+        [data]="previewData.matchAnalysis.data"
+        [labels]="previewData.matchAnalysis.labels"
+        [chartType]="'bubble'"
+        [title]="'Match Analysis'"
+        [insightText]="'Detailed match analysis'"
+        [width]="500"
+        [height]="400"
+        [preview]="true">
+      </app-chart-d3>
+    </div>
+
+    <!-- Personality Traits (Bar Chart) -->
+    <div class="chart-card preview">
+      <h3>Personality Traits</h3>
+      <app-chart-d3 
+        [data]="previewData.personalityTraits.data"
+        [labels]="previewData.personalityTraits.labels"
+        [chartType]="'bar'"
+        [title]="'Personality Traits'"
+        [insightText]="'Your personality match analysis'"
+        [width]="500"
+        [height]="400"
+        [preview]="true">
+      </app-chart-d3>
+    </div>
+
+    <!-- Interest Overlap (Pie Chart) -->
+    <div class="chart-card preview">
+      <h3>Interest Overlap</h3>
+      <app-chart-d3 
+        [data]="previewData.interestOverlap.data"
+        [labels]="previewData.interestOverlap.labels"
+        [chartType]="'pie'"
+        [title]="'Interest Overlap'"
+        [insightText]="'Shared interests analysis'"
+        [width]="300"
+        [height]="300"
+        [preview]="true">
+      </app-chart-d3>
+    </div>
+
+    <!-- Communication Style (Radar Chart) -->
+    <div class="chart-card preview">
+      <h3>Communication Style</h3>
+      <app-chart-d3 
+        [data]="previewData.communicationStyle.data"
+        [labels]="previewData.communicationStyle.labels"
+        [chartType]="'radar'"
+        [title]="'Communication Style'"
+        [insightText]="'Communication compatibility analysis'"
+        [width]="500"
+        [height]="500"
+        [preview]="true">
+      </app-chart-d3>
+    </div>
+
+    <!-- Growth Potential (Bubble Chart) -->
+    <div class="chart-card preview">
+      <h3>Growth Potential</h3>
+      <app-chart-d3 
+        [data]="previewData.growthPotential.data"
+        [labels]="previewData.growthPotential.labels"
+        [chartType]="'bubble'"
+        [title]="'Growth Potential'"
+        [insightText]="'Relationship growth analysis'"
+        [width]="500"
+        [height]="400"
+        [preview]="true">
+      </app-chart-d3>
+    </div>
+  </div>
+
+  <!-- Enhanced Summary Section -->
+  <div class="insights-summary">
+    <div class="summary-grid">
+      <div class="summary-item">
+        <div class="summary-item">
+          <div class="value">{{ overallMatch }}%</div>
+          <div class="label">Overall Match</div>
+        </div>              
+      </div>
+      <div class="summary-item">
+        <div class="value">{{ insightsData.length }}</div>
+        <div class="label">Common Interests</div>
+      </div>
+      <div class="summary-item">
+        <div class="value">{{ topCategory?.percentage }}%</div>
+        <div class="label">Strongest Match</div>
+      </div>
+      
+
+      <div class="summary-item">
+        <div class="value">{{ lowestCategory?.percentage }}%</div>
+        <div class="label">Growth Area</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Enhanced Upgrade Prompt -->
+  <div class="upgrade-prompt">
+    <h3>Unlock Your Full Compatibility Profile</h3>
+    <p>Get detailed insights into your compatibility, including personality traits, communication styles, and growth potential. Premium members receive:</p>
+    <ul>
+      <li>Detailed compatibility analysis across 8 key categories</li>
+      <li>Personalized recommendations for better connections</li>
+      <li>Growth opportunities and areas for improvement</li>
+      <li>Advanced matching algorithms for better matches</li>
+    </ul>
+    <!-- <button mat-raised-button color="primary" (click)="promptUpgrade()">
+      Upgrade to Premium
+    </button> -->
+  </div>
+</div>
