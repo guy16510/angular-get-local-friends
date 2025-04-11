@@ -11,7 +11,7 @@ import { CompatibilityState } from '../../store/states/compatibility.state';
 import { GenerateCompatibilityInsights } from '../../store/actions/compatibility.actions';
 import { ChartD3Component } from '../shared/chart/chart-d3.component';
 // Import the interface
-import { CompatibilityInsights } from '../../models/compatibility-insights.model';
+import { CompatibilityInsights } from '../../models/compatibility';
 import { AuthState } from '../../store/states/auth.state';
 
 @Component({

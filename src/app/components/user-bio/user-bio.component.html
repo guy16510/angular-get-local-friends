@@ -52,7 +52,6 @@
   
 </main>
 <!-- Premium Insights -->
-<!-- Premium Insights -->
 <div class="premium-compatibility">
   <h3 class="label">✨ Premium Compatibility Insights ✨</h3>
   <div *ngIf="isPremiumUser; else upgradePrompt">
@@ -63,7 +62,7 @@
       [chartType]="'bar'"
       [data]="insightsData"
       [labels]="insightsLabels"
-      [width]="500"
+      [width]="800"
       [height]="400"
       [preview]="!isPremiumUser"
       [showLegend]="true">
