@@ -1,6 +1,6 @@
 <main class="user-bio-container" *ngIf="profile$ | async as profile">
   <div class="bio-layout">
-    <!-- LEFT COLUMN: USER INFO -->
+
     <section class="bio-info">
       <div class="about-section">
         <div class="about-text">
@@ -54,145 +54,183 @@
 <!-- Premium Insights -->
 <div class="premium-compatibility">
   <h3 class="label">✨ Premium Compatibility Insights ✨</h3>
-  <div *ngIf="isPremiumUser; else upgradePrompt">
-    <!-- A sample ChartD3 instance using insights from the API -->
-    <app-chart-d3
+  <!-- <div *ngIf="isPremiumUser; else upgradePrompt">
+    <div style="width: 100%; height: 400px;">
+      <app-chart-d3
       [title]="'Compatibility Insights'"
       [insightText]="'Unlock the full picture of your compatibility scores!'"
       [chartType]="'bar'"
       [data]="insightsData"
       [labels]="insightsLabels"
-      [width]="800"
-      [height]="400"
       [preview]="!isPremiumUser"
       [showLegend]="true">
     </app-chart-d3>
+    </div>
   </div>
   <ng-template #upgradePrompt>
     <button (click)="promptUpgrade()" class="premium-button">
       Unlock Compatibility Insights
     </button>
-  </ng-template>
+  </ng-template> -->
 
   <div class="insights-grid">
+    <div class="chart-card preview">
+    <div style="width: 100%; height: 400px;">
+      <app-chart-d3
+      [title]="'Compatibility Insights'"
+      [insightText]="'Unlock the full picture of your compatibility scores!'"
+      [chartType]="'bar'"
+      [data]="insightsData"
+      [labels]="insightsLabels"
+      [preview]="!isPremiumUser"
+      [showLegend]="true">
+    </app-chart-d3>
+    </div>
+  </div>
+
+  <div class="chart-card preview">
+    <div style="width: 100%; height: 400px;">
+      <div class="chart-card summary-card">
+        <h3>
+          <mat-icon color="primary">trending_up</mat-icon>
+          Growth Potential
+        </h3>
+        <p class="subtitle">Relationship growth analysis</p>
+        <div class="summary-values">
+          <div>
+            <mat-icon class="icon">favorite</mat-icon>
+            <span>Overall Match:</span>
+            <strong>{{ overallMatch | number:'1.0-0' }}%</strong>
+          </div>
+          <div>
+            <mat-icon class="icon">emoji_objects</mat-icon>
+            <span>Common Interests:</span>
+            <strong>{{ insightsData.length }}</strong>
+          </div>
+          <div>
+            <mat-icon class="icon">star</mat-icon>
+            <span>Strongest Match:</span>
+            <strong>{{ topCategory?.percentage | number:'1.0-0' }}%</strong>
+          </div>
+          <div>
+            <mat-icon class="icon">trending_down</mat-icon>
+            <span>Growth Area:</span>
+            <strong>{{ lowestCategory?.percentage | number:'1.0-0' }}%</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
     <!-- Overall Compatibility (Pie Chart) -->
     <div class="chart-card preview">
-      <h3>Overall Compatibility</h3>
-      <app-chart-d3
+      <div style="width: 100%; height: 400px;">
+        <app-chart-d3
         [data]="previewData.overallCompatibility.data"
         [labels]="previewData.overallCompatibility.labels"
         [chartType]="'pie'"
         [title]="'Overall Compatibility'"
         [insightText]="'Your overall compatibility score'"
-        [width]="300"
-        [height]="300"
-        [preview]="true">
+        [preview]="!isPremiumUser">
       </app-chart-d3>
+      </div>
     </div>
 
     <!-- Category Breakdown (Bar Chart) -->
     <div class="chart-card preview">
-      <h3>Category Breakdown</h3>
-      <app-chart-d3
+      <div style="width: 100%; height: 400px;">
+        <app-chart-d3
         [data]="previewData.categoryBreakdown.data"
         [labels]="previewData.categoryBreakdown.labels"
         [chartType]="'bar'"
         [title]="'Category Breakdown'"
         [insightText]="'Detailed breakdown by category'"
-        [width]="500"
-        [height]="400"
-        [preview]="true">
+        [preview]="!isPremiumUser">
       </app-chart-d3>
+      </div>
     </div>
 
     <!-- Compatibility Radar (Radar Chart) -->
     <div class="chart-card preview">
-      <h3>Compatibility Radar</h3>
-      <app-chart-d3
+      <div style="width: 100%; height: 400px;">
+        <app-chart-d3
         [data]="previewData.compatibilityRadar.data"
         [labels]="previewData.compatibilityRadar.labels"
         [chartType]="'radar'"
         [title]="'Compatibility Radar'"
         [insightText]="'Visual representation of compatibility'"
-        [width]="500"
-        [height]="500"
-        [preview]="true">
+        [preview]="!isPremiumUser">
       </app-chart-d3>
+      </div>
     </div>
 
     <!-- Match Analysis (Bubble Chart) -->
     <div class="chart-card preview">
-      <h3>Match Analysis</h3>
-      <app-chart-d3
+      <div style="width: 100%; height: 400px;">
+        <app-chart-d3
         [data]="previewData.matchAnalysis.data"
         [labels]="previewData.matchAnalysis.labels"
         [chartType]="'bubble'"
         [title]="'Match Analysis'"
         [insightText]="'Detailed match analysis'"
-        [width]="500"
-        [height]="400"
-        [preview]="true">
+        [preview]="!isPremiumUser">
       </app-chart-d3>
+      </div>
     </div>
 
     <!-- Personality Traits (Bar Chart) -->
     <div class="chart-card preview">
-      <h3>Personality Traits</h3>
-      <app-chart-d3 
+      <div style="width: 100%; height: 400px;">
+        <app-chart-d3
         [data]="previewData.personalityTraits.data"
         [labels]="previewData.personalityTraits.labels"
         [chartType]="'bar'"
         [title]="'Personality Traits'"
         [insightText]="'Your personality match analysis'"
-        [width]="500"
-        [height]="400"
-        [preview]="true">
+        [preview]="!isPremiumUser">
       </app-chart-d3>
+      </div>
     </div>
 
     <!-- Interest Overlap (Pie Chart) -->
     <div class="chart-card preview">
-      <h3>Interest Overlap</h3>
-      <app-chart-d3 
+      <div style="width: 100%; height: 400px;">
+        <app-chart-d3
         [data]="previewData.interestOverlap.data"
         [labels]="previewData.interestOverlap.labels"
         [chartType]="'pie'"
         [title]="'Interest Overlap'"
         [insightText]="'Shared interests analysis'"
-        [width]="300"
-        [height]="300"
-        [preview]="true">
-      </app-chart-d3>
+        [preview]="!isPremiumUser">
+      </app-chart-d3></div>
     </div>
 
     <!-- Communication Style (Radar Chart) -->
     <div class="chart-card preview">
-      <h3>Communication Style</h3>
-      <app-chart-d3 
+      <div style="width: 100%; height: 400px;">
+        <app-chart-d3
         [data]="previewData.communicationStyle.data"
         [labels]="previewData.communicationStyle.labels"
         [chartType]="'radar'"
         [title]="'Communication Style'"
         [insightText]="'Communication compatibility analysis'"
-        [width]="500"
-        [height]="500"
-        [preview]="true">
+        [preview]="!isPremiumUser">
       </app-chart-d3>
+      </div>
     </div>
 
     <!-- Growth Potential (Bubble Chart) -->
     <div class="chart-card preview">
-      <h3>Growth Potential</h3>
-      <app-chart-d3 
+      <div style="width: 100%; height: 400px;">
+        <app-chart-d3
         [data]="previewData.growthPotential.data"
         [labels]="previewData.growthPotential.labels"
         [chartType]="'bubble'"
         [title]="'Growth Potential'"
         [insightText]="'Relationship growth analysis'"
-        [width]="500"
-        [height]="400"
-        [preview]="true">
+        [preview]="!isPremiumUser">
       </app-chart-d3>
+      </div>
     </div>
   </div>
 
@@ -232,8 +270,8 @@
       <li>Growth opportunities and areas for improvement</li>
       <li>Advanced matching algorithms for better matches</li>
     </ul>
-    <!-- <button mat-raised-button color="primary" (click)="promptUpgrade()">
+    <button mat-raised-button color="primary" (click)="promptUpgrade()">
       Upgrade to Premium
-    </button> -->
+    </button>
   </div>
 </div>

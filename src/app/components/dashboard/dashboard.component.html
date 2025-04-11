@@ -1,13 +1,13 @@
 <div class="dashboard-container" fxLayout="row wrap" fxLayoutGap="16px">
   <!-- Composite Overall Profile Chart -->
-  <app-chart-d3
+  <div style="width: 100%; height: 400px;">
+    <app-chart-d3
     [title]="'Overall Profile Composite'"
     chartType="bar"
     [data]="compositeChartData"
-    [labels]="compositeChartLabels"
-    [width]="500"
-    [height]="300">
+    [labels]="compositeChartLabels">
   </app-chart-d3>
+  </div>
 
   <div *ngFor="let insight of questionInsights" 
   class="question-insight" 

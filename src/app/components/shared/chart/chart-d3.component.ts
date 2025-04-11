@@ -1,12 +1,14 @@
-import { 
-  Component, 
-  Input, 
-  OnChanges, 
-  ElementRef, 
-  ViewChild, 
-  SimpleChanges, 
-  AfterViewInit, 
-  ChangeDetectionStrategy 
+import {
+  Component,
+  Input,
+  OnChanges,
+  ElementRef,
+  ViewChild,
+  SimpleChanges,
+  AfterViewInit,
+  OnDestroy,
+  ChangeDetectionStrategy,
+  NgZone,
 } from '@angular/core';
 import * as d3 from 'd3';
 import { MaterialModule } from '../../../utils/material.module';
@@ -16,68 +18,61 @@ type ChartType = 'pie' | 'bar' | 'radar' | 'bubble';
 
 @Component({
   selector: 'app-chart-d3',
-  template: `
-    <mat-card class="chart-card" [class.preview]="preview">
-      <mat-card-header>
-        <mat-card-title>{{ title }}</mat-card-title>
-        <mat-card-subtitle *ngIf="insightText">{{ insightText }}</mat-card-subtitle>
-      </mat-card-header>
-      <mat-card-content>
-        <div class="chart-container" #chartContainer>
-          <svg #chart></svg>
-          <div *ngIf="preview" class="preview-overlay">
-             <p>Preview mode. Upgrade to see full insights.</p>
-          </div>
-        </div>
-        <div class="chart-legend" *ngIf="showLegend">
-          <!-- Optionally, build a legend here -->
-        </div>
-      </mat-card-content>
-    </mat-card> 
-  `,
+  templateUrl: './chart-d3.component.html',
   styleUrls: ['./chart-d3.component.scss'],
   imports: [MaterialModule, CommonModule],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ChartD3Component implements OnChanges, AfterViewInit {
+export class ChartD3Component implements OnChanges, AfterViewInit, OnDestroy {
   @Input() title: string = '';
   @Input() insightText?: string;
   @Input() chartType: ChartType = 'pie';
-  /**
-   * For charts that expect a numeric array.
-   * For complex chart types (e.g. bubble), you may want to pass an array of objects.
-   */
   @Input() data: number[] = [];
   @Input() labels: string[] = [];
-  @Input() width: number = 300;
-  @Input() height: number = 300;
   @Input() showLegend: boolean = false;
-  /**
-   * When set to true, the component uses mock data and overlays a preview mask.
-   */
   @Input() preview: boolean = false;
 
   @ViewChild('chart', { static: true }) chartElement!: ElementRef<SVGSVGElement>;
-  private svg!: d3.Selection<SVGSVGElement, unknown, null, undefined>;
+  @ViewChild('chartContainer', { static: true }) chartContainer!: ElementRef<HTMLDivElement>;
 
-  // Mock data for preview mode (for pie/bar charts)
+  private resizeObserver!: ResizeObserver;
+  private resizeTimeout: any;
+  private svg!: d3.Selection<SVGSVGElement, unknown, null, undefined>;
+  private width: number = 300;
+  private height: number = 300;
+
+  constructor(private ngZone: NgZone) {}
+
   private mockData: number[] = [73.33, 88.89, 50, 80, 57.14, 44.44, 100, 66.67, 85.71, 46.67];
   private mockLabels: string[] = [
-    'Friendship',
-    'Interests',
-    'Social Energy',
-    'Communication',
-    'Spending',
-    'Work',
-    'Entertainment',
-    'Lifestyle',
-    'Fitness',
-    'Preferences'
+    'Friendship', 'Interests', 'Social Energy', 'Communication',
+    'Spending', 'Work', 'Entertainment', 'Lifestyle', 'Fitness', 'Preferences'
   ];
 
   ngAfterViewInit(): void {
-    this.initializeChart();
+    this.ngZone.runOutsideAngular(() => {
+      setTimeout(() => {
+        this.resizeObserver = new ResizeObserver(() => {
+          clearTimeout(this.resizeTimeout);
+          this.resizeTimeout = setTimeout(() => {
+            const rect = this.chartContainer.nativeElement.getBoundingClientRect();
+            if (rect.width && rect.height) {
+              this.width = rect.width;
+              this.height = rect.height;
+              this.initializeChart();
+            }
+          }, 50);
+        });
+
+        this.resizeObserver.observe(this.chartContainer.nativeElement);
+      });
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.resizeObserver?.disconnect();
+    clearTimeout(this.resizeTimeout);
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -87,42 +82,33 @@ export class ChartD3Component implements OnChanges, AfterViewInit {
   }
 
   private initializeChart(): void {
-    this.svg = d3.select<SVGSVGElement, unknown>(this.chartElement.nativeElement)
-      .attr('width', this.width)
-      .attr('height', this.height);
+    this.svg = d3.select(this.chartElement.nativeElement)
+    .attr('viewBox', `-20 -20 ${this.width + 40} ${this.height + 40}`) // 👈 padding
+    .attr('preserveAspectRatio', 'none')
+    .classed('responsive-svg', true);
+
     this.updateChart();
   }
 
   private updateChart(): void {
-    if (!this.svg) { return; }
-    // Clear previous contents.
+    if (!this.svg) return;
     this.svg.selectAll('*').remove();
 
-    // For preview (or if no data passed), use the mock values.
     const chartData = (this.preview || this.data.length === 0) ? this.mockData : this.data;
     const chartLabels = (this.preview || this.labels.length === 0) ? this.mockLabels : this.labels;
 
     switch (this.chartType) {
-      case 'pie':
-        this.drawPieChart(chartData, chartLabels);
-        break;
-      case 'bar':
-        this.drawBarChart(chartData, chartLabels);
-        break;
-      case 'radar':
-        this.drawRadarChart(chartData, chartLabels);
-        break;
-      case 'bubble':
-        this.drawBubbleChart(chartData, chartLabels);
-        break;
-      default:
-        console.warn(`Unsupported chart type: ${this.chartType}`);
-        break;
+      case 'pie': this.drawPieChart(chartData, chartLabels); break;
+      case 'bar': this.drawBarChart(chartData, chartLabels); break;
+      case 'radar': this.drawRadarChart(chartData, chartLabels); break;
+      case 'bubble': this.drawBubbleChart(chartData, chartLabels); break;
+      default: console.warn(`Unsupported chart type: ${this.chartType}`); break;
     }
   }
 
   private drawPieChart(data: number[], labels: string[]): void {
-    const radius = Math.min(this.width, this.height) / 2;
+    const padding = 30;
+    const radius = Math.min(this.width, this.height) / 2 - padding;
     const g = this.svg.append('g')
       .attr('transform', `translate(${this.width / 2}, ${this.height / 2})`);
 
@@ -268,46 +254,47 @@ export class ChartD3Component implements OnChanges, AfterViewInit {
   }
 
   private drawBubbleChart(data: number[], labels: string[]): void {
-    const width = this.width;
-    const height = this.height;
-    // Use a square root scale to compute bubble radii.
+    const radiusPadding = 5;
     const maxData = d3.max(data) || 1;
+  
     const radiusScale = d3.scaleSqrt().domain([0, maxData]).range([10, 50]);
-
-    // Create nodes for each data value.
+  
     const nodes = data.map((d, i) => ({
       index: i,
       radius: radiusScale(d),
       value: d,
-      label: labels[i]
+      label: labels[i],
+      x: Math.random() * this.width,
+      y: Math.random() * this.height,
     }));
-
-    // Use a force simulation to position bubbles.
+  
     const simulation = d3.forceSimulation(nodes)
-      .force('center', d3.forceCenter(width / 2, height / 2))
+      .force('center', d3.forceCenter(this.width / 2, this.height / 2))
       .force('charge', d3.forceManyBody().strength(5))
-      .force('collision', d3.forceCollide().radius((d: any) => d.radius + 5))
+      .force('collision', d3.forceCollide().radius((d: any) => d.radius + radiusPadding))
       .stop();
-
-    // Run the simulation for a fixed number of iterations.
+  
     for (let i = 0; i < 300; i++) {
       simulation.tick();
     }
-
-    // Create a group for each node.
+  
     const node = this.svg.selectAll('.node')
       .data(nodes)
       .enter()
       .append('g')
       .attr('class', 'node')
-      .attr('transform', (d: any) => `translate(${d.x}, ${d.y})`);
-
+      .attr('transform', (d: any) => {
+        const clampedX = Math.max(d.radius, Math.min(this.width - d.radius, d.x));
+        const clampedY = Math.max(d.radius, Math.min(this.height - d.radius, d.y));
+        return `translate(${clampedX}, ${clampedY})`;
+      });
+  
     node.append('circle')
       .attr('r', (d: any) => d.radius)
       .attr('fill', (d, i) => d3.schemeCategory10[i % 10])
       .attr('stroke', '#fff')
       .attr('stroke-width', 1);
-
+  
     node.append('text')
       .attr('dy', 4)
       .attr('text-anchor', 'middle')
