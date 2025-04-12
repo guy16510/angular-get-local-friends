@@ -16,7 +16,7 @@
   .header-title {
     font-size: 2.5rem;
     font-weight: 700;
-    color: $primary;
+    // color: $primary;
     margin-bottom: 0.5rem;
     background: linear-gradient(135deg, $primary, #64b5f6);
     -webkit-background-clip: text;
@@ -25,7 +25,7 @@
 
   .header-subtitle {
     font-size: 1.2rem;
-    color: rgba(#212121, 0.7);
+    // color: rgba(#212121, 0.7);
   }
 }
 
@@ -33,7 +33,6 @@
   padding: 1.5rem;
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10px);
   min-height: 160px;
 
@@ -136,7 +135,7 @@
 
           .premium-badge {
             background: linear-gradient(135deg, #ffd700, #ffa000);
-            color: #fff;
+            // color: #fff;
             padding: 2px 6px;
             border-radius: 12px;
             font-size: 0.7rem;
@@ -200,13 +199,13 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    color: rgba(#212121, 0.7);
+    // color: rgba(#212121, 0.7);
     font-size: 0.9rem;
     justify-content: center;
     margin-top: 1rem;
 
     mat-icon {
-      color: #64b5f6;
+      // color: #64b5f6;
     }
   }
 }
@@ -214,7 +213,7 @@
 .users-section {
   .section-title {
     font-size: 1.8rem;
-    color: $primary;
+    // color: $primary;
     margin-bottom: 1.5rem;
     text-align: center;
   }
@@ -259,7 +258,7 @@
       align-items: center;
       gap: 4px;
       font-size: 0.8rem;
-      color: white;
+      // color: white;
 
       @media (max-width: 768px) {
         top: 5px;
@@ -279,8 +278,6 @@
 
   .user-info {
     padding: 1rem;
-    background: white;
-
     @media (max-width: 768px) {
       padding: 0.75rem;
     }
@@ -288,7 +285,7 @@
     h3 {
       margin: 0;
       font-size: 1.1rem;
-      color: #212121;
+      // color: #212121;
       margin-bottom: 0.5rem;
 
       @media (max-width: 768px) {
@@ -300,7 +297,7 @@
     p {
       margin: 0;
       font-size: 0.9rem;
-      color: rgba(#212121, 0.7);
+      // color: rgba(#212121, 0.7);
       display: flex;
       align-items: center;
       gap: 4px;
@@ -359,12 +356,10 @@
     font-size: 3rem;
     width: 3rem;
     height: 3rem;
-    color: rgba(#212121, 0.5);
     margin-bottom: 1rem;
   }
 
   p {
-    color: rgba(#212121, 0.7);
     font-size: 1.1rem;
   }
 }
@@ -377,14 +372,9 @@
 
   .search-header {
     .header-title {
-      color: $primary-dark;
       background: linear-gradient(135deg, $primary-dark, #64b5f6);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-    }
-
-    .header-subtitle {
-      color: rgba(#ffffff, 0.7);
     }
   }
 
@@ -398,23 +388,23 @@
   }
 
   .location-info {
-    color: rgba(#ffffff, 0.7);
+    // color: rgba(#ffffff, 0.7);
   }
 
   .users-section {
     .section-title {
-      color: $primary-dark;
+      // color: $primary-dark;
     }
   }
 
   .user-card {
     .user-info {
       h3 {
-        color: $primary-dark;
+        // color: $primary-dark;
       }
 
       p {
-        color: rgba(#ffffff, 0.7);
+        // color: rgba(#ffffff, 0.7);
       }
     }
   }
@@ -423,11 +413,11 @@
     background: rgba(30, 30, 30, 0.9);
 
     mat-icon {
-      color: rgba(#ffffff, 0.5);
+      // color: rgba(#ffffff, 0.5);
     }
 
     p {
-      color: rgba(#ffffff, 0.7);
+      // color: rgba(#ffffff, 0.7);
     }
   }
 }
@@ -471,4 +461,30 @@
       grid-template-columns: 1fr;
     }
   }
-} 
+}
+
+// Append style for disabled search content
+.search-content.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+  filter: grayscale(50%);
+}
+
+.noProfile {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  width: 100%;
+  div{
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 20px;
+    margin: 20px auto;
+    max-width: 400px;
+    // background-color: #fafafa;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+}

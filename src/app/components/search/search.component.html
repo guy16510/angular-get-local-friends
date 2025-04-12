@@ -4,8 +4,8 @@
     <p class="header-subtitle">Discover people around you in an instant</p>
   </div>
 
-  <div class="search-content">
-    <mat-card class="search-card modern-card">
+  <div class="search-content" [ngClass]="{'disabled': !(userProfile$ | async)}">   
+     <mat-card class="search-card modern-card">
       <div class="search-form">
         <div class="search-row">
           <!-- Left Column -->
@@ -19,15 +19,6 @@
                 <mat-option [value]="50">50 mi</mat-option>
               </mat-select>
             </mat-form-field>
-
-            <!-- <mat-form-field appearance="outline">
-              <mat-label>Sort By</mat-label>
-              <mat-select [(ngModel)]="sortBy" name="sortBy">
-                <mat-option value="distance">Distance</mat-option>
-                <mat-option value="age">Age</mat-option>
-                <mat-option value="name">Name</mat-option>
-              </mat-select>
-            </mat-form-field> -->
           </div>
 
           <!-- Right Column -->
@@ -161,4 +152,10 @@
       </div>
     </ng-container>
   </div>
+
+  <div class="noProfile" *ngIf="!(userProfile$ | async)">
+    <div>To use Search, Please: <a class="cta-btn" routerLink="/survey" routerLinkActive="active">Complete the Survey</a>
+    </div>
+  </div>
+
 </main>

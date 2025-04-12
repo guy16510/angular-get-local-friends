@@ -1,29 +1,39 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { Store } from '@ngxs/store';
-import { AuthState } from '../../store/states/auth.state';
+import { MatIconModule } from '@angular/material/icon';
 import { CheckAuth } from '../../store/actions/auth.actions';
-import { GeolocationService } from '../../services/geolocation.service';
 import { SubmitUserProfile } from '../../store/actions/user-profile.actions';
+import { FetchPreciseLocation, FetchNominatimLocation, SetManualLocation } from '../../store/actions/geolocation.action';
+import { GenerateCompatibilityInsights } from '../../store/actions/compatibility.actions';
+import { firstValueFrom, Observable } from 'rxjs';
+import { AuthState } from '../../store/states/auth.state';
+import { UserProfileState } from '../../store/states/user-profile.state';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../utils/material.module';
 import { LoadingComponent } from '../shared/loading/loading.component';
-import { firstValueFrom, Observable } from 'rxjs';
-import { UserProfileState } from '../../store/states/user-profile.state';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-account-setup',
+  standalone: true,
+  imports: [CommonModule, MaterialModule, LoadingComponent, RouterModule, MatIconModule],
   templateUrl: './account-setup.component.html',
-  styleUrls: ['./account-setup.component.css'],
-  imports: [CommonModule, MaterialModule, LoadingComponent]
+  styleUrls: ['./account-setup.component.css']
 })
 export class AccountSetupComponent implements OnInit {
   identityId: string | null = null;
   userName: string = '';
   lat: number | null = null;
   lng: number | null = null;
-  locationMessage: string = "Fetching approximate location...";
+  locationMessage: string = 'Fetching approximate location...';
   preciseLocationGranted = false;
+  showLocationWarning = false;
+
+  // Fallback input properties (remains false by default)
+  fallbackInputVisible: boolean = false;
+  fallbackAddress: string = '';
+
   surveyAnswers: any;
 
   loading$: Observable<boolean> = this.store.select(UserProfileState.loading);
@@ -31,11 +41,14 @@ export class AccountSetupComponent implements OnInit {
   error$: Observable<string | null> = this.store.select(UserProfileState.error);
   geoLoading$!: Observable<boolean>;
   geoError$!: Observable<string | null>;
+  fallbackLocations$: Observable<Array<{ lat: number; lng: number; displayName: string }>> =
+    this.store.select((state: any) => state.geolocation.fallbackLocations);
 
   constructor(
     private store: Store,
     private router: Router,
-    private geoService: GeolocationService
+    private route: ActivatedRoute,
+    private dialog: MatDialog
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -43,13 +56,13 @@ export class AccountSetupComponent implements OnInit {
     const userName = this.store.selectSnapshot(AuthState.userName);
 
     if (!identityId || !userName) {
-      console.warn("🚨 No authenticated user detected, fetching authentication state...");
+      console.warn('No authenticated user detected, fetching authentication state...');
       await firstValueFrom(this.store.dispatch(new CheckAuth()));
     }
 
     await this.initializeUser();
     await this.fetchSurveyData();
-    await this.requestPreciseLocation();
+    await this.fetchLocation();
   }
 
   private async initializeUser(): Promise<void> {
@@ -57,7 +70,7 @@ export class AccountSetupComponent implements OnInit {
     const userName = this.store.selectSnapshot(AuthState.userName);
 
     if (!identityId || !userName) {
-      console.error("User authentication state missing or incomplete.");
+      console.error('User authentication state missing or incomplete.');
       this.router.navigate(['/login'], { queryParams: { createAccount: true } });
       return;
     }
@@ -68,70 +81,103 @@ export class AccountSetupComponent implements OnInit {
 
   async fetchSurveyData(): Promise<void> {
     try {
-      const surveyFormState = this.store.selectSnapshot(state => state.survey.form); 
-      if(surveyFormState?.status === "VALID") {
-        this.surveyAnswers = this.formatSurveyAnswers(surveyFormState.model);
-        // this.surveyAnswers = surveyFormState.model;
-        console.log("✅ Survey data retrieved:", this.surveyAnswers);
+      const surveyState = this.store.selectSnapshot((state: any) => state.survey.form);
+      if (surveyState?.status === 'VALID') {
+        this.surveyAnswers = this.formatSurveyAnswers(surveyState.model);
+        console.log('Survey data retrieved:', this.surveyAnswers);
       } else {
-        console.warn("🚨 No survey data found, redirecting...");
+        console.warn('No valid survey data found, redirecting to survey.');
         this.router.navigate(['/survey']);
       }
     } catch (error) {
-      console.error("❌ Error retrieving survey data:", error);
+      console.error('Error retrieving survey data:', error);
       this.router.navigate(['/survey']);
     }
   }
 
   async fetchLocation(): Promise<void> {
-    this.geoLoading$ = this.geoService.loading$;
-    this.geoError$ = this.geoService.error$;
-
     try {
-      const location = await this.geoService.getIPLocation();
-      this.lat = location.lat;
-      this.lng = location.lng;
-      this.locationMessage = `We estimated your location as ${location.city}, ${location.region}. For better results, allow precise location.`;
+      // Attempt to fetch precise location (with internal IP and Nominatim fallback)
+      await firstValueFrom(this.store.dispatch(new FetchPreciseLocation()));
+      const state = this.store.selectSnapshot((s: any) => s.geolocation);
+      this.lat = state.lat;
+      this.lng = state.lng;
+      this.preciseLocationGranted = state.preciseLocationGranted;
+      this.locationMessage = state.preciseLocationGranted
+        ? '✅ Precise location enabled.'
+        : `We estimated your location as ${state.city}, ${state.region}.`;
     } catch (error: any) {
-      this.locationMessage = "Couldn't fetch location. Allow precise location for better results.";
+      // On error, if there are fallback results display them, otherwise show manual input.
+      const state = this.store.selectSnapshot((s: any) => s.geolocation);
+      if (state.fallbackLocations && state.fallbackLocations.length > 0) {
+        this.locationMessage = 'Please select your location from the results below.';
+      } else {
+        this.locationMessage = 'Failed to retrieve location. Please enter your city, state or address below.';
+        this.fallbackInputVisible = true;
+      }
+    }
+    // Update geo loading and error observables.
+    this.geoLoading$ = this.store.select((s: any) => s.geolocation.loading);
+    this.geoError$ = this.store.select((s: any) => s.geolocation.error);
+  }
+
+  /**
+   * onTryAgain() is triggered by the "Try Again" button.
+   * - If the fallback input is already visible, it clears the input for retyping.
+   * - Otherwise, it tries to re-fetch the location. If the location remains unavailable,
+   *   it forces the fallback input to display.
+   */
+  onTryAgain(): void {
+    if (this.fallbackInputVisible) {
+      // Already showing fallback input: clear input for retyping.
+      this.fallbackAddress = '';
+      this.locationMessage = 'Please enter your city, state or address below.';
+    } else {
+      // Attempt to fetch location automatically.
+      this.fetchLocation().then(() => {
+        // If no lat/lng were found, force the manual fallback input to appear.
+        if (!this.lat || !this.lng) {
+          this.fallbackInputVisible = true;
+          this.locationMessage = 'Please enter your city, state or address below.';
+        }
+      }).catch(() => {
+        // On error, show fallback input.
+        this.fallbackInputVisible = true;
+        this.locationMessage = 'Please enter your city, state or address below.';
+      });
     }
   }
 
-  async requestPreciseLocation(): Promise<void> {
-    this.geoLoading$ = this.geoService.loading$;
-    this.geoError$ = this.geoService.error$;
-
-    try {
-      const position = await this.geoService.getCurrentPosition();
-      this.lat = position.lat;
-      this.lng = position.lng;
-      this.preciseLocationGranted = true;
-      this.locationMessage = "✅ Precise location enabled.";
-    } catch (error: any) {
-      console.error("❌ Error fetching location:", error);
-      
-      // Check if the error is specifically a permission denied error
-      if (error.code === error.PERMISSION_DENIED || 
-          (this.geoError$ && (await firstValueFrom(this.geoError$)) === 'location_permission_denied')) {
-        this.locationMessage = `
-          Location access is important for finding local friends who share your interests.
-          Without it, you'll miss out on:
-          • Meeting people in your area
-          • Finding friends with similar hobbies nearby
-          • Local events and activities
-          • Better match quality based on distance
-          
-          Please enable location access in your browser settings to get the best experience.
-        `;
-      } else {
-        this.locationMessage = "Could not get precise location. Please allow access.";
-      }
+  searchFallbackLocation(): void {
+    if (!this.fallbackAddress || this.fallbackAddress.trim() === '') {
+      alert('Please enter a valid address.');
+      return;
     }
+    // Dispatch NGXS action to search Nominatim with the user-provided address.
+    this.store.dispatch(new FetchNominatimLocation(this.fallbackAddress)).subscribe({
+      next: () => {
+        // Hide the manual input as fallback results are now available.
+        this.fallbackInputVisible = false;
+        this.locationMessage = 'Select your location from the search results below.';
+      },
+      error: (err: any) => {
+        console.error('Error searching for location:', err);
+        alert('Unable to find location. Please try a different address.');
+      }
+    });
+  }
+
+  selectFallbackLocation(loc: { lat: number; lng: number; displayName: string }): void {
+    this.lat = loc.lat;
+    this.lng = loc.lng;
+    this.locationMessage = `Location selected: ${loc.displayName}`;
+    // Update the geolocation state with the selected fallback location.
+    this.store.dispatch(new SetManualLocation(loc.lat, loc.lng, loc.displayName));
   }
 
   async onSubmit(): Promise<void> {
     if (!this.lat || !this.lng) {
-      alert("Please enable location services to proceed.");
+      alert('Please enable location services or select a location to proceed.');
       return;
     }
 
@@ -149,26 +195,26 @@ export class AccountSetupComponent implements OnInit {
     };
 
     this.store.dispatch(new SubmitUserProfile(payload)).subscribe(() => {
-      console.log("✅ Profile submitted successfully.");
+      console.log('Profile submitted successfully.');
+      if (this.identityId) {
+        this.store.dispatch(new GenerateCompatibilityInsights(this.identityId));
+      }
       this.router.navigate(['/myProfile']);
     });
   }
 
-  formatSurveyAnswers(obj: Record<string, unknown>) {
+  private formatSurveyAnswers(obj: Record<string, unknown>): Record<string, string | string[]> {
     const compact: Record<string, string | string[]> = {};
-  
     for (const [key, value] of Object.entries(obj)) {
       if (Array.isArray(value)) {
-        const filtered = value.filter(v => typeof v === 'string') as string[];
-        const unique = [...new Set(filtered)];
+        const unique = Array.from(new Set(value.filter(v => typeof v === 'string')));
         compact[key] = unique.length === 1 ? unique[0] : unique;
       } else if (typeof value === 'string') {
         compact[key] = value;
       } else {
-        console.warn(`Unexpected value for questionId ${key}:`, value);
+        console.warn(`Unexpected value for question ${key}:`, value);
       }
     }
     return compact;
   }
-
 }

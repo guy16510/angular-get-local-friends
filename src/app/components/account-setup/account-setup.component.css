@@ -1,48 +1,86 @@
 .account-setup-container {
-    margin-top: 70px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    padding: 20px;
-  }
+  margin-top: 70px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+mat-card {
+  width: 100%;
+  max-width: 800px;
+  padding: 20px;
+  text-align: center;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+mat-card-title {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--theme-primary);
+}
+
+mat-card p {
+  font-size: 1.1rem;
+  color: var(--meta-color);
+  margin: 1rem 0;
+}
+
+.alert {
+  margin: 1rem 0;
+  padding: 1rem;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.alert-warning {
+  background-color: #fff3cd;
+  border: 1px solid #ffeeba;
+  color: #856404;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  color: #721c24;
+}
+
+.button-container {
+  display: flex;
+  justify-content: center;
+  margin: 1rem 0;
+}
+
+.btn-submit {
+  width: 80%;
+  max-width: 300px;
+  height: 3.5em;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.mat-mdc-raised-button[disabled].mat-mdc-button-disabled, .mat-mdc-raised-button.mat-mdc-button-disabled.mat-mdc-button-disabled{
   
-  mat-card {
-    width: 100%;
-    max-width: 800px;
-    padding: 20px;
-    text-align: center;
-  }
-  
-  /* Full-width location card */
-  .location-card {
-    width: 100%;
-    background-color: #f5f5f5;
-    padding: 20px;
-    border-radius: 8px;
-    margin-bottom: 15px;
-    text-align: center;
-  }
-  
-  .location-text {
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: #333;
-  }
-  
-  /* Center the button below the location */
-  .button-container {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 15px;
-  }
-  
-  /* Button styling */
-  .btn-submit {
-    width: 80%;
-    max-width: 300px;
-    height: 4em;
-  }
-.bold{
-  font-weight: bold;
+}
+
+.location-warning{
+  padding-bottom: 1rem;
+}
+
+button.mdc-button.mdc-button--raised.mat-mdc-raised-button.mat-primary.mat-mdc-button-base{
+  float: left;
+  height: 60px;
+  width: 25%;
+}
+
+mat-form-field{
+  width: 75%;
+  float: left;
+  padding-right: 2%;
+}
+
+.mdc-list-group__subheader{
+  clear:both;
 }

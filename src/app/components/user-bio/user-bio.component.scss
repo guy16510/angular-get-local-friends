@@ -139,12 +139,16 @@
   }
 }
 
+
 .premium-compatibility {
   padding: 1rem;
   border-top: 1px solid #eee;
   margin-top: 1.5rem;
   background: #fef9e7;
   border-radius: 8px;
+  @media (min-width: 768px) {
+    padding: 2rem;
+  }
 
   .label {
     color: #ffb300;
@@ -183,5 +187,106 @@
 
   .error {
     color: #d32f2f;
+  }
+}
+
+.insights-grid {
+  display: grid;
+  grid-template-columns: 1fr; // default: single column
+  gap: 1.5rem;
+  margin-top: 1rem;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr); // two columns on tablets and up
+  }
+
+  .chart-card {
+    padding: 1rem;
+    background: var(--bio-layout-bg, #fff);
+    border-radius: 8px;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
+
+    h3 {
+      margin-top: 0;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    > div {
+      width: 100%;
+      height: 400px;
+    }
+  }
+}
+
+.summary-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  padding: 1rem;
+  background: #fffde7; // light yellow
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+
+  h3 {
+    display: flex;
+    align-items: center;
+    font-size: 1.25rem;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .subtitle {
+    font-size: 0.95rem;
+    color: #777;
+    margin-bottom: 1rem;
+  }
+
+  .summary-metrics {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 1rem;
+
+    .metric {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 0.85rem;
+      color: #555;
+
+      .icon {
+        font-size: 28px;
+        margin-bottom: 0.25rem;
+        color: #ffa000;
+      }
+    }
+  }
+
+  .summary-values {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    div {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      .icon {
+        font-size: 20px;
+        color: #ff4081;
+      }
+
+      span {
+        flex: 1;
+        color: #333;
+      }
+
+      strong {
+        font-weight: 600;
+        color: #212121;
+      }
+    }
   }
 }

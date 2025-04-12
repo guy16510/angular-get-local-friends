@@ -14,7 +14,6 @@ export class CompatibilityService {
   generateInsights(targetUserId: string): Observable<CompatibilityInsights> {
     return from(this.client.queries.generateCompatibilityInsights({ targetUserId })).pipe(
       map((result: any) => {
-        debugger;
         if (!result?.data) {
           throw new Error('No data returned from compatibility insights');
         }
