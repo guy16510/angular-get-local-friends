@@ -179,10 +179,17 @@ export class UserProfileState {
     ctx.patchState({ loading: true });
     return this.userProfileService.submitUserProfile(action.payload).pipe(
       tap((response) => {
+        // Merge the submitted payload with the response.
+        // This assumes that any overlapping fields from the response take precedence.
+        const mergedProfile = {
+          ...action.payload,
+          ...response
+        };
+  
         ctx.patchState({
           profilesById: {
             ...ctx.getState().profilesById,
-            [response.identityId]: response
+            [mergedProfile.identityId]: mergedProfile
           },
           loading: false,
           error: null

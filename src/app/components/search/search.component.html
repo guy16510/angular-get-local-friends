@@ -1,16 +1,20 @@
 <main class="search-container">
-  <div class="search-header">
-    <h1 class="header-title">Find Friends Nearby</h1>
-    <p class="header-subtitle">Discover people around you in an instant</p>
-  </div>
-
-  <div class="search-content" [ngClass]="{'disabled': !(userProfile$ | async)}">   
-     <mat-card class="search-card modern-card">
-      <div class="search-form">
-        <div class="search-row">
-          <!-- Left Column -->
-          <div class="search-column">
-            <mat-form-field appearance="outline">
+    <!-- HERO SECTION (Desktop Only) -->
+    <div class="hero-section">
+      <div class="hero-content">
+        <h1>Connect With Your Neighbors</h1>
+        <p>Find local friends, share experiences, and build community.</p>
+      </div>
+    </div>
+  
+    <!-- SEARCH CARD SECTION -->
+    <div class="search-top">
+      <mat-card class="search-card minimal">
+        <!-- Basic Search -->
+        <div class="basic-search">
+          <h2 class="search-title">Find Friends Near You</h2>
+          <div class="basic-search-row">
+            <mat-form-field appearance="outline" class="radius-field">
               <mat-label>Search Radius</mat-label>
               <mat-select [(ngModel)]="radius" name="radius">
                 <mat-option [value]="5">5 mi</mat-option>
@@ -19,143 +23,133 @@
                 <mat-option [value]="50">50 mi</mat-option>
               </mat-select>
             </mat-form-field>
-          </div>
-
-          <!-- Right Column -->
-          <div class="search-column">
-            <mat-accordion class="filters-accordion">
-              <mat-expansion-panel [expanded]="false" class="filters-panel">
-                <mat-expansion-panel-header>
-                  <mat-panel-title>
-                    <mat-icon>filter_list</mat-icon>
-                    Premium Filters
-                    <span class="premium-badge" *ngIf="!(isPremium$ | async)" (click)="upgradeToPremium(); $event.stopPropagation()">
-                      <mat-icon>star</mat-icon>
-                      Premium
-                    </span>
-                  </mat-panel-title>
-                </mat-expansion-panel-header>
-
-                <div class="premium-filters" [class.disabled]="!(isPremium$ | async)">
-                  <mat-form-field appearance="outline">
-                    <mat-label>Gender</mat-label>
-                    <mat-select [(ngModel)]="gender" name="gender" [disabled]="!(isPremium$ | async)">
-                      <mat-option [value]="null">Any</mat-option>
-                      <mat-option value="male">Male</mat-option>
-                      <mat-option value="female">Female</mat-option>
-                      <mat-option value="other">Other</mat-option>
-                    </mat-select>
-                  </mat-form-field>
-
-                  <mat-form-field appearance="outline">
-                    <mat-label>Has Kids</mat-label>
-                    <mat-select [(ngModel)]="hasKids" name="hasKids" [disabled]="!(isPremium$ | async)">
-                      <mat-option [value]="null">Any</mat-option>
-                      <mat-option [value]="true">Yes</mat-option>
-                      <mat-option [value]="false">No</mat-option>
-                    </mat-select>
-                  </mat-form-field>
-
-                  <div class="age-range">
-                    <mat-form-field appearance="outline">
-                      <mat-label>Min Age</mat-label>
-                      <input matInput type="number" [(ngModel)]="ageRange.min" name="minAge" 
-                             [disabled]="!(isPremium$ | async)" min="18" max="100">
-                    </mat-form-field>
-                    <mat-form-field appearance="outline">
-                      <mat-label>Max Age</mat-label>
-                      <input matInput type="number" [(ngModel)]="ageRange.max" name="maxAge" 
-                             [disabled]="!(isPremium$ | async)" min="18" max="100">
-                    </mat-form-field>
-                  </div>
-
-                  <div class="premium-actions">
-                    <button mat-stroked-button (click)="clearFilters()" [disabled]="!(isPremium$ | async)">
-                      <mat-icon>clear</mat-icon>
-                      Clear Filters
-                    </button>
-                    <button mat-raised-button color="accent" (click)="upgradeToPremium()" *ngIf="!(isPremium$ | async)">
-                      <mat-icon>star</mat-icon>
-                      Upgrade to Premium
-                    </button>
-                  </div>
-                </div>
-              </mat-expansion-panel>
-            </mat-accordion>
-          </div>
-
-          <!-- Centered Search Button -->
-          <div class="search-button-container">
-            <button mat-raised-button color="primary" (click)="searchUsers()" 
+            <button mat-raised-button color="primary" (click)="searchUsers()"
                     [disabled]="isLoading || (geoLoading$ | async) || !lat || !lng">
               <mat-icon>search</mat-icon>
               Search
             </button>
           </div>
         </div>
-
-        <!-- <div class="location-info" *ngIf="city">
-          <mat-icon>location_on</mat-icon>
-          Searching near: <strong>{{ city }}</strong>
-        </div> -->
-
+  
+        <!-- Advanced Filters (Hidden by Default in Accordion) -->
+        <mat-accordion class="advanced-search-accordion">
+          <mat-expansion-panel hideToggle>
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                Advanced Filters
+                <span class="premium-indicator" *ngIf="!(isPremium$ | async)">Premium</span>
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            <div class="advanced-fields">
+              <div class="filter-row">
+                <mat-form-field appearance="outline" class="filter-field">
+                  <mat-label>Gender</mat-label>
+                  <mat-select [(ngModel)]="gender" name="gender" [disabled]="!(isPremium$ | async)">
+                    <mat-option [value]="null">Any</mat-option>
+                    <mat-option value="male">Male</mat-option>
+                    <mat-option value="female">Female</mat-option>
+                    <mat-option value="other">Other</mat-option>
+                  </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="filter-field">
+                  <mat-label>Has Kids</mat-label>
+                  <mat-select [(ngModel)]="hasKids" name="hasKids" [disabled]="!(isPremium$ | async)">
+                    <mat-option [value]="null">Any</mat-option>
+                    <mat-option [value]="true">Yes</mat-option>
+                    <mat-option [value]="false">No</mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+              <div class="filter-row">
+                <mat-form-field appearance="outline" class="filter-field">
+                  <mat-label>Min Age</mat-label>
+                  <input matInput type="number" [(ngModel)]="ageRange.min" name="minAge"
+                         [disabled]="!(isPremium$ | async)" min="18" max="100">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="filter-field">
+                  <mat-label>Max Age</mat-label>
+                  <input matInput type="number" [(ngModel)]="ageRange.max" name="maxAge"
+                         [disabled]="!(isPremium$ | async)" min="18" max="100">
+                </mat-form-field>
+              </div>
+              <div class="advanced-actions">
+                <button mat-stroked-button (click)="clearFilters()" [disabled]="!(isPremium$ | async)">
+                  <mat-icon>clear</mat-icon>
+                  Clear Filters
+                </button>
+                <button mat-raised-button color="accent" (click)="upgradeToPremium()"
+                        *ngIf="!(isPremium$ | async)">
+                  <mat-icon>star</mat-icon>
+                  Upgrade
+                </button>
+              </div>
+            </div>
+          </mat-expansion-panel>
+        </mat-accordion>
+  
+        <!-- Optional Geolocation Error Message -->
         <div class="location-error" *ngIf="geoError$ | async">
           <mat-icon>error_outline</mat-icon>
           {{ geoError$ | async }}
         </div>
-      </div>
-    </mat-card>
+      </mat-card>
+    </div>
+  <!-- </main> -->
 
-    <app-loading *ngIf="loading$ | async"></app-loading>
 
-    <ng-container *ngIf="(users$ | async) as users">
-      <div *ngIf="users.length > 0" class="users-section">
-        <h2 class="section-title">Nearby Users</h2>
-        <mat-grid-list [cols]="cols" rowHeight="1:1.2" gutterSize="16px">
-          <mat-grid-tile *ngFor="let user of users">
-            <mat-card class="user-card modern-card" [routerLink]="['/user-bio', user.identityId]">
-              <div class="user-image-container">
-                <app-image-display [identityId]="user.identityId"></app-image-display>
-                <div class="online-indicator" *ngIf="isOnline(user.lastOnlineAt)">
-                  <span class="online-dot"></span>
-                  <span class="online-text">Online</span>
-                </div>
+  <div class="users-grid" *ngIf="(users$ | async) as users">
+    <div *ngIf="users.length > 0">
+      <h2 class="section-title">Nearby Users</h2>
+      <div class="users-grid-container">
+        <div class="user-grid-item" *ngFor="let user of users">
+          <mat-card class="user-card modern-card" [routerLink]="['/user-bio', user.identityId]">
+            <div class="user-image-container">
+              <app-image-display [identityId]="user.identityId"></app-image-display>
+              <div class="online-indicator" *ngIf="isOnline(user.lastOnlineAt)">
+                <span class="online-dot"></span>
+                <span class="online-text">Online</span>
               </div>
-              <div class="user-info">
-                <h3>{{ user.userName }}</h3>
-                <p class="distance">
-                  <mat-icon>location_on</mat-icon>
-                  {{ user.distance }} miles away
-                </p>
-                <p class="last-online" *ngIf="!isOnline(user.lastOnlineAt)">
-                  <mat-icon>schedule</mat-icon>
-                  Last seen: {{ user.lastOnlineAt | date:'short' }}
-                </p>
-              </div>
-            </mat-card>
-          </mat-grid-tile>
-        </mat-grid-list>
-        <div class="navigation-buttons">
-          <button mat-stroked-button (click)="previousPage()" [disabled]="currentPage === 0" [ngClass]="{'disabled-btn': currentPage === 0}">
-            <mat-icon>chevron_left</mat-icon>
-            Previous
-          </button>
-          <button mat-stroked-button (click)="nextPage()" [disabled]="!hasMoreResults" [ngClass]="{'disabled-btn': !hasMoreResults}">
-            Next
-            <mat-icon>chevron_right</mat-icon>
-          </button>
+            </div>
+            <div class="user-info">
+              <h3>{{ user.userName }}</h3>
+              <p class="distance">
+                <mat-icon>location_on</mat-icon>
+                {{ user.distance }} miles away
+              </p>
+              <p class="last-online" *ngIf="!isOnline(user.lastOnlineAt)">
+                <mat-icon>schedule</mat-icon>
+                Last seen: {{ user.lastOnlineAt | date:'short' }}
+              </p>
+            </div>
+          </mat-card>
         </div>
       </div>
-      <div *ngIf="users.length === 0 && hasSearched" class="no-results">
-        <mat-icon>search_off</mat-icon>
-        <p>No users found. Try adjusting your search parameters.</p>
+      <div class="navigation-buttons">
+        <button mat-stroked-button (click)="previousPage()" [disabled]="currentPage === 0"
+          [ngClass]="{'disabled-btn': currentPage === 0}">
+          <mat-icon>chevron_left</mat-icon>
+          Previous
+        </button>
+        <button mat-stroked-button (click)="nextPage()" [disabled]="!hasMoreResults"
+          [ngClass]="{'disabled-btn': !hasMoreResults}">
+          Next
+          <mat-icon>chevron_right</mat-icon>
+        </button>
       </div>
-    </ng-container>
-  </div>
-
-  <div class="noProfile" *ngIf="!(userProfile$ | async)">
-    <div>To use Search, Please: <a class="cta-btn" routerLink="/survey" routerLinkActive="active">Complete the Survey</a>
+    </div>
+    <div *ngIf="users.length === 0 && hasSearched" class="no-results">
+      <mat-icon>search_off</mat-icon>
+      <p>No users found. Try adjusting your search parameters.</p>
     </div>
   </div>
 
+  <!-- No Profile Message -->
+  <div class="noProfile" *ngIf="!(userProfile$ | async)">
+    <div>
+      To use Search, Please:
+      <a class="cta-btn" routerLink="/survey" routerLinkActive="active">Complete the Survey</a>
+    </div>
+  </div>
+
+  <app-loading *ngIf="loading$ | async"></app-loading>
 </main>
