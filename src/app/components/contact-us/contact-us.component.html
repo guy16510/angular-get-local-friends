@@ -1,46 +1,80 @@
-<main class="contact-container container">
-  <mat-card>
-    <mat-card-title><h1>Contact Us</h1></mat-card-title>
-    <mat-card-content>
-      <br/>
-  <form [formGroup]="contactForm" (ngSubmit)="onSubmit()" *ngIf="!success">
-    <mat-form-field appearance="outline" class="form-group">
-      <mat-label>Name</mat-label>
-      <input matInput id="name" formControlName="name" [ngClass]="{'is-invalid': submitted && contactForm.get('name')?.errors}">
-      <mat-error *ngIf="submitted && contactForm.get('name')?.errors?.['required']">
-        Name is required
-      </mat-error>
-    </mat-form-field>
+<main class="contact-container">
+  <section class="form-section">
+    <mat-card class="contact-card">
+      <mat-card-title>Contact Us</mat-card-title>
 
-    <mat-form-field appearance="outline" class="form-group">
-      <mat-label>Email</mat-label>
-      <input matInput type="email" id="email" formControlName="email" [ngClass]="{'is-invalid': submitted && contactForm.get('email')?.errors}">
-      <mat-error *ngIf="submitted && contactForm.get('email')?.errors?.['required']">
-        Email is required
-      </mat-error>
-      <mat-error *ngIf="submitted && contactForm.get('email')?.errors?.['email']">
-        Please enter a valid email address
-      </mat-error>
-    </mat-form-field>
+      <form
+        [formGroup]="contactForm"
+        (ngSubmit)="onSubmit()"
+        *ngIf="!success"
+        class="contact-form"
+      >
+        <mat-form-field>
+          <mat-label>Name</mat-label>
+          <input
+            matInput
+            formControlName="name"
+            [class.invalid]="submitted && contactForm.get('name')?.invalid"
+          />
+          <mat-error *ngIf="submitted && contactForm.get('name')?.hasError('required')">
+            Name is required
+          </mat-error>
+        </mat-form-field>
 
-    <mat-form-field appearance="outline" class="form-group">
-      <mat-label>Message</mat-label>
-      <textarea matInput id="summary" formControlName="summary" rows="5" [ngClass]="{'is-invalid': submitted && contactForm.get('summary')?.errors}"></textarea>
-      <mat-error *ngIf="submitted && contactForm.get('summary')?.errors?.['required']">
-        Message is required
-      </mat-error>
-    </mat-form-field>
+        <mat-form-field>
+          <mat-label>Email</mat-label>
+          <input
+            matInput
+            type="email"
+            formControlName="email"
+            [class.invalid]="submitted && contactForm.get('email')?.invalid"
+          />
+          <mat-error *ngIf="submitted && contactForm.get('email')?.hasError('required')">
+            Email is required
+          </mat-error>
+          <mat-error *ngIf="submitted && contactForm.get('email')?.hasError('email')">
+            Enter a valid email
+          </mat-error>
+        </mat-form-field>
 
-    <button mat-raised-button color="primary" type="submit" class="btn-submit">Submit</button>
+        <mat-form-field>
+          <mat-label>Your message</mat-label>
+          <textarea
+            matInput
+            rows="5"
+            formControlName="summary"
+            [class.invalid]="submitted && contactForm.get('summary')?.invalid"
+          ></textarea>
+          <mat-error *ngIf="submitted && contactForm.get('summary')?.hasError('required')">
+            Message is required
+          </mat-error>
+        </mat-form-field>
 
-    <mat-card class="alert alert-danger mt-3" *ngIf="error">
-      {{ error }}
+        <button
+          mat-raised-button
+          color="primary"
+          class="submit-btn"
+          type="submit"
+        >
+          Send
+        </button>
+
+        <mat-card class="alert alert-danger" *ngIf="error">
+          {{ error }}
+        </mat-card>
+      </form>
+
+      <mat-card class="alert alert-success" *ngIf="success">
+        Thank you for your message! We will get back to you soon.
+      </mat-card>
     </mat-card>
-  </form>
+  </section>
 
-  <mat-card class="alert alert-success" *ngIf="success">
-    Thank you for your message! We will get back to you soon.
-  </mat-card>
-</mat-card-content>
-</mat-card>
+  <section class="image-section">
+    <img
+      src="/assets/images/contact-us.png"
+      alt="Contact Illustration"
+      class="contact-image"
+    />
+  </section>
 </main>
