@@ -1,11 +1,13 @@
+<!-- HERO SECTION (Desktop Only) -->
+<div class="hero-section">
+  <div class="hero-content">
+    <h1>Connect With Your Neighbors</h1>
+    <p>Find local friends, share experiences, and build community.</p>
+  </div>
+</div>
+
 <main class="search-container">
-    <!-- HERO SECTION (Desktop Only) -->
-    <div class="hero-section">
-      <div class="hero-content">
-        <h1>Connect With Your Neighbors</h1>
-        <p>Find local friends, share experiences, and build community.</p>
-      </div>
-    </div>
+
   
     <!-- SEARCH CARD SECTION -->
     <div class="search-top">
@@ -36,7 +38,7 @@
           <mat-expansion-panel hideToggle>
             <mat-expansion-panel-header>
               <mat-panel-title>
-                Advanced Filters
+                Premium Filters
                 <span class="premium-indicator" *ngIf="!(isPremium$ | async)">Premium</span>
               </mat-panel-title>
             </mat-expansion-panel-header>
@@ -105,10 +107,14 @@
           <mat-card class="user-card modern-card" [routerLink]="['/user-bio', user.identityId]">
             <div class="user-image-container">
               <app-image-display [identityId]="user.identityId"></app-image-display>
-              <div class="online-indicator" *ngIf="isOnline(user.lastOnlineAt)">
-                <span class="online-dot"></span>
-                <span class="online-text">Online</span>
-              </div>
+            </div>
+            <div *ngIf="isOnline(user.lastOnlineAt)" class="status-indicator online">
+              <mat-icon class="status-icon">lens</mat-icon>
+              <span>Active Now</span>
+            </div>
+            <div *ngIf="!isOnline(user.lastOnlineAt)" class="status-indicator offline">
+              <mat-icon class="status-icon">schedule</mat-icon>
+              <span>Last seen: {{ user.lastOnlineAt | date:'short' }}</span>
             </div>
             <div class="user-info">
               <h3>{{ user.userName }}</h3>
@@ -119,6 +125,10 @@
               <p class="last-online" *ngIf="!isOnline(user.lastOnlineAt)">
                 <mat-icon>schedule</mat-icon>
                 Last seen: {{ user.lastOnlineAt | date:'short' }}
+              </p>
+              <p>Gender: {{user.gender }}</p>
+              <p><mat-icon>stroller</mat-icon>
+                {{ user.hasKids ? 'Has Kids' : 'No Kids' }}
               </p>
             </div>
           </mat-card>

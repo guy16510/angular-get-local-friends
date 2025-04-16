@@ -20,7 +20,6 @@ export class CompatibilityService {
         return result.data as CompatibilityInsights;
       }),
       catchError(err => {
-        debugger;
         console.error('[CompatibilityService] generateInsights error:', err);
         return throwError(() => err);
       })

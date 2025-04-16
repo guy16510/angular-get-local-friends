@@ -1,17 +1,9 @@
-/* =====================================
-   Global Container
-===================================== */
-.search-container {
-  width: 100%;
-  padding: 16px;
-  box-sizing: border-box;
-  // background: #f4f4f4;
-}
 
 /* =====================================
    Hero Section (Desktop Only)
 ===================================== */
 .hero-section {
+  margin-top:70px;
   display: none;
   position: relative;
   width: 100%;
@@ -42,6 +34,9 @@
 @media (min-width: 1024px) {
   .hero-section {
     display: flex;
+  }
+  main{
+    margin-top: 20px;
   }
 }
 
@@ -214,16 +209,20 @@
 /* Image Container within User Cards */
 .user-image-container {
   position: relative;
-  width: 100%;
-  height: 200px;
+  flex: 0 0 200px;   // fix height
   overflow: hidden;
   flex: 0 0 auto;
 }
 
 @media (max-width: 768px) {
-  .user-image-container {
-    height: 150px;
-  }
+  // .user-image-container {
+  //   position: relative;
+  //   width: 100%;
+  //   /* enforce a perfect square on every screen */
+  //   aspect-ratio: 1 / 1;
+  //   overflow: hidden;
+  //   flex: 0 0 auto;
+  // }
 }
 
 /* User Info Section: Takes up Remaining Space */
@@ -235,22 +234,47 @@
 /* Online Status Indicator */
 .online-indicator {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  // background: rgba(0, 0, 0, 0.6);
+  top: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.75);
   padding: 4px 8px;
   border-radius: 12px;
   display: flex;
   align-items: center;
   gap: 4px;
+  color: #fff;
+  font-weight: 600;
   font-size: 0.8rem;
+  z-index: 2;
 }
 
-.online-indicator .online-dot {
-  width: 6px;
-  height: 6px;
-  background: #4caf50;
-  border-radius: 50%;
+.online-indicator .online-icon {
+  font-size: 1rem;      // a bit bigger circle
+  color: #4caf50 !important;
+  margin: 0;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 8px 0;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.status-indicator .status-icon {
+  font-size: 1.1rem;
+}
+
+/* Online */
+.status-indicator.online .status-icon {
+  color: #4caf50;
+}
+
+/* Offline */
+.status-indicator.offline .status-icon {
+  color: #757575;
 }
 
 /* Navigation Buttons for the Grid */
