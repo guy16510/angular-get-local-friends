@@ -5,5 +5,6 @@ export const listConversations = defineFunction({
   entry: './handler.ts',
   environment: {
     CONVERSATION_TABLE_NAME: process.env['AMPLIFY_CONVERSATION_TABLE_NAME'] || '',
+    BLOCK_TABLE_NAME: process.env['AMPLIFY_BLOCK_TABLE_NAME']!,
   },
 });

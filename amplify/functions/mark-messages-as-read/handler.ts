@@ -2,10 +2,13 @@ import { DynamoDB } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
 import type { Schema } from '../../data/resource';
 import { getIdentityId } from '../../shared/utils/identity';
+import { getBlockLists } from '../../shared/utils/block';
 import { sanitizeBigInts } from '../../shared/utils/sanitize';
 
 const TABLE_NAME = process.env['CHAT_MESSAGE_TABLE_NAME'];
 if (!TABLE_NAME) throw new Error('Missing CHAT_MESSAGE_TABLE_NAME');
+const BLOCK_TABLE = process.env['BLOCK_TABLE_NAME']!;
+
 
 const ddb = new DynamoDB({});
 const docClient = DynamoDBDocument.from(ddb);
@@ -13,6 +16,8 @@ const docClient = DynamoDBDocument.from(ddb);
 export const handler: Schema['markMessagesAsRead']['functionHandler'] = async (event) => {
   const { conversationId } = event.arguments;
   const identityId = getIdentityId(event.identity);
+  const { blockedSet } = await getBlockLists(identityId, BLOCK_TABLE);
+
 
   if (!conversationId) throw new Error('Missing conversationId');
   if (!identityId) throw new Error('Unauthorized: No identity');
@@ -56,8 +61,9 @@ export const handler: Schema['markMessagesAsRead']['functionHandler'] = async (e
         return sanitizeBigInts(updated.Attributes);
       })
     );
-
-    return updatedMessages;
+    
+  // Filter out any messages from blocked users before returning
+    return updatedMessages.filter(m => !blockedSet.has((m as any).senderId));
   } catch (err) {
     console.error('[markMessagesAsRead] Failed:', err);
     throw new Error('Internal server error');

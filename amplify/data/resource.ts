@@ -17,6 +17,9 @@ import { enrollPremium } from '../functions/enroll-premium/resource';
 import { removePremium } from '../functions/remove-premium/resource';
 import { createReport } from '../functions/create-report/resource';
 import { generateCompatibilityInsights } from '../functions/generate-compatibility-insights/resource';
+import { createBlock } from '../functions/create-block/resource';
+import { deleteBlock } from '../functions/delete-block/resource';
+
 
 /* --- Define Models --- */
 export const ChatMessage = a.model({
@@ -111,6 +114,19 @@ const Report = a.model({
   ])
   .authorization(allow => [allow.authenticated()]);
 
+  export const Block = a.model({
+    id: a.id().required(),
+    blockerId: a.string().required(),
+    blockedId: a.string().required(),
+    createdAt: a.datetime(),
+    updatedAt: a.datetime()
+  })
+    .secondaryIndexes(index => [
+      index('blockerId').sortKeys(['createdAt']),
+      index('blockedId').sortKeys(['createdAt'])
+    ])
+    .authorization(allow => [allow.authenticated()]);  
+
 const CompatibilityInsights = a.model({
   totalMatches: a.integer().required(),
   totalQuestions: a.integer().required(),
@@ -143,6 +159,19 @@ const schema = a.schema({
     .returns(a.json())
     .handler(a.handler.function(getUserProfile))
     .authorization(allow => [allow.authenticated()]),
+
+  blockUser: a.mutation()
+    .arguments({ blockedUserId: a.string().required() })
+    .returns(a.ref('Block'))
+    .handler(a.handler.function(createBlock))
+    .authorization(allow => [allow.authenticated()]),
+
+  unblockUser: a.mutation()
+    .arguments({ blockedUserId: a.string().required() })
+    .returns(a.string())   // returns the deleted Block.id
+    .handler(a.handler.function(deleteBlock))
+    .authorization(allow => [allow.authenticated()]),
+
 
   fetchAnimalProfile: a.query()
     .arguments({})
@@ -251,7 +280,8 @@ const schema = a.schema({
   TypingStatus,
   UserPresence,
   Report,
-  CompatibilityInsights
+  CompatibilityInsights,
+  Block
 });
 
 export type Schema = ClientSchema<typeof schema>;

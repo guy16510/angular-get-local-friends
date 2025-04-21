@@ -169,3 +169,7 @@ export const handler: Schema["findPremiumMatches"]["functionHandler"] = async (e
     nextToken: result.LastEvaluatedKey ? JSON.stringify(result.LastEvaluatedKey) : null,
   });
 };
+
+/**
+ * TODO add blocked uesrs, and addtional enhancements here.
+ */

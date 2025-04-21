@@ -2,7 +2,8 @@ import type { Schema } from '../../data/resource';
 import { DynamoDB } from '@aws-sdk/client-dynamodb';
 import { unmarshall } from '@aws-sdk/util-dynamodb';
 import * as ddbGeo from 'dynamodb-geo-v3';
-import { getIdentityId } from '../../shared/utils/identity';
+import { getBlockLists } from '../../shared/utils/block';
+import { getIdentityId }   from '../../shared/utils/identity';
 import { sanitizeBigInts } from '../../shared/utils/sanitize';
 
 const TABLE_NAME = process.env['USER_PROFILE_TABLE_NAME']!;
@@ -32,6 +33,9 @@ export const handler: Schema["findNearbyUsers"]["functionHandler"] = async (even
 
   // Get the identityId from the event context (requester’s identity)
   const identityId = getIdentityId(event.identity);
+  const BLOCK_TABLE = process.env['BLOCK_TABLE_NAME']!;
+  const { blockedByMe, blockedMe, blockedSet } = await getBlockLists(identityId, BLOCK_TABLE);
+
 
   console.info(`🔍 [findNearbyUsers] lat=${lat}, lng=${lng}, radius=${radius}mi, identityId=${identityId}`);
 
@@ -44,7 +48,7 @@ export const handler: Schema["findNearbyUsers"]["functionHandler"] = async (even
     const items = rawResults.map(item => sanitizeBigInts(unmarshall(item))) as NearbyUser[];
 
     const filteredUsers = items
-      .filter(user => user && user.identityId !== identityId)
+      .filter(u => u['id'] !== identityId && !blockedSet.has(u['id']))
       .map(user => {
         const distance = haversine(lat, lng, user.locationLat, user.locationLng);
         return {

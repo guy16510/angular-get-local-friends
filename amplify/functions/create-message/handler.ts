@@ -1,6 +1,7 @@
 import { DynamoDB } from 'aws-sdk';
 import type { Schema } from '../../data/resource';
-import { getIdentityId } from '../../shared/utils/identity';
+import { getBlockLists } from '../../shared/utils/block';
+import { getIdentityId }   from '../../shared/utils/identity';
 import { toChatMessage } from '../../shared/mappers/chatMessageMapper';
 
 const docClient = new DynamoDB.DocumentClient();
@@ -10,7 +11,12 @@ export const handler: Schema['createMessage']['functionHandler'] = async (event)
   
   const { recipientId, text } = event.arguments;
   const senderId = getIdentityId(event.identity);
-  console.log('[createMessage] Computed senderId:', senderId);
+  const BLOCK_TABLE = process.env['BLOCK_TABLE_NAME']!;
+  const { blockedByMe, blockedMe, blockedSet } = await getBlockLists(senderId, BLOCK_TABLE); 
+
+  if (blockedByMe.includes(recipientId) || blockedMe.includes(recipientId)) {
+    throw new Error('Messaging not allowed due to block. If you feel this is an error, please reach out to administrator.');
+  }
 
   if (!senderId) {
     console.error("Missing identity: event.identity", event.identity);

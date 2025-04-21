@@ -37,3 +37,17 @@ export const handler: Schema["fetchUserProfile"]["functionHandler"] = async (eve
     throw new Error("Internal server error");
   }
 };
+
+/**
+ * add signature to pass user who is invoking this api's identity ID, then you can add teh blocked user code here:
+ * 
+ * const BLOCK_TABLE = process.env.BLOCK_TABLE_NAME!;
+const { blockedByMe, blockedMe, blockedSet } = 
+  await getBlockLists(identityId, BLOCK_TABLE);
+
+  
+  if (blockedByMe.includes(recipientId) || blockedMe.includes(recipientId)) {
+  throw new Error('Messaging not allowed due to block');
+}
+
+ */
