@@ -50,7 +50,6 @@ export class UploadComponent {
     try {
       const webpBlob = await this.fileService.convertToWebP(this.selectedFile);
       const uploadResult = await this.fileService.uploadFile(identityId, webpBlob);
-      debugger;
       this.store.dispatch(new SetUserProfileImage(uploadResult));
       this.toastService.success('Profile image uploaded successfully!', 'Close');
       this.imageUpdated.emit(uploadResult);

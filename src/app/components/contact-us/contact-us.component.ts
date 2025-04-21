@@ -10,7 +10,7 @@ import { MatError } from '@angular/material/form-field';
     selector: 'app-contact-us',
     imports: [ReactiveFormsModule, CommonModule, MaterialModule, MatError],
     templateUrl: './contact-us.component.html',
-    styleUrl: './contact-us.component.css',
+    styleUrl: './contact-us.component.scss',
     standalone: true
 })
 export class ContactUsComponent {

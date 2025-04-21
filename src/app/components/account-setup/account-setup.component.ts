@@ -180,12 +180,12 @@ export class AccountSetupComponent implements OnInit {
       alert('Please enable location services or select a location to proceed.');
       return;
     }
-
+  
     if (!this.surveyAnswers) {
       this.router.navigate(['/survey']);
       return;
     }
-
+  
     const payload = {
       identityId: this.identityId!,
       locationLat: this.lat,
@@ -193,16 +193,25 @@ export class AccountSetupComponent implements OnInit {
       surveyAnswers: this.surveyAnswers,
       userName: this.userName
     };
-
-    this.store.dispatch(new SubmitUserProfile(payload)).subscribe(() => {
+  
+    try {
+      // Await the completion of the user profile submission
+      await firstValueFrom(this.store.dispatch(new SubmitUserProfile(payload)));
       console.log('Profile submitted successfully.');
+  
+      // If we have a valid identityId, await the generation of compatibility insights
       if (this.identityId) {
-        this.store.dispatch(new GenerateCompatibilityInsights(this.identityId));
+        await firstValueFrom(this.store.dispatch(new GenerateCompatibilityInsights(this.identityId)));
       }
+  
+      // Navigate to '/myProfile' only after the insights have been generated
       this.router.navigate(['/myProfile']);
-    });
+    } catch (error) {
+      // Handle potential errors during dispatch or insight generation
+      console.error('An error occurred during submission:', error);
+      // Optionally, inform the user about the error
+    }
   }
-
   private formatSurveyAnswers(obj: Record<string, unknown>): Record<string, string | string[]> {
     const compact: Record<string, string | string[]> = {};
     for (const [key, value] of Object.entries(obj)) {

@@ -16,6 +16,9 @@ import { MatGridListModule } from '@angular/material/grid-list';
 import { MatSelectModule } from '@angular/material/select';
 import { MatMenuModule } from '@angular/material/menu';
 import { FormsModule } from '@angular/forms';
+import {MatChipsModule} from '@angular/material/chips';
+import { MatDividerModule }  from '@angular/material/divider';
+import { MatTooltipModule }  from '@angular/material/tooltip';
 
 @NgModule({
   exports: [
@@ -34,7 +37,11 @@ import { FormsModule } from '@angular/forms';
     MatGridListModule,
     MatSelectModule,
     MatMenuModule,
-    FormsModule
+    FormsModule,
+    MatChipsModule,
+    MatChipsModule,
+    MatDividerModule,
+    MatTooltipModule
   ]
 })
 export class MaterialModule {}
