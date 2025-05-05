@@ -319,21 +319,7 @@ npx amplify publish
 ```
 
 ## Frontend Routes
-
-```mermaid
-graph TD
-    A[/] --> B[HomeComponent]
-    C[/contact-us] --> D[ContactUsComponent]
-    E[/profile] --> F[ProfileComponent]
-    G[/404] --> H[ErrorComponent]
-    I[/login] --> J[LoginComponent]
-    K[/sign-up] --> L[SignUpComponent]
-    M[/search] --> N[SearchComponent]
-    
-    F -->|Auth Guard| O[Authenticated]
-    L -->|Auth Guard| O
-    N -->|Auth Guard| O
-```
+- src/app/app.routes.ts
 
 ## Component Structure
 
@@ -446,19 +432,10 @@ graph TD
 
 ```bash
 # Start local development server
+# Ensure you have the file "amplify_outputs.json in the root of the project, then:
 npm start
 
-# Run type checking
-npm run typecheck
-
-# Build for production
-npm run build:prod
-
-# Deploy backend changes
-npx ampx pipeline-deploy --branch $AWS_BRANCH --app-id $AWS_APP_ID
-
-# Open Amplify Studio
-npx amplify studio
+# For deployment, commiting to your branch will create a deployment to staging/dev, I will enable.
 ```
 
 ## Project Structure
@@ -486,3 +463,40 @@ npx amplify studio
 ## Contact
 
 For questions or assistance, contact the project maintainer.
+
+
+# TODOS for MVP:
+- Testing
+  - E2E, or even just generally creating users
+
+- Ability to Block a User in these apis (in progress):
+  - Search
+  - Messages
+  - Remove it from everywhere.
+
+- Animal images 
+  - Redo image to more artisy for adults
+  - Make it something I would hang up on wall
+
+- Social Share
+  - Using animal images
+    - SSR? How to get image to propigate on static pre-render (slack/linkedin/msg)
+
+- Premium
+  - More premium features
+  - Premium Search
+  - More indexes on geospatial
+
+- Ability to Seed Users
+  - It should be load tested, and validated
+
+
+# Ice Bucket:
+- Ads:
+  - Maybe in messages
+  - Maybe in suggestions for places for people to meet, tasteful?
+
+- Marketing ideas?
+
+- Dashboards to show health of site, and any other metrics
+
