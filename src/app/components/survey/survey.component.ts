@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { SURVEY_QUESTIONS, SurveyQuestion } from '../../data/surveyQuestions';
 import { MaterialModule } from '../../utils/material.module';
@@ -7,7 +7,8 @@ import { CommonModule } from '@angular/common';
 import { NgxsFormDirective } from '@ngxs/form-plugin';
 import { Store } from '@ngxs/store';
 import { SetProgress } from '../../store/actions/progress.actions';
-// import {SaveSurveyAnswers} from '../../store/actions/survey.actions';
+import { SaveSurveyAnswers } from '../../store/actions/survey.actions';
+import { Subscription } from 'rxjs';
 
 /**
  * Custom validator for multiple-select questions.
@@ -28,12 +29,13 @@ export function minLengthArray(min: number): ValidatorFn {
     styleUrls: ['./survey.component.css'],
     imports: [MaterialModule, CommonModule, ReactiveFormsModule, NgxsFormDirective]
 })
-export class SurveyComponent implements OnInit {
+export class SurveyComponent implements OnInit, OnDestroy {
   surveyForm!: FormGroup;
   questions: SurveyQuestion[] = SURVEY_QUESTIONS;
   currentPage = 0;
   pageSize = 10;
   scaleRange: number[] = [];
+  private formSubscription?: Subscription;
 
   constructor(
     private fb: FormBuilder,
@@ -60,10 +62,51 @@ export class SurveyComponent implements OnInit {
     }
     this.surveyForm = this.fb.group(formGroupConfig);
 
+    // Subscribe to changes in question 5 (Do you have kids?)
+    this.formSubscription = this.surveyForm.get('5')?.valueChanges.subscribe(value => {
+      if (value === 'No') {
+        // Clear and disable kid-related questions
+        this.clearKidRelatedQuestions();
+      } else {
+        // Re-enable kid-related questions
+        this.enableKidRelatedQuestions();
+      }
+      this.cdr.detectChanges();
+    });
+
     // Use Promise.resolve().then to ensure this runs after the current change detection cycle
     Promise.resolve().then(() => {
       this.updateProgress();
       this.restoreCurrentPage();
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.formSubscription) {
+      this.formSubscription.unsubscribe();
+    }
+  }
+
+  private clearKidRelatedQuestions(): void {
+    this.questions.forEach(question => {
+      if (question.kidRelated) {
+        const control = this.surveyForm.get(question.id.toString());
+        if (control) {
+          control.setValue(null);
+          control.disable();
+        }
+      }
+    });
+  }
+
+  private enableKidRelatedQuestions(): void {
+    this.questions.forEach(question => {
+      if (question.kidRelated) {
+        const control = this.surveyForm.get(question.id.toString());
+        if (control) {
+          control.enable();
+        }
+      }
     });
   }
 
@@ -101,10 +144,14 @@ export class SurveyComponent implements OnInit {
     this.currentPage = totalPages - 1;
   }
 
-  // Returns the questions for the current page.
+  // Returns the questions for the current page, filtering out kid-related questions if appropriate
   get paginatedQuestions(): SurveyQuestion[] {
     const start = this.currentPage * this.pageSize;
-    return this.questions.slice(start, start + this.pageSize);
+    const hasKids = this.surveyForm.get('5')?.value !== 'No';
+    
+    return this.questions
+      .slice(start, start + this.pageSize)
+      .filter(question => !question.kidRelated || hasKids);
   }
 
   // Calculates the overall progress percentage.
@@ -150,8 +197,35 @@ export class SurveyComponent implements OnInit {
 
   async onSubmit(): Promise<void> {
     if (this.surveyForm.valid) {
+      // Get the form values and format them
+      const formValues = this.surveyForm.value;
+      const surveyAnswers = this.formatSurveyAnswers(formValues);
+      
+      // Save the survey answers to the store
+      await this.store.dispatch(new SaveSurveyAnswers(surveyAnswers)).toPromise();
+      
+      // Navigate to account setup
       this.router.navigate(['/account-setup']);
     }
+  }
+
+  private formatSurveyAnswers(formValues: any): { [key: string]: any } {
+    const answers: { [key: string]: any } = {};
+    
+    // Process each question and its answer
+    this.questions.forEach(question => {
+      const value = formValues[question.id.toString()];
+      if (value !== null && value !== undefined) {
+        // For multiple-select questions, ensure we store an array
+        if (question.type === 'multiple-select' && !Array.isArray(value)) {
+          answers[question.id] = [value];
+        } else {
+          answers[question.id] = value;
+        }
+      }
+    });
+    
+    return answers;
   }
 
   // For handling multiple-select questions manually.

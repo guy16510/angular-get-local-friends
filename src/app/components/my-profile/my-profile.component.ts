@@ -12,6 +12,8 @@ import { AuthState } from '../../store/states/auth.state';
 import { FileService } from '../../services/file.service';
 import { CheckAuth } from '../../store/actions/auth.actions';
 import { Router } from '@angular/router';
+import { SurveyState } from '../../store/states/survey.state';
+import { ThemeService } from '../../services/theme.service';
 
 @Component({
   selector: 'app-my-profile',
@@ -24,20 +26,31 @@ export class MyProfileComponent implements OnInit {
   @Select(UserProfileState.loading) loading$!: Observable<boolean>;
   @Select(UserProfileState.error) error$!: Observable<string | null>;
   userProfile$!: Observable<UserProfile | null>;
+  surveyAnswers$: Observable<any>;
 
   @ViewChild('uploadComponent') uploadComponent!: UploadComponent;
 
   readonly fallbackImage = '/assets/images/noImageUploaded.jpg';
   profileImage: string = this.fallbackImage;
 
+  showSurveyAnswers = true;
+  isDarkMode = false;
+
   private store = inject(Store);
+  private themeService = inject(ThemeService);
 
   constructor(
     private fileService: FileService,
     private router: Router
-  ) {}
+  ) {
+    this.surveyAnswers$ = this.store.select(SurveyState.getSurveyAnswers);
+  }
 
   ngOnInit(): void {
+    this.themeService.darkMode$.subscribe(isDark => {
+      this.isDarkMode = isDark;
+    });
+
     this.store.dispatch(new CheckAuth()).subscribe(() => {
       const identityId = this.store.selectSnapshot(AuthState.identityId);
       if (!identityId) return;
@@ -108,5 +121,9 @@ export class MyProfileComponent implements OnInit {
 
   completeSurvey(): void {
     this.router.navigate(['/survey']);
+  }
+
+  toggleSurveyAnswers(): void {
+    this.showSurveyAnswers = !this.showSurveyAnswers;
   }
 }
