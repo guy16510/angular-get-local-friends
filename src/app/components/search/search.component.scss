@@ -1,9 +1,8 @@
-
 /* =====================================
    Hero Section (Desktop Only)
 ===================================== */
 .hero-section {
-  margin-top:70px;
+  margin-top: 70px;
   display: none;
   position: relative;
   width: 100%;
@@ -35,14 +34,20 @@
   .hero-section {
     display: flex;
   }
-  main{
+  main {
     margin-top: 20px;
   }
 }
 
 /* =====================================
-   Search Card & Basic Search
+   Search Container & Search Card
 ===================================== */
+.search-container {
+  width: 100%;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
 .search-top {
   width: 100%;
   margin-bottom: 24px;
@@ -52,12 +57,14 @@
   width: 100%;
   border-radius: 8px;
   padding: 16px;
-  // background: #fff;
+  /* background: #fff; */ /* commented out */
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   box-sizing: border-box;
 }
 
-/* Basic Search */
+/* =====================================
+   Basic Search
+===================================== */
 .basic-search {
   text-align: center;
   margin-bottom: 16px;
@@ -80,6 +87,25 @@
 .radius-field {
   flex: 1;
   min-width: 150px;
+  display: flex;
+  align-items: center;
+  height: 56px; /* match button */
+}
+
+::ng-deep .mat-mdc-select {
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+::ng-deep .mat-mdc-select-value-text {
+  padding: 0 14px;
+}
+
+::ng-deep .mat-mdc-select-arrow-wrapper {
+  padding-right: 12px;
+  display: flex;
+  align-items: center;
 }
 
 .basic-search-row button {
@@ -104,7 +130,7 @@
 
 .premium-indicator {
   font-size: 0.9rem;
-  // color: #ffd700;
+  color: #ffd700;
   margin-left: 8px;
 }
 
@@ -127,6 +153,30 @@
   min-width: 140px;
 }
 
+::ng-deep .filter-field input.mat-input-element {
+  padding-left: 12px;
+}
+
+:host ::ng-deep .mat-mdc-text-field-wrapper.mdc-text-field--outlined .mdc-text-field__input {
+  padding-left: 12px !important;
+}
+
+::ng-deep .filter-field .mat-mdc-text-field-input {
+  padding-left: 12px !important;
+}
+
+.padded-label .mat-mdc-floating-label {
+  padding-left: 12px !important;
+}
+
+/* Also target non-floating label (default state) */
+::ng-deep .padded-label .mat-mdc-floating-label,
+::ng-deep .padded-label .mat-mdc-form-field-label,
+::ng-deep .padded-label .mat-mdc-text-field-input {
+  padding-left: 6px !important;
+}
+
+/* Advanced Actions */
 .advanced-actions {
   display: flex;
   justify-content: flex-end;
@@ -162,7 +212,9 @@
   }
 }
 
-/* Grid Container Styles */
+/* =====================================
+   Users Grid Container (Cards Layout)
+===================================== */
 .users-grid-container {
   display: grid;
   gap: 16px;
@@ -188,8 +240,6 @@
 /* =======================================
    User Card Styles
 ========================================== */
-
-/* Ensure All Cards Have the Same Height */
 .user-card {
   height: 100%;
   display: flex;
@@ -209,23 +259,23 @@
 /* Image Container within User Cards */
 .user-image-container {
   position: relative;
-  flex: 0 0 200px;   // fix height
+  flex: 0 0 200px; /* fixed height */
   overflow: hidden;
   flex: 0 0 auto;
 }
 
-@media (max-width: 768px) {
-  // .user-image-container {
-  //   position: relative;
-  //   width: 100%;
-  //   /* enforce a perfect square on every screen */
-  //   aspect-ratio: 1 / 1;
-  //   overflow: hidden;
-  //   flex: 0 0 auto;
-  // }
-}
+/* Responsive Image Container (commented out in original) */
+/* @media (max-width: 768px) {
+  .user-image-container {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    flex: 0 0 auto;
+  }
+} */
 
-/* User Info Section: Takes up Remaining Space */
+/* User Info Section */
 .user-info {
   flex: 1 1 auto;
   padding: 1rem;
@@ -249,11 +299,12 @@
 }
 
 .online-indicator .online-icon {
-  font-size: 1rem;      // a bit bigger circle
+  font-size: 1rem;
   color: #4caf50 !important;
   margin: 0;
 }
 
+/* Status Indicator */
 .status-indicator {
   display: flex;
   align-items: center;
@@ -267,17 +318,17 @@
   font-size: 1.1rem;
 }
 
-/* Online */
+/* Online Status */
 .status-indicator.online .status-icon {
   color: #4caf50;
 }
 
-/* Offline */
+/* Offline Status */
 .status-indicator.offline .status-icon {
   color: #757575;
 }
 
-/* Navigation Buttons for the Grid */
+/* Navigation Buttons */
 .navigation-buttons {
   display: flex;
   justify-content: center;
@@ -303,130 +354,7 @@ app-image-display img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  /* Adjust vertical positioning – for example, 40% instead of 50% centers the head better */
+  /* Adjust vertical positioning (40% instead of 50% centers the head better) */
   object-position: center 40%;
   display: block;
-}
-
-/* --- Overall Search Container --- */
-.search-container {
-  width: 100%;
-  padding: 16px;
-  box-sizing: border-box;
-}
-
-/* --- Full-Width Search Card --- */
-.search-top {
-  width: 100%;
-  margin-bottom: 24px;
-}
-
-.search-card.minimal {
-  width: 100%;
-  padding: 16px;
-  border-radius: 8px;
-  // background: #fff;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  box-sizing: border-box;
-}
-
-/* --- Basic Search Section --- */
-.basic-search {
-  text-align: center;
-  margin-bottom: 16px;
-}
-
-.search-title {
-  margin: 0 0 16px;
-  font-size: 1.8rem;
-  font-weight: 600;
-}
-
-.basic-search-row {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 16px;
-  align-items: center;
-}
-
-.radius-field {
-  flex: 1;
-  min-width: 150px;
-}
-
-/* Ensure Search button is sizeable */
-.basic-search-row button {
-  height: 56px;
-}
-
-/* --- Advanced Filters Accordion --- */
-.advanced-search-accordion {
-  margin-top: 8px;
-}
-
-.mat-expansion-panel-header {
-  padding: 0 16px;
-}
-
-.mat-expansion-panel-header mat-panel-title {
-  font-size: 1rem;
-  font-weight: 500;
-}
-
-.premium-indicator {
-  font-size: 0.9rem;
-  color: #ffd700;
-  margin-left: 8px;
-}
-
-/* --- Advanced Fields Layout --- */
-.advanced-fields {
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.filter-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-
-.filter-field {
-  flex: 1;
-  min-width: 140px;
-}
-
-/* --- Advanced Actions --- */
-.advanced-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 16px;
-}
-
-/* --- Geolocation Error --- */
-.location-error {
-  margin-top: 8px;
-  color: red;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.location-error mat-icon {
-  margin-right: 4px;
-}
-
-/* --- Responsive Adjustments --- */
-@media (max-width: 768px) {
-  .basic-search-row,
-  .filter-row {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .advanced-actions {
-    justify-content: center;
-  }
 }

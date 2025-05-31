@@ -25,7 +25,9 @@
                 <mat-option [value]="50">50 mi</mat-option>
               </mat-select>
             </mat-form-field>
-            <button mat-raised-button color="primary" (click)="searchUsers()"
+        
+            <button mat-raised-button color="primary"
+                    (click)="searchUsers()"
                     [disabled]="isLoading || (geoLoading$ | async) || !lat || !lng">
               <mat-icon>search</mat-icon>
               Search
@@ -44,7 +46,7 @@
             </mat-expansion-panel-header>
             <div class="advanced-fields">
               <div class="filter-row">
-                <mat-form-field appearance="outline" class="filter-field">
+                <mat-form-field appearance="outline" class="filter-field padded-label">
                   <mat-label>Gender</mat-label>
                   <mat-select [(ngModel)]="gender" name="gender" [disabled]="!(isPremium$ | async)">
                     <mat-option [value]="null">Any</mat-option>
@@ -53,7 +55,7 @@
                     <mat-option value="other">Other</mat-option>
                   </mat-select>
                 </mat-form-field>
-                <mat-form-field appearance="outline" class="filter-field">
+                <mat-form-field appearance="outline" class="filter-field padded-label">
                   <mat-label>Has Kids</mat-label>
                   <mat-select [(ngModel)]="hasKids" name="hasKids" [disabled]="!(isPremium$ | async)">
                     <mat-option [value]="null">Any</mat-option>

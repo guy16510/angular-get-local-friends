@@ -7,6 +7,7 @@ import { CommonModule } from '@angular/common';
 import { NgxsFormDirective } from '@ngxs/form-plugin';
 import { Store } from '@ngxs/store';
 import { SetProgress } from '../../store/actions/progress.actions';
+import { ProgressBarComponent } from "../shared/progress-bar/progress-bar.component";
 // import {SaveSurveyAnswers} from '../../store/actions/survey.actions';
 
 /**
@@ -14,6 +15,7 @@ import { SetProgress } from '../../store/actions/progress.actions';
  * Requires the array to have at least one entry.
  */
 export function minLengthArray(min: number): ValidatorFn {
+  
   return (control: AbstractControl): { [key: string]: any } | null => {
     if (Array.isArray(control.value) && control.value.length >= min) {
       return null;
@@ -26,7 +28,7 @@ export function minLengthArray(min: number): ValidatorFn {
     selector: 'app-survey',
     templateUrl: './survey.component.html',
     styleUrls: ['./survey.component.css'],
-    imports: [MaterialModule, CommonModule, ReactiveFormsModule, NgxsFormDirective]
+    imports: [MaterialModule, CommonModule, ReactiveFormsModule, NgxsFormDirective, ProgressBarComponent]
 })
 export class SurveyComponent implements OnInit {
   surveyForm!: FormGroup;
@@ -34,6 +36,7 @@ export class SurveyComponent implements OnInit {
   currentPage = 0;
   pageSize = 10;
   scaleRange: number[] = [];
+  showProgressBar: boolean = true;
 
   constructor(
     private fb: FormBuilder,
@@ -66,6 +69,7 @@ export class SurveyComponent implements OnInit {
       this.restoreCurrentPage();
     });
   }
+  
 
   private updateProgress(): void {
     const progress = this.progress;

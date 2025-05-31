@@ -41,17 +41,69 @@ span#logoText {
   padding-left: 10px;
 }
 
-/* Navigation Links */
+.messages-link {
+  display: flex;
+  align-items: center;
+  gap: 6px; /* Reduce gap between icon and text */
+  position: relative;
+  text-decoration: none;
+  color: inherit;
+}
+
+.messages-link .jiggle-icon {
+  position: relative;
+}
+
 .nav-links {
   display: flex;
+  align-items: center;
   gap: 1rem;
+  flex-wrap: nowrap;
 }
 
 .nav-links a {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   text-decoration: none;
   font-size: 1rem;
   color: inherit;
 }
+
+.spaced-link {
+  margin-left: 0.6rem; 
+}
+
+.icon-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-right: 0.4rem;
+}
+
+/* Make only the text inside the anchor change on hover */
+.nav-links a:hover,
+.nav-links a:focus {
+  color: var(--accent-color); /* same accent color you use for active */
+  text-decoration: underline;
+  text-underline-offset: 6px;
+  cursor: pointer;
+}
+
+/* Specifically for the Messages link, the text is in .messages-text span */
+.nav-links a:hover .messages-text {
+  color: var(--accent-color);
+  text-decoration: underline;
+  text-underline-offset: 6px;
+}
+
+/* Optional: Slight scale up on hover for text */
+.nav-links a:hover .messages-text,
+.nav-links a:hover:not(.messages-link) {
+  transition: color 0.3s ease, transform 0.3s ease;
+  transform: scale(1.05);
+}
+
 
 .header-container .nav-links > a.active {
   color: var(--accent-color);
@@ -99,7 +151,7 @@ span#logoText {
   transition: color 0.3s ease-in-out;
 }
 
-.header-container.scrolled,
+.header-container,
 .header-container.scrolled .profile-dropdown {
   background-color: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(5px);
@@ -115,19 +167,36 @@ span#logoText {
   margin-left: 4px;
 }
 
-/* New styles for the messages icon with overlayed unread badge */
 .messages-link {
   display: flex;
   align-items: center;
+  gap: 4px; /* Space between icon and text */
+  text-decoration: none;
+  color: inherit;
+  position: relative;
 }
 
+/* Make the icon + badge group behave like a regular icon */
 .icon-wrapper {
   position: relative;
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;   /* Match material icon size */
+  height: 24px;
+}
+
+.icon-wrapper mat-icon {
+  font-size: 24px;
+  line-height: 24px;
 }
 
 .messages-icon {
   transition: transform 0.2s ease-in-out;
+}
+
+.jiggle-icon {
+  margin-right: 2px; /* space between icon and text */
 }
 
 .jiggle-icon:hover {
@@ -172,7 +241,23 @@ span#logoText {
   }
 
   .theme-toggle {
-    padding-left: 10px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    color: inherit;
+    text-decoration: none;
+    font-size: 1rem;
+  }
+
+  .theme-toggle:hover {
+    color: var(--accent-color);
+    text-decoration: underline;
+    text-underline-offset: 6px;
+  }
+  
+  .theme-toggle mat-icon {
+    vertical-align: middle;
   }
 
   .nav-links a {

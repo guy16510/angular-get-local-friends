@@ -18,19 +18,20 @@
 
       <ng-container *ngIf="(isLoggedIn$ | async); else loggedOut">
         <!-- <a routerLink="/dashboard" routerLinkActive="active"><mat-icon>dashboard</mat-icon>Dashboard</a> -->
-        <a routerLink="/search" routerLinkActive="active"><mat-icon class="jiggle-icon">search</mat-icon>Search</a>
-        <a routerLink="/chatList" routerLinkActive="active" class="messages-link">
-          <div class="icon-wrapper">
-            <mat-icon class="jiggle-icon">forum</mat-icon>
-            <span class="unread-badge" *ngIf="(unreadCount$ | async)">
-              {{ unreadCount$ | async }}
-            </span>
-          </div>
+        <a routerLink="/search" routerLinkActive="active" class="nav-link"><mat-icon class="jiggle-icon">search</mat-icon>Search</a>
+        <a routerLink="/chatList" routerLinkActive="active" class="messages-link spaced-link">
+          <mat-icon class="jiggle-icon">forum</mat-icon>
+          <span class="unread-badge" *ngIf="(unreadCount$ | async)">
+            {{ unreadCount$ | async }}
+          </span>
           <span class="messages-text">Messages</span>
         </a>
+        
 
-        <a routerLink="/myProfile"><mat-icon>person</mat-icon>My Profile</a>
-        <a class="signOut" (click)="signOut()"><mat-icon>logout</mat-icon>Logout</a>
+        <a routerLink="/myProfile" routerLinkActive="active" class="nav-link spaced-link"><mat-icon class="jiggle-icon">person</mat-icon>My Profile</a>
+
+        <a class="signOut spaced-link" (click)="signOut()"><mat-icon>logout</mat-icon>Logout</a>
+
 
       </ng-container>
       <ng-template #loggedOut>
@@ -41,9 +42,12 @@
         <!-- <a routerLink="/login" routerLinkActive="active">Login</a> -->
       </ng-template>
 
-      <div class="theme-toggle" (click)="toggleTheme()">
-        <mat-icon class="jiggle-icon">{{ isDarkMode ? 'light_mode' : 'dark_mode' }}</mat-icon>
-      </div>
+      <a class="theme-toggle spaced-link" (click)="toggleTheme()">
+        <mat-icon class="jiggle-icon">
+          {{ isDarkMode ? 'light_mode' : 'dark_mode' }}
+        </mat-icon>
+      </a>
+      
     </nav>
   </div>
 </header>
