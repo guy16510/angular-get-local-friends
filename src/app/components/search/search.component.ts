@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef, HostListener } from '@angular/core';
 import { Store } from '@ngxs/store';
-import { SearchNearbyUsers, SearchUsers, SetSearchFilters } from '../../store/actions/search.actions';
+import { SearchNearbyUsers, SearchUsers, SetSearchFilters, SearchPremiumUsers } from '../../store/actions/search.actions';
 import { SearchState } from '../../store/states/search.state';
 import { GeolocationState } from '../../store/states/geolocation.state';
 import { FetchPreciseLocation, FetchIPLocation } from '../../store/actions/geolocation.action';
@@ -9,7 +9,7 @@ import { MaterialModule } from '../../utils/material.module';
 import { ImageDisplayComponent } from '../image-display/image-display.component';
 import { LoadingComponent } from '../shared/loading/loading.component';
 import { FormsModule } from '@angular/forms';
-import { Observable, Subject, takeUntil, of, map } from 'rxjs';
+import { Observable, Subject, takeUntil } from 'rxjs';
 import { Router, RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -58,8 +58,7 @@ export class SearchComponent implements OnInit, OnDestroy {
   hasMore$: Observable<boolean> = this.store.select(state => state.search.hasMore);
   currentPage$: Observable<number> = this.store.select(state => state.search.currentPage);
   totalPages$: Observable<number> = this.store.select(state => state.search.totalPages);
-  // isPremium$: Observable<boolean> = this.store.select(state => state.search.isPremium);
-  isPremium$: Observable<boolean> = of(true);
+  isPremium$: Observable<boolean> = this.store.select(UserProfileState.isPremium);
   userProfile$!: Observable<UserProfile | null>;
 
   
@@ -126,7 +125,17 @@ export class SearchComponent implements OnInit, OnDestroy {
   searchUsers(pageIndex = 0) {
     this.hasSearched = true;
     const token = this.paginationTokens[pageIndex] ?? undefined;
-    this.store.dispatch(new SearchNearbyUsers(this.lat, this.lng, this.radius, token)).subscribe(() => {
+    const isPremium = this.store.selectSnapshot(UserProfileState.isPremium);
+
+    const dispatch$ = isPremium
+      ? this.store.dispatch(new SearchPremiumUsers(this.lat, this.lng, this.radius, {
+          gender: this.gender,
+          hasKids: this.hasKids,
+          ageRange: { ...this.ageRange },
+        }, token))
+      : this.store.dispatch(new SearchNearbyUsers(this.lat, this.lng, this.radius, token));
+
+    dispatch$.subscribe(() => {
       const nextToken = this.store.selectSnapshot(SearchState.nextToken);
       if (nextToken && !this.paginationTokens.includes(nextToken)) {
         this.paginationTokens.push(nextToken);
