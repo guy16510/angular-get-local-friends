@@ -2,7 +2,7 @@ import { State, Action, StateContext, Selector, Store } from '@ngxs/store';
 import { Injectable } from '@angular/core';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../../../../amplify/data/resource';
-import { SearchNearbyUsers } from '../actions/search.actions';
+import { SearchNearbyUsers, SearchPremiumUsers } from '../actions/search.actions';
 import { SearchStateModel } from '../../models/Search';
 import { AuthState } from './auth.state';
 
@@ -111,6 +111,17 @@ export class SearchState {
         }
       }
 
+      // Normalize boolean values that may be stored as numbers
+      if (typeof parsedUser.hasKids === 'number') {
+        parsedUser.hasKids = parsedUser.hasKids === 1;
+      }
+      if (typeof parsedUser.wantsFriendsWithKids === 'number') {
+        parsedUser.wantsFriendsWithKids = parsedUser.wantsFriendsWithKids === 1;
+      }
+      if (typeof parsedUser.wantsSimilarChildAges === 'number') {
+        parsedUser.wantsSimilarChildAges = parsedUser.wantsSimilarChildAges === 1;
+      }
+
       return parsedUser;
     }).filter(Boolean);
   
@@ -121,6 +132,55 @@ export class SearchState {
       nextToken: rawData.nextToken || null,
       loading: false,
       error: null
+    });
+  }
+
+  @Action(SearchPremiumUsers)
+  async searchPremium(ctx: StateContext<SearchStateModel>, action: SearchPremiumUsers) {
+    ctx.patchState({ loading: true });
+
+    const surveyFilter: { questionId: number; answer: string[] }[] = [];
+    if (action.filters.gender) {
+      surveyFilter.push({ questionId: 3, answer: [action.filters.gender] });
+    }
+    if (action.filters.hasKids !== null && action.filters.hasKids !== undefined) {
+      surveyFilter.push({ questionId: 5, answer: [action.filters.hasKids ? 'Yes' : 'No'] });
+    }
+    if (action.filters.ageRange) {
+      const range = `${action.filters.ageRange.min}-${action.filters.ageRange.max}`;
+      surveyFilter.push({ questionId: 1, answer: [range] });
+    }
+
+    const result = await client.queries.findPremiumMatches({
+      lat: action.lat,
+      lng: action.lng,
+      radius: action.radius,
+      surveyFilter,
+      nextToken: action.nextToken || undefined,
+    });
+
+    let data: any = null;
+    if (result.data) {
+      try {
+        data = JSON.parse(result.data as unknown as string);
+      } catch (err) {
+        console.error('Failed to parse premium matches response', err);
+      }
+    }
+
+    const matches = (data?.premiumMatches || []) as any[];
+    const parsedMatches = matches.map(u => {
+      if (typeof u.hasKids === 'number') u.hasKids = u.hasKids === 1;
+      if (typeof u.wantsFriendsWithKids === 'number') u.wantsFriendsWithKids = u.wantsFriendsWithKids === 1;
+      if (typeof u.wantsSimilarChildAges === 'number') u.wantsSimilarChildAges = u.wantsSimilarChildAges === 1;
+      return u;
+    });
+
+    ctx.patchState({
+      nearbyUsers: action.nextToken ? [...ctx.getState().nearbyUsers, ...parsedMatches] : parsedMatches,
+      nextToken: data?.nextToken || null,
+      loading: false,
+      error: null,
     });
   }
 }
