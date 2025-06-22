@@ -20,6 +20,7 @@ import { checkMessageLimit } from './functions/check-message-limit/resource';
 import { removePremium } from './functions/remove-premium/resource';
 import { createReport } from './functions/create-report/resource';
 import { generateCompatibilityInsights } from './functions/generate-compatibility-insights/resource';
+import { blockUser } from './functions/block-user/resource';
 
 import * as iam from 'aws-cdk-lib/aws-iam';
 
@@ -44,7 +45,8 @@ const backend = defineBackend({
   checkMessageLimit,
   removePremium,
   createReport,
-  generateCompatibilityInsights
+  generateCompatibilityInsights,
+  blockUser
 });
 
 
@@ -171,6 +173,7 @@ backend.removePremium.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
 }));
 
 const reportTableArn = `arn:aws:dynamodb:us-east-1:${process.env['AWS_ACCOUNT_ID']}:table/${backend.data.resources.tables["Report"].tableName}`;
+const blockTableArn = `arn:aws:dynamodb:us-east-1:${process.env['AWS_ACCOUNT_ID']}:table/${backend.data.resources.tables["UserBlock"].tableName}`;
 
 backend.createReport.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
   actions: [
@@ -182,6 +185,11 @@ backend.createReport.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
     'dynamodb:Scan'
   ],
   resources: [reportTableArn]
+}));
+
+backend.blockUser.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
+  actions: ['dynamodb:PutItem'],
+  resources: [blockTableArn]
 }));
 
 backend.createReport.resources.lambda.addToRolePolicy(new iam.PolicyStatement({
@@ -197,3 +205,4 @@ backend.generateCompatibilityInsights.resources.lambda.addToRolePolicy(new iam.P
 
 // Add this after the reportTableArn definition
 backend.createReport.addEnvironment("AMPLIFY_REPORT_TABLE_NAME", backend.data.resources.tables["Report"].tableName);
+backend.blockUser.addEnvironment("AMPLIFY_USER_BLOCK_TABLE_NAME", backend.data.resources.tables["UserBlock"].tableName);
