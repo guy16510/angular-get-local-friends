@@ -57,14 +57,23 @@
           >
             {{ recipientUserName$ | async }}
           </div>
-          <button 
+          <button
             *ngIf="msg.senderId !== currentUserId"
-            mat-icon-button 
+            mat-icon-button
             class="report-button"
             (click)="openReportDialog(msg)"
             matTooltip="Report this message"
           >
             <mat-icon>flag</mat-icon>
+          </button>
+          <button
+            *ngIf="msg.senderId !== currentUserId"
+            mat-icon-button
+            class="block-button"
+            (click)="openBlockDialog()"
+            matTooltip="Block this user"
+          >
+            <mat-icon>block</mat-icon>
           </button>
         </div>
         <div class="text">{{ msg.text }}</div>

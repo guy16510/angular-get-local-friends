@@ -1,0 +1,13 @@
+<h2 mat-dialog-title class="text-center">Block User</h2>
+
+<mat-dialog-content>
+  <p>Are you sure you want to block <strong>{{ data.userName }}</strong>?</p>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" class="flex gap-2">
+  <button mat-button mat-dialog-close [disabled]="isSubmitting">Cancel</button>
+  <button mat-raised-button color="warn" (click)="confirmBlock()" [disabled]="isSubmitting">
+    <span *ngIf="!isSubmitting">Block</span>
+    <span *ngIf="isSubmitting">Blocking...</span>
+  </button>
+</mat-dialog-actions>

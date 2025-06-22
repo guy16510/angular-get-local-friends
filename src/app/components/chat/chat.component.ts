@@ -18,6 +18,7 @@ import { UserProfileState } from '../../store/states/user-profile.state';
 import { LoadUserProfile } from '../../store/actions/user-profile.actions';
 import { MatDialog } from '@angular/material/dialog';
 import { ReportUserComponent } from '../report-user/report-user.component';
+import { BlockUserComponent } from '../block-user/block-user.component';
 // import { ChatReactionComponent } from './chat-reaction/chat-reaction.component'; // adjust path if needed
 
 @Component({
@@ -25,7 +26,7 @@ import { ReportUserComponent } from '../report-user/report-user.component';
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, MaterialModule, ImageDisplayComponent, LoadingComponent]
+  imports: [CommonModule, FormsModule, MaterialModule, ImageDisplayComponent, LoadingComponent, BlockUserComponent, ReportUserComponent]
 })
 export class ChatComponent implements OnInit, OnDestroy {
   @ViewChild('messagesContainer') private messagesContainer!: ElementRef;
@@ -221,6 +222,22 @@ export class ChatComponent implements OnInit, OnDestroy {
       if (result) {
         // Show success message
         // You might want to add a snackbar service for this
+      }
+    });
+  }
+
+  openBlockDialog(): void {
+    const dialogRef = this.dialog.open(BlockUserComponent, {
+      data: {
+        blockedUserId: this.recipientId,
+        userName: this.store.selectSnapshot(UserProfileState.getUserNameById)?.(this.recipientId) || 'User'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        // Navigate away from chat after blocking
+        this.router.navigate(['/chat-list']);
       }
     });
   }

@@ -17,6 +17,7 @@ import { enrollPremium } from '../functions/enroll-premium/resource';
 import { removePremium } from '../functions/remove-premium/resource';
 import { createReport } from '../functions/create-report/resource';
 import { generateCompatibilityInsights } from '../functions/generate-compatibility-insights/resource';
+import { blockUser } from '../functions/block-user/resource';
 
 /* --- Define Models --- */
 export const ChatMessage = a.model({
@@ -108,6 +109,18 @@ const Report = a.model({
     index('reporterId').sortKeys(['createdAt']),
     index('reportedUserId').sortKeys(['createdAt']),
     index('status').sortKeys(['createdAt'])
+  ])
+  .authorization(allow => [allow.authenticated()]);
+
+const UserBlock = a.model({
+  id: a.id().required(),
+  userId: a.string().required(),
+  blockedUserId: a.string().required(),
+  createdAt: a.datetime().required()
+})
+  .secondaryIndexes(index => [
+    index('userId').sortKeys(['blockedUserId']),
+    index('blockedUserId').sortKeys(['userId'])
   ])
   .authorization(allow => [allow.authenticated()]);
 
@@ -225,6 +238,12 @@ const schema = a.schema({
     .handler(a.handler.function(removePremium))
     .authorization(allow => [allow.authenticated()]),
 
+  blockUser: a.mutation()
+    .arguments({ blockedUserId: a.string().required() })
+    .returns(a.ref('UserBlock'))
+    .handler(a.handler.function(blockUser))
+    .authorization(allow => [allow.authenticated()]),
+
   customCreateReport: a.mutation()
     .arguments({ 
       reportedUserId: a.string().required(),
@@ -251,6 +270,7 @@ const schema = a.schema({
   TypingStatus,
   UserPresence,
   Report,
+  UserBlock,
   CompatibilityInsights
 });
 
