@@ -37,6 +37,21 @@ export class SearchNearbyUsers {
     }) {}
   }
   
-  export class ClearSearchResults {
-    static readonly type = '[Search] Clear Results';
-  }
+export class ClearSearchResults {
+  static readonly type = '[Search] Clear Results';
+}
+
+export class SearchPremiumUsers {
+  static readonly type = '[Search] Search Premium Users';
+  constructor(
+    public lat: number,
+    public lng: number,
+    public radius: number,
+    public filters: {
+      gender?: string | null;
+      hasKids?: boolean | null;
+      ageRange?: { min: number; max: number };
+    },
+    public nextToken?: string
+  ) {}
+}

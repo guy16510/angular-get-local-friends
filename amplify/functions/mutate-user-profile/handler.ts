@@ -88,9 +88,9 @@ export const handler: Schema["mutateUserProfile"]["functionHandler"] = async (ev
       userName: { S: userName },
       surveyAnswers: { S: JSON.stringify(surveyAnswers) },
       images: { S: JSON.stringify(images) },
-      hasKids: { BOOL: traits.hasKids },
-      wantsFriendsWithKids: { BOOL: traits.wantsFriendsWithKids },
-      wantsSimilarChildAges: { BOOL: traits.wantsSimilarChildAges },
+      hasKids: { N: traits.hasKids ? '1' : '0' },
+      wantsFriendsWithKids: { N: traits.wantsFriendsWithKids ? '1' : '0' },
+      wantsSimilarChildAges: { N: traits.wantsSimilarChildAges ? '1' : '0' },
       createdAt: { S: now },
       updatedAt: { S: now },
     };

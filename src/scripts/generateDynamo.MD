@@ -40,19 +40,59 @@ config.hashKeyLength = 5;
   // createTableInput.BillingMode = 'PAY_PER_REQUEST';
   // delete createTableInput.ProvisionedThroughput;
 
-  // 👉 Add identityId-index manually
-  createTableInput.AttributeDefinitions.push({ AttributeName: 'identityId', AttributeType: 'S' });
+  // 👉 Add indexes for user attributes
+  createTableInput.AttributeDefinitions.push(
+    { AttributeName: 'identityId', AttributeType: 'S' },
+    { AttributeName: 'gender', AttributeType: 'S' },
+    { AttributeName: 'ageRange', AttributeType: 'S' },
+    { AttributeName: 'genderFriendPreference', AttributeType: 'S' },
+    { AttributeName: 'hasKids', AttributeType: 'N' },
+    { AttributeName: 'wantsFriendsWithKids', AttributeType: 'N' },
+    { AttributeName: 'wantsSimilarChildAges', AttributeType: 'N' }
+  );
 
   createTableInput.GlobalSecondaryIndexes = [
     {
       IndexName: 'identityId-index',
       KeySchema: [{ AttributeName: 'identityId', KeyType: 'HASH' }],
       Projection: { ProjectionType: 'ALL' },
-      // If you're using provisioned mode:
-      ProvisionedThroughput: {
-        ReadCapacityUnits: 5,
-        WriteCapacityUnits: 5
-      }
+      ProvisionedThroughput: { ReadCapacityUnits: 5, WriteCapacityUnits: 5 }
+    },
+    {
+      IndexName: 'gender-index',
+      KeySchema: [{ AttributeName: 'gender', KeyType: 'HASH' }],
+      Projection: { ProjectionType: 'ALL' },
+      ProvisionedThroughput: { ReadCapacityUnits: 5, WriteCapacityUnits: 5 }
+    },
+    {
+      IndexName: 'ageRange-index',
+      KeySchema: [{ AttributeName: 'ageRange', KeyType: 'HASH' }],
+      Projection: { ProjectionType: 'ALL' },
+      ProvisionedThroughput: { ReadCapacityUnits: 5, WriteCapacityUnits: 5 }
+    },
+    {
+      IndexName: 'genderFriendPreference-index',
+      KeySchema: [{ AttributeName: 'genderFriendPreference', KeyType: 'HASH' }],
+      Projection: { ProjectionType: 'ALL' },
+      ProvisionedThroughput: { ReadCapacityUnits: 5, WriteCapacityUnits: 5 }
+    },
+    {
+      IndexName: 'hasKids-index',
+      KeySchema: [{ AttributeName: 'hasKids', KeyType: 'HASH' }],
+      Projection: { ProjectionType: 'ALL' },
+      ProvisionedThroughput: { ReadCapacityUnits: 5, WriteCapacityUnits: 5 }
+    },
+    {
+      IndexName: 'wantsFriendsWithKids-index',
+      KeySchema: [{ AttributeName: 'wantsFriendsWithKids', KeyType: 'HASH' }],
+      Projection: { ProjectionType: 'ALL' },
+      ProvisionedThroughput: { ReadCapacityUnits: 5, WriteCapacityUnits: 5 }
+    },
+    {
+      IndexName: 'wantsSimilarChildAges-index',
+      KeySchema: [{ AttributeName: 'wantsSimilarChildAges', KeyType: 'HASH' }],
+      Projection: { ProjectionType: 'ALL' },
+      ProvisionedThroughput: { ReadCapacityUnits: 5, WriteCapacityUnits: 5 }
     }
   ];
 
