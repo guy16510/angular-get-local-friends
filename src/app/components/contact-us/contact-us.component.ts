@@ -9,7 +9,7 @@ import type { Schema } from '../../../../amplify/data/resource';
   standalone: true,
   imports: [ReactiveFormsModule, CommonModule],
   templateUrl: './contact-us.component.html',
-  styleUrl: './contact-us.component.css'
+  styleUrls: ['./contact-us.component.css']
 })
 export class ContactUsComponent {
   contactForm: FormGroup;

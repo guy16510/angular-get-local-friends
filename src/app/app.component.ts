@@ -13,7 +13,7 @@ Amplify.configure(outputs);
   selector: 'app-root',
   standalone: true,
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css',
+  styleUrls: ['./app.component.css'],
   imports: [RouterOutlet, TodosComponent, AmplifyAuthenticatorModule, HeaderComponent, FooterComponent],
 })
 export class AppComponent {
