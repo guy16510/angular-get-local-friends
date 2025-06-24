@@ -2,6 +2,10 @@
 <main class="survey-container">
   <mat-card>
     <mat-card-title><h1>Survey</h1></mat-card-title>
+    <div *ngIf="showProgressBar" class="progress-bar-container">
+      <app-progress-bar></app-progress-bar>
+    </div>
+    
     <mat-card-content>
       <form [formGroup]="surveyForm" ngxsForm="survey.form" ngxsFormDebounce="-1" (ngSubmit)="onSubmit()">  
         <p class="disclaimer">

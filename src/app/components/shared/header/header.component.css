@@ -1,57 +1,121 @@
-/* Header Container */
-.header-container {
-  height:70px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-  position: fixed;
+/* Modern Header Styles */
+
+.main-header {
   width: 100%;
+  background: #f6f6f5;
+  border-bottom: 1px solid #e0e0e0;
+  position: sticky;
   top: 0;
-  left: 0;
-  z-index: 1000;
-  transition: background-color 0.3s ease-in-out;
+  z-index: 100;
 }
 
-/* Branding */
-.branding {
-  margin: 0;
-}
-
-.branding a {
+.header-inner {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 0.5rem 2rem;
+}
+
+.branding {
+  display: flex;
+  align-items: center;
+}
+
+.brand-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+#logo {
+  width: 48px;
+  height: 48px;
+  margin-right: 0.75rem;
+}
+
+#logoText {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #111;
+  letter-spacing: 0.5px;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.nav-links a, .nav-links button.theme-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.15rem;
+.messages-link {
+  display: flex;
+  align-items: center;
+  gap: 6px; /* Reduce gap between icon and text */
+  position: relative;
   text-decoration: none;
   color: inherit;
 }
 
-#logo {
-  width: 50px;
-  margin-right: 0.5rem;
-  margin-left: -15px;
-  margin-top: -10px;
+.messages-link .jiggle-icon {
+  position: relative;
 }
 
-#logoText {
-  font-size: 1.5rem;
-  font-weight: bold;
-}
-
-span#logoText {
-  padding-left: 10px;
-}
-
-/* Navigation Links */
 .nav-links {
   display: flex;
+  align-items: center;
   gap: 1rem;
+  flex-wrap: nowrap;
 }
 
 .nav-links a {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   text-decoration: none;
   font-size: 1rem;
   color: inherit;
 }
+
+.spaced-link {
+  margin-left: 0.6rem; 
+}
+
+.icon-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-right: 0.4rem;
+}
+
+/* Make only the text inside the anchor change on hover */
+.nav-links a:hover,
+.nav-links a:focus {
+  color: var(--accent-color); /* same accent color you use for active */
+  text-decoration: underline;
+  text-underline-offset: 6px;
+  cursor: pointer;
+}
+
+/* Specifically for the Messages link, the text is in .messages-text span */
+.nav-links a:hover .messages-text {
+  color: var(--accent-color);
+  text-decoration: underline;
+  text-underline-offset: 6px;
+}
+
+/* Optional: Slight scale up on hover for text */
+.nav-links a:hover .messages-text,
+.nav-links a:hover:not(.messages-link) {
+  transition: color 0.3s ease, transform 0.3s ease;
+  transform: scale(1.05);
+}
+
 
 .header-container .nav-links > a.active {
   color: var(--accent-color);
@@ -65,41 +129,58 @@ span#logoText {
 }
 
 /* Hamburger menu icon */
-.menu-icon {
+  cursor: pointer;
+  font-weight: 500;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.nav-links a.active, .nav-links a:hover, .nav-links button.theme-toggle-btn:hover {
+  background: #ececec;
+  color: #1976d2;
+}
+
+.nav-links .unread-badge {
+  background: #e53935;
+  color: #fff;
+  font-size: 0.85rem;
+  border-radius: 12px;
+  padding: 0 7px;
+  margin-left: 0.3rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.theme-toggle-btn {
+  border: 1px solid #ccc;
+  background: #fff;
+  border-radius: 8px;
+  padding: 0.3rem 0.6rem;
+  margin-left: 0.5rem;
+  font-size: 1.2rem;
+  transition: background 0.2s, border 0.2s;
+.theme-toggle-btn:active {
+  background: #ececec;
+  border-color: #1976d2;
+}
+
+.mobile-menu-btn {
   display: none;
-  flex-direction: column;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 0.3rem 0.6rem;
+  font-size: 2rem;
+  margin-left: 1rem;
   cursor: pointer;
+  align-items: center;
+  justify-content: center;
 }
 
-.menu-icon span {
-  width: 25px;
-  height: 3px;
-  background-color: currentColor;
-  margin: 4px 0;
-  transition: 0.4s;
-}
-
-.signOut {
-  cursor: pointer;
-}
-
-/* ======= Profile Dropdown ======= */
-.profile-container {
-  position: relative;
-  display: inline-block;
-}
-
-/* Mobile: Integrate into Mobile Menu */
-/* @media (max-width: 768px) { */
-
-/* ======= Navbar Darkens on Scroll ======= */
-.dark-theme .header-container{
-  background-color: rgba(0, 0, 0, 0.3);
-  transition: background-color 0.3s ease-in-out;
-  transition: color 0.3s ease-in-out;
-}
-
-.header-container.scrolled,
+/* Mobile Navigation Drawer */
+.mobile-nav {
+.header-container,
 .header-container.scrolled .profile-dropdown {
   background-color: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(5px);
@@ -115,19 +196,36 @@ span#logoText {
   margin-left: 4px;
 }
 
-/* New styles for the messages icon with overlayed unread badge */
 .messages-link {
   display: flex;
   align-items: center;
+  gap: 4px; /* Space between icon and text */
+  text-decoration: none;
+  color: inherit;
+  position: relative;
 }
 
+/* Make the icon + badge group behave like a regular icon */
 .icon-wrapper {
   position: relative;
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;   /* Match material icon size */
+  height: 24px;
+}
+
+.icon-wrapper mat-icon {
+  font-size: 24px;
+  line-height: 24px;
 }
 
 .messages-icon {
   transition: transform 0.2s ease-in-out;
+}
+
+.jiggle-icon {
+  margin-right: 2px; /* space between icon and text */
 }
 
 .jiggle-icon:hover {
@@ -157,47 +255,78 @@ span#logoText {
   font-size: 1rem;
 }
 
-/* ======= Responsive Styles ======= */
-@media (max-width: 768px) {
+@media (max-width: 900px) {
+  .header-inner {
+    padding: 0.5rem 1rem;
+  }
   .nav-links {
-    display: none;
-    flex-direction: column;
-    position: fixed;
-    top: 60px;
-    left: 0;
-    width: 100%;
-    background-color: inherit;
-    padding: 1rem 0;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-
-  .theme-toggle {
-    padding-left: 10px;
-  }
-
-  .nav-links a {
-    padding: 0.75rem 1rem;
-  }
-
-  .menu-icon {
-    display: flex;
-  }
-
-  /* Toggle menu display */
-  .menu-toggle:checked + .menu-icon + .nav-links {
-    display: flex;
-  }
-
-  /* Animate icon on toggle */
-  .menu-toggle:checked + .menu-icon span:nth-child(1) {
-    transform: rotate(-45deg) translate(-5px, 6px);
-  }
-
-  .menu-toggle:checked + .menu-icon span:nth-child(2) {
-    opacity: 0;
-  }
-
-  .menu-toggle:checked + .menu-icon span:nth-child(3) {
-    transform: rotate(45deg) translate(-5px, -6px);
+    gap: 1rem;
   }
 }
+
+@media (max-width: 700px) {
+  .header-inner {
+    flex-direction: row;
+    padding: 0.5rem 0.5rem;
+    
+  .theme-toggle {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    color: inherit;
+    text-decoration: none;
+    font-size: 1rem;
+  }
+
+  .theme-toggle:hover {
+    color: var(--accent-color);
+    text-decoration: underline;
+    text-underline-offset: 6px;
+  }
+  
+  .theme-toggle mat-icon {
+    vertical-align: middle;
+  }
+  .desktop-nav {
+    display: none;
+  }
+  .mobile-menu-btn {
+    display: flex;
+  }
+  .mobile-nav {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 64px;
+    left: 0;
+    width: 100vw;
+    background: #f6f6f5;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    z-index: 200;
+    padding: 1.5rem 1rem 1rem 1rem;
+    gap: 1.2rem;
+    animation: slideDown 0.2s;
+  }
+  .mobile-nav a, .mobile-nav button.theme-toggle-btn {
+    font-size: 1.2rem;
+    padding: 0.7rem 0.5rem;
+    border-radius: 6px;
+    background: none;
+    border: none;
+    color: #222;
+    text-align: left;
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .mobile-nav a.active, .mobile-nav a:hover, .mobile-nav button.theme-toggle-btn:hover {
+    background: #ececec;
+    color: #1976d2;
+  }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+  

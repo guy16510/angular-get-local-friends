@@ -20,6 +20,7 @@ export class HeaderComponent {
   @Select(ChatState.unreadCount) unreadCount$!: Observable<number>;
 
   isDarkMode = false;
+  mobileMenuOpen = false;
 
   @ViewChild('headerContainer') headerContainer!: ElementRef;
 
