@@ -1,8 +1,13 @@
-<div class="progress-container">
-  <mat-progress-bar
-    mode="determinate"
-    [value]="(progress$ | async)"
-    color="accent"
-    class="survey-progress-bar">
-  </mat-progress-bar>
+<div class="progress-container" *ngIf="progress$ | async as progress">
+  <div class="progress-wrapper">
+    <mat-progress-bar
+      mode="determinate"
+      [value]="progress"
+      [color]="getProgressColor(progress)"
+      class="survey-progress-bar">
+    </mat-progress-bar>
+    <div class="progress-label-inside">
+      {{ progress }}%
+    </div>
+  </div>
 </div>

@@ -24,68 +24,69 @@
       </div>
     </div>
 
-      <!-- Self Profile Image -->
-      <div class="animal-card-container">
-        <div class="animal-card" *ngIf="userProfile.selfProfile?.animal">
-          <img [src]="'/assets/images/animal/male/' + userProfile.selfProfile?.animal?.toLowerCase() + '.png'"
-            alt="{{ userProfile.selfProfile?.animal }}" />
-          <h3>You are a {{ userProfile.selfProfile?.adjective }} {{ userProfile.selfProfile?.animal }}</h3>
-          <p>{{ userProfile.selfProfile?.fullDescription }}</p>
-        </div>
-      
-        <div class="animal-card" *ngIf="userProfile.seekingProfile?.animal">
-          <img [src]="'/assets/images/animal/male/' + userProfile.seekingProfile?.animal?.toLowerCase() + '.png'"
-            alt="{{ userProfile.seekingProfile?.animal }}" />
-          <h3>Looking for a {{ userProfile.seekingProfile?.adjective }} {{ userProfile.seekingProfile?.animal }}</h3>
-          <p>{{ userProfile.seekingProfile?.fullDescription }}</p>
-        </div>
+    <!-- Self Profile Image -->
+    <div class="animal-card-container">
+      <div class="animal-card" *ngIf="userProfile.selfProfile?.animal">
+        <img [src]="'/assets/images/animal/male/' + userProfile.selfProfile?.animal?.toLowerCase() + '.png'"
+          alt="{{ userProfile.selfProfile?.animal }}" />
+        <h3>You are a {{ userProfile.selfProfile?.adjective }} {{ userProfile.selfProfile?.animal }}</h3>
+        <p>{{ userProfile.selfProfile?.fullDescription }}</p>
       </div>
 
-      <div class="deep-insights-section" *ngIf="userProfile?.deepInsights as insights">
-        <div class="insights-card">
-          <h3 class="insights-title">Deep Personality Insights</h3>
-      
-          <div class="insight-item">
-            <div class="insight-icon"><mat-icon>psychology</mat-icon></div>
-            <div class="insight-content">
-              <strong>Personality Narrative</strong>
-              <p>{{ insights?.personalityNarrative }}</p>
-            </div>
+      <div class="animal-card" *ngIf="userProfile.seekingProfile?.animal">
+        <img [src]="'/assets/images/animal/male/' + userProfile.seekingProfile?.animal?.toLowerCase() + '.png'"
+          alt="{{ userProfile.seekingProfile?.animal }}" />
+        <h3>Looking for a {{ userProfile.seekingProfile?.adjective }} {{ userProfile.seekingProfile?.animal }}</h3>
+        <p>{{ userProfile.seekingProfile?.fullDescription }}</p>
+      </div>
+    </div>
+
+    <div class="deep-insights-section" *ngIf="userProfile?.deepInsights as insights">
+      <div class="insights-card">
+        <h3 class="insights-title">Deep Personality Insights</h3>
+
+        <div class="insight-item">
+          <div class="insight-icon"><mat-icon>psychology</mat-icon></div>
+          <div class="insight-content">
+            <strong>Personality Narrative</strong>
+            <p>{{ insights?.personalityNarrative }}</p>
           </div>
-      
-          <div class="insight-item">
-            <div class="insight-icon"><mat-icon>group</mat-icon></div>
-            <div class="insight-content">
-              <strong>Social Role</strong>
-              <p>{{ insights.socialRole }}</p>
-            </div>
+        </div>
+
+        <div class="insight-item">
+          <div class="insight-icon"><mat-icon>group</mat-icon></div>
+          <div class="insight-content">
+            <strong>Social Role</strong>
+            <p>{{ insights.socialRole }}</p>
           </div>
-      
-          <div class="insight-item">
-            <div class="insight-icon"><mat-icon>favorite</mat-icon></div>
-            <div class="insight-content">
-              <strong>Friendship Needs</strong>
-              <p>{{ insights.friendshipNeeds }}</p>
-            </div>
+        </div>
+
+        <div class="insight-item">
+          <div class="insight-icon"><mat-icon>favorite</mat-icon></div>
+          <div class="insight-content">
+            <strong>Friendship Needs</strong>
+            <p>{{ insights.friendshipNeeds }}</p>
           </div>
-      
-          <div class="insight-item">
-            <div class="insight-icon"><mat-icon>trending_up</mat-icon></div>
-            <div class="insight-content">
-              <strong>Growth Path</strong>
-              <p>{{ insights.potentialGrowthPath }}</p>
-            </div>
+        </div>
+
+        <div class="insight-item">
+          <div class="insight-icon"><mat-icon>trending_up</mat-icon></div>
+          <div class="insight-content">
+            <strong>Growth Path</strong>
+            <p>{{ insights.potentialGrowthPath }}</p>
           </div>
-      
-          <div class="insight-item">
-            <div class="insight-icon"><mat-icon>key</mat-icon></div>
-            <div class="insight-content">
-              <strong>Compatibility Tip</strong>
-              <p>{{ insights.compatibilityTip }}</p>
-            </div>
+        </div>
+
+        <div class="insight-item">
+          <div class="insight-icon"><mat-icon>key</mat-icon></div>
+          <div class="insight-content">
+            <strong>Compatibility Tip</strong>
+            <p>{{ insights.compatibilityTip }}</p>
           </div>
         </div>
       </div>
+    </div>
+
 
       <!-- Survey Answers Section -->
       <div *ngIf="surveyAnswers$ | async as answers">
@@ -205,16 +206,23 @@
       </div>
     </ng-container>
 
-    <!-- Show survey CTA if no profile -->
-    <ng-template #noProfile>
-      <div class="location-card">
-        <h2>You're So Close to Finding Your Wolf Pack!!</h2>
-        <p>Please complete the survey to be matched with other people locally in your area.</p>
-        <p>
-          <button mat-raised-button color="primary" (click)="completeSurvey()">Complete Survey</button>
-        </p>
-      </div>
-    </ng-template>
-  </mat-card>
-  
-  <app-upload-image #uploadComponent (imageUpdated)="onImageUpdated($event)" style="display: none;"></app-upload-image>
+    <!-- Map Container -->
+    <div class="map-container">
+      <div id="map" style="height: 400px; width: 100%;"></div>
+    </div>
+  </ng-container>
+
+
+  <!-- Show survey CTA if no profile -->
+  <ng-template #noProfile>
+    <div class="location-card">
+      <h2>You're So Close to Finding Your Wolf Pack!!</h2>
+      <p>Please complete the survey to be matched with other people locally in your area.</p>
+      <p>
+        <button mat-raised-button color="primary" (click)="completeSurvey()">Complete Survey</button>
+      </p>
+    </div>
+  </ng-template>
+</mat-card>
+
+<app-upload-image #uploadComponent (imageUpdated)="onImageUpdated($event)" style="display: none;"></app-upload-image>

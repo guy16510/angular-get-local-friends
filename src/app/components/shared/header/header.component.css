@@ -53,10 +53,82 @@
   align-items: center;
   gap: 0.5rem;
   font-size: 1.15rem;
-  color: #222;
+.messages-link {
+  display: flex;
+  align-items: center;
+  gap: 6px; /* Reduce gap between icon and text */
+  position: relative;
   text-decoration: none;
-  background: none;
-  border: none;
+  color: inherit;
+}
+
+.messages-link .jiggle-icon {
+  position: relative;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: nowrap;
+}
+
+.nav-links a {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+  font-size: 1rem;
+  color: inherit;
+}
+
+.spaced-link {
+  margin-left: 0.6rem; 
+}
+
+.icon-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-right: 0.4rem;
+}
+
+/* Make only the text inside the anchor change on hover */
+.nav-links a:hover,
+.nav-links a:focus {
+  color: var(--accent-color); /* same accent color you use for active */
+  text-decoration: underline;
+  text-underline-offset: 6px;
+  cursor: pointer;
+}
+
+/* Specifically for the Messages link, the text is in .messages-text span */
+.nav-links a:hover .messages-text {
+  color: var(--accent-color);
+  text-decoration: underline;
+  text-underline-offset: 6px;
+}
+
+/* Optional: Slight scale up on hover for text */
+.nav-links a:hover .messages-text,
+.nav-links a:hover:not(.messages-link) {
+  transition: color 0.3s ease, transform 0.3s ease;
+  transform: scale(1.05);
+}
+
+
+.header-container .nav-links > a.active {
+  color: var(--accent-color);
+  text-decoration: underline;
+  text-underline-offset: 8px;
+}
+
+/* Hide checkbox input */
+.menu-toggle {
+  display: none;
+}
+
+/* Hamburger menu icon */
   cursor: pointer;
   font-weight: 500;
   padding: 0.25rem 0.5rem;
@@ -88,8 +160,6 @@
   margin-left: 0.5rem;
   font-size: 1.2rem;
   transition: background 0.2s, border 0.2s;
-}
-
 .theme-toggle-btn:active {
   background: #ececec;
   border-color: #1976d2;
@@ -110,7 +180,79 @@
 
 /* Mobile Navigation Drawer */
 .mobile-nav {
-  display: none;
+.header-container,
+.header-container.scrolled .profile-dropdown {
+  background-color: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
+  color: white;
+}
+
+.unread-badge {
+  background-color: red;
+  color: white;
+  font-size: 0.75rem;
+  border-radius: 50%;
+  padding: 0 6px;
+  margin-left: 4px;
+}
+
+.messages-link {
+  display: flex;
+  align-items: center;
+  gap: 4px; /* Space between icon and text */
+  text-decoration: none;
+  color: inherit;
+  position: relative;
+}
+
+/* Make the icon + badge group behave like a regular icon */
+.icon-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;   /* Match material icon size */
+  height: 24px;
+}
+
+.icon-wrapper mat-icon {
+  font-size: 24px;
+  line-height: 24px;
+}
+
+.messages-icon {
+  transition: transform 0.2s ease-in-out;
+}
+
+.jiggle-icon {
+  margin-right: 2px; /* space between icon and text */
+}
+
+.jiggle-icon:hover {
+  transform: rotate(15deg);
+}
+
+.unread-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: red;
+  color: white;
+  border-radius: 50%;
+  font-size: 0.65rem;
+  padding: 2px 5px;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.messages-text {
+  margin-left: 8px;
+  font-size: 1rem;
 }
 
 @media (max-width: 900px) {
@@ -126,6 +268,25 @@
   .header-inner {
     flex-direction: row;
     padding: 0.5rem 0.5rem;
+    
+  .theme-toggle {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    color: inherit;
+    text-decoration: none;
+    font-size: 1rem;
+  }
+
+  .theme-toggle:hover {
+    color: var(--accent-color);
+    text-decoration: underline;
+    text-underline-offset: 6px;
+  }
+  
+  .theme-toggle mat-icon {
+    vertical-align: middle;
   }
   .desktop-nav {
     display: none;
@@ -168,3 +329,4 @@
   from { opacity: 0; transform: translateY(-20px); }
   to { opacity: 1; transform: translateY(0); }
 }
+  

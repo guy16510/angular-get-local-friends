@@ -33,3 +33,7 @@ p.disclaimer{
 .textArea{
   width:100% !important;
 }
+
+.progress-bar-container {
+  margin: 10px 0;
+}
