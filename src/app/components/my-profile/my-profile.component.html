@@ -87,11 +87,131 @@
       </div>
     </div>
 
+
+      <!-- Survey Answers Section -->
+      <div *ngIf="surveyAnswers$ | async as answers">
+        <button mat-stroked-button color="primary" class="toggle-survey-btn" (click)="toggleSurveyAnswers()">
+          {{ showSurveyAnswers ? 'Hide' : 'Show' }} Survey Responses
+        </button>
+        <div class="survey-answers-section" *ngIf="showSurveyAnswers" [ngClass]="{ 'dark-theme': isDarkMode }">
+          <div class="survey-answers-card">
+            <h3 class="survey-title">Your Survey Responses</h3>
+            
+            <!-- Friendship Preferences -->
+            <div class="survey-category">
+              <h4><mat-icon>people</mat-icon> Friendship Preferences</h4>
+              <div class="answer-grid">
+                <div class="answer-item" *ngIf="answers['1']">
+                  <span class="question">Age:</span>
+                  <span class="answer">{{ answers['1'] }}</span>
+                </div>
+                <div class="answer-item" *ngIf="answers['2']">
+                  <span class="question">Looking for friends aged:</span>
+                  <span class="answer">{{ answers['2']?.join(', ') }}</span>
+                </div>
+                <div class="answer-item" *ngIf="answers['3']">
+                  <span class="question">Gender:</span>
+                  <span class="answer">{{ answers['3'] }}</span>
+                </div>
+                <div class="answer-item" *ngIf="answers['4']">
+                  <span class="question">Gender preference:</span>
+                  <span class="answer">{{ answers['4'] }}</span>
+                </div>
+                <div class="answer-item" *ngIf="answers['5']">
+                  <span class="question">Have kids:</span>
+                  <span class="answer">{{ answers['5'] }}</span>
+                </div>
+                <div class="answer-item" *ngIf="answers['11']">
+                  <span class="question">Meeting frequency:</span>
+                  <span class="answer">{{ answers['11'] }}</span>
+                </div>
+                <div class="answer-item" *ngIf="answers['12']">
+                  <span class="question">Main reason:</span>
+                  <span class="answer">{{ answers['12'] }}</span>
+                </div>
+                <div class="answer-item" *ngIf="answers['13']">
+                  <span class="question">Location preference:</span>
+                  <span class="answer">{{ answers['13'] }}</span>
+                </div>
+                <div class="answer-item" *ngIf="answers['14']">
+                  <span class="question">Activities interested in:</span>
+                  <span class="answer">{{ answers['14']?.join(', ') }}</span>
+                </div>
+                <div class="answer-item" *ngIf="answers['15']">
+                  <span class="question">Travel distance:</span>
+                  <span class="answer">{{ answers['15'] }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Interests & Activities -->
+            <div class="survey-category">
+              <h4><mat-icon>favorite</mat-icon> Interests & Activities</h4>
+              <div class="answer-grid">
+                <div class="answer-item" *ngIf="answers['16']">
+                  <span class="question">Free time activities:</span>
+                  <span class="answer">{{ answers['16']?.join(', ') }}</span>
+                </div>
+                <div class="answer-item" *ngIf="answers['17']">
+                  <span class="question">Preferred events:</span>
+                  <span class="answer">{{ answers['17']?.join(', ') }}</span>
+                </div>
+                <div class="answer-item" *ngIf="answers['18']">
+                  <span class="question">Weekend preference:</span>
+                  <span class="answer">{{ answers['18'] }}</span>
+                </div>
+                <div class="answer-item" *ngIf="answers['19']">
+                  <span class="question">Hobby groups:</span>
+                  <span class="answer">{{ answers['19'] === 'true' ? 'Yes' : 'No' }}</span>
+                </div>
+                <div class="answer-item" *ngIf="answers['20']">
+                  <span class="question">Planning style:</span>
+                  <span class="answer">{{ answers['20'] }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Kid-Related Section (only shown if they have kids) -->
+            <div class="survey-category" *ngIf="answers['5'] === 'Yes'">
+              <h4><mat-icon>child_care</mat-icon> Parenting Preferences</h4>
+              <div class="answer-grid">
+                <div class="answer-item" *ngIf="answers['6']">
+                  <span class="question">Friends with kids:</span>
+                  <span class="answer">{{ answers['6'] }}</span>
+                </div>
+                <div class="answer-item" *ngIf="answers['7']">
+                  <span class="question">Children's age groups:</span>
+                  <span class="answer">{{ answers['7']?.join(', ') }}</span>
+                </div>
+                <div class="answer-item" *ngIf="answers['8']">
+                  <span class="question">Similar age kids:</span>
+                  <span class="answer">{{ answers['8'] === 'true' ? 'Yes' : 'No' }}</span>
+                </div>
+                <div class="answer-item" *ngIf="answers['9']">
+                  <span class="question">Kid-friendly meetups:</span>
+                  <span class="answer">{{ answers['9'] }}</span>
+                </div>
+                <div class="answer-item" *ngIf="answers['10']">
+                  <span class="question">Parent preference:</span>
+                  <span class="answer">{{ answers['10'] }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="map-placeholder">
+        <p>Map placeholder - Nearby connections coming soon!</p>
+      </div>
+    </ng-container>
+
     <!-- Map Container -->
     <div class="map-container">
       <div id="map" style="height: 400px; width: 100%;"></div>
     </div>
   </ng-container>
+
 
   <!-- Show survey CTA if no profile -->
   <ng-template #noProfile>
